@@ -28,6 +28,35 @@ public class Scales
           );
       } /*Scale*/
 
+/*
+    Common useful stuff
+*/
+
+    public static void DrawCenteredText
+      (
+        Canvas Draw,
+        String TheText,
+        float x,
+        float y,
+        Paint UsePaint
+      )
+      /* draws text at position x, vertically centred around y. */
+      {
+        final android.graphics.Rect TextBounds = new android.graphics.Rect();
+        UsePaint.getTextBounds(TheText, 0, TheText.length(), TextBounds);
+        Draw.drawText
+          (
+            TheText,
+            x, /* depend on UsePaint to align horizontally */
+            y - (TextBounds.bottom + TextBounds.top) / 2.0f,
+            UsePaint
+          );
+      } /*DrawCenteredText*/
+
+/*
+    The actual scales
+*/
+
     public static class XScale implements Scale
       {
         public String Name()
@@ -83,7 +112,14 @@ public class Scales
                   )
                   {
                     g.drawLine(Left1, 0.0f, Left1, TopEdge ? Length1 : - Length1, LineHow);
-                    g.drawText(String.format("%d", i), Left1, TopEdge ? Length1 : - Length1, TextHow);
+                    DrawCenteredText
+                      (
+                        /*Draw =*/ g,
+                        /*TheText =*/ String.format("%d", i),
+                        /*x =*/ Left1,
+                        /*y =*/ TopEdge ? Length1 : - Length1,
+                        /*UsePaint =*/ TextHow
+                      );
                   /* TBD determine number of graduation levels based on PixelsWide */
                     for (int j = 1; j < 10; ++j)
                       {

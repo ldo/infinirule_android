@@ -105,8 +105,9 @@ public class SlideView extends android.view.View
       /* finds the offset value such that the specified view coordinate
         maps to the specified position on a scale. */
       {
+        final double Offset = Coord / ScaleLength - Pos;
         return
-            Coord / ScaleLength - Pos;
+            Offset - Math.ceil(Offset);
       } /*FindScaleOffset*/
 
 /*
@@ -120,17 +121,22 @@ public class SlideView extends android.view.View
       )
       {
       /* scale names TBD */
-      /* scale wraparound TBD */
         g.drawColor(0xfffffada);
         g.save(android.graphics.Canvas.MATRIX_SAVE_FLAG);
         final android.graphics.Matrix m1 = g.getMatrix();
         final android.graphics.Matrix m2 = g.getMatrix();
+        final int ScaleRepeat = (getWidth() + ScaleLength - 1) / ScaleLength;
         m1.preTranslate((float)(Offset1 * ScaleLength), getHeight() / 2.0f);
         m2.preTranslate((float)(Offset2 * ScaleLength), getHeight() / 2.0f);
-        g.setMatrix(m1);
-        Scale1.Draw(g, ScaleLength, false);
-        g.setMatrix(m2);
-        Scale2.Draw(g, ScaleLength, true);
+        for (int i = -1; i <= ScaleRepeat; ++i)
+          {
+            g.setMatrix(m1);
+            Scale1.Draw(g, ScaleLength, false);
+            m1.preTranslate(ScaleLength, 0.0f);
+            g.setMatrix(m2);
+            Scale2.Draw(g, ScaleLength, true);
+            m2.preTranslate(ScaleLength, 0.0f);
+          } /*for*/
         g.restore();
       } /*onDraw*/
 
