@@ -10,17 +10,17 @@ import android.view.MotionEvent;
 
 public class SlideView extends android.view.View
   {
-    private Scales.Scale Scale1, Scale2;
-    private double Offset1, Offset2;
+    private Scales.Scale UpperScale, LowerScale;
+    private double UpperScaleOffset, LowerScaleOffset;
     private int ScaleLength; /* in pixels */
 
     private void Init()
       /* common code for all constructors */
       {
-        Scale1 = new Scales.XScale();
-        Scale2 = Scale1;
-        Offset1 = 0.0;
-        Offset2 = 0.0;
+        UpperScale = new Scales.XScale();
+        LowerScale = UpperScale;
+        UpperScaleOffset = 0.0;
+        LowerScaleOffset = 0.0;
         ScaleLength = -1; /* proper value deferred to onLayout */
       } /*Init*/
 
@@ -134,7 +134,7 @@ public class SlideView extends android.view.View
                 getWidth() / 2.0f,
                 getHeight() * (Upper ? 0.25f : 0.75f)
               );
-            final String Template = (Upper ? Scale1 : Scale2).Name();
+            final String Template = (Upper ? UpperScale : LowerScale).Name();
             float TotalLength = 0.0f;
             for (boolean Render = false;;)
               {
@@ -212,15 +212,15 @@ public class SlideView extends android.view.View
         final android.graphics.Matrix m1 = g.getMatrix();
         final android.graphics.Matrix m2 = g.getMatrix();
         final int ScaleRepeat = (getWidth() + ScaleLength - 1) / ScaleLength;
-        m1.preTranslate((float)(Offset1 * ScaleLength), getHeight() / 2.0f);
-        m2.preTranslate((float)(Offset2 * ScaleLength), getHeight() / 2.0f);
+        m1.preTranslate((float)(UpperScaleOffset * ScaleLength), getHeight() / 2.0f);
+        m2.preTranslate((float)(LowerScaleOffset * ScaleLength), getHeight() / 2.0f);
         for (int i = -1; i <= ScaleRepeat; ++i)
           {
             g.setMatrix(m1);
-            Scale1.Draw(g, ScaleLength, false);
+            UpperScale.Draw(g, ScaleLength, false);
             m1.preTranslate(ScaleLength, 0.0f);
             g.setMatrix(m2);
-            Scale2.Draw(g, ScaleLength, true);
+            LowerScale.Draw(g, ScaleLength, true);
             m2.preTranslate(ScaleLength, 0.0f);
           } /*for*/
         g.restore();
@@ -335,17 +335,17 @@ public class SlideView extends android.view.View
                                 ThisMouseLower = ThisMouse1;
                                 LastMouseLower = LastMouse1;
                               } /*if*/
-                            Offset1 =
+                            UpperScaleOffset =
                                 FindScaleOffset
                                   (
                                     ThisMouseUpper.x,
-                                    ViewToScale(LastMouseUpper.x, Offset1)
+                                    ViewToScale(LastMouseUpper.x, UpperScaleOffset)
                                   );
-                            Offset2 =
+                            LowerScaleOffset =
                                 FindScaleOffset
                                   (
                                     ThisMouseLower.x,
-                                    ViewToScale(LastMouseLower.x, Offset2)
+                                    ViewToScale(LastMouseLower.x, LowerScaleOffset)
                                   );
                             invalidate();
                           }
@@ -380,15 +380,19 @@ public class SlideView extends android.view.View
                                 FindScaleOffset
                                   (
                                     ThisMouse.x,
-                                    ViewToScale(LastMouse.x, UpperScale ? Offset1 : Offset2)
+                                    ViewToScale
+                                      (
+                                        LastMouse.x,
+                                        UpperScale ? UpperScaleOffset : LowerScaleOffset
+                                      )
                                   );
                             if (UpperScale)
                               {
-                                Offset1 = NewOffset;
+                                UpperScaleOffset = NewOffset;
                               }
                             else
                               {
-                                Offset2 = NewOffset;
+                                LowerScaleOffset = NewOffset;
                               } /*if*/
                             invalidate();
                           } /*if*/
