@@ -307,47 +307,101 @@ public class SlideView extends android.view.View
                             null;
                     if (ThisMouse1 != null || ThisMouse2 != null)
                       {
-                        final PointF ThisMouse =
-                            ThisMouse1 != null ?
-                                ThisMouse2 != null ?
-                                    new PointF
-                                      (
-                                        (ThisMouse1.x + ThisMouse2.x) / 2.0f,
-                                        (ThisMouse1.y + ThisMouse2.y) / 2.0f
-                                      )
-                                :
-                                    ThisMouse1
-                            :
-                                ThisMouse2;
-                        final PointF LastMouse =
-                            ThisMouse1 != null ?
-                                ThisMouse2 != null ?
-                                    new PointF
-                                      (
-                                        (LastMouse1.x + LastMouse2.x) / 2.0f,
-                                        (LastMouse1.y + LastMouse2.y) / 2.0f
-                                      )
-                                :
-                                    LastMouse1
-                            :
-                                LastMouse2;
-                        final boolean UpperScale = ThisMouse.y < getHeight() / 2.0f;
-                        final double NewOffset =
-                            FindScaleOffset
-                              (
-                                ThisMouse.x,
-                                ViewToScale(LastMouse.x, UpperScale ? Offset1 : Offset2)
-                              );
-                        if (UpperScale)
+                        if
+                          (
+                                ThisMouse1 != null
+                            &&
+                                ThisMouse2 != null
+                            &&
+                                    ThisMouse1.y < getHeight() / 2.0f
+                                !=
+                                    ThisMouse2.y < getHeight() / 2.0f
+                          )
                           {
-                            Offset1 = NewOffset;
+                          /* simultaneous scrolling of both scales */
+                            final PointF
+                                ThisMouseUpper, ThisMouseLower, LastMouseUpper, LastMouseLower;
+                            if (ThisMouse1.y < getHeight() / 2.0f)
+                              {
+                                ThisMouseUpper = ThisMouse1;
+                                LastMouseUpper = LastMouse1;
+                                ThisMouseLower = ThisMouse2;
+                                LastMouseLower = LastMouse2;
+                              }
+                            else
+                              {
+                                ThisMouseUpper = ThisMouse2;
+                                LastMouseUpper = LastMouse2;
+                                ThisMouseLower = ThisMouse1;
+                                LastMouseLower = LastMouse1;
+                              } /*if*/
+                            Offset1 =
+                                FindScaleOffset
+                                  (
+                                    ThisMouseUpper.x,
+                                    ViewToScale(LastMouseUpper.x, Offset1)
+                                  );
+                            Offset2 =
+                                FindScaleOffset
+                                  (
+                                    ThisMouseLower.x,
+                                    ViewToScale(LastMouseLower.x, Offset2)
+                                  );
+                            invalidate();
                           }
                         else
                           {
-                            Offset2 = NewOffset;
+                            final PointF ThisMouse =
+                                ThisMouse1 != null ?
+                                    ThisMouse2 != null ?
+                                        new PointF
+                                          (
+                                            (ThisMouse1.x + ThisMouse2.x) / 2.0f,
+                                            (ThisMouse1.y + ThisMouse2.y) / 2.0f
+                                          )
+                                    :
+                                        ThisMouse1
+                                :
+                                    ThisMouse2;
+                            final PointF LastMouse =
+                                ThisMouse1 != null ?
+                                    ThisMouse2 != null ?
+                                        new PointF
+                                          (
+                                            (LastMouse1.x + LastMouse2.x) / 2.0f,
+                                            (LastMouse1.y + LastMouse2.y) / 2.0f
+                                          )
+                                    :
+                                        LastMouse1
+                                :
+                                    LastMouse2;
+                            final boolean UpperScale = ThisMouse.y < getHeight() / 2.0f;
+                            final double NewOffset =
+                                FindScaleOffset
+                                  (
+                                    ThisMouse.x,
+                                    ViewToScale(LastMouse.x, UpperScale ? Offset1 : Offset2)
+                                  );
+                            if (UpperScale)
+                              {
+                                Offset1 = NewOffset;
+                              }
+                            else
+                              {
+                                Offset2 = NewOffset;
+                              } /*if*/
+                            invalidate();
                           } /*if*/
-                        invalidate();
-                        if (ThisMouse1 != null && ThisMouse2 != null)
+                        if
+                          (
+                                ThisMouse1 != null
+                            &&
+                                ThisMouse2 != null
+                            &&
+                                    ThisMouse1.y < getHeight() / 2.0f
+                                ==
+                                    ThisMouse2.y < getHeight() / 2.0f
+                          )
                           {
                           /* pinch to zoom */
                             final float LastDistance = (float)Math.hypot
