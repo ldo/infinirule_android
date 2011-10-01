@@ -70,6 +70,27 @@ public class SlideView extends android.view.View
           } /*if*/
       } /*onLayout*/
 
+    public void SetScale
+      (
+        String NewScaleName,
+        boolean Upper
+      )
+      {
+        final Scales.Scale NewScale = Scales.KnownScales.get(NewScaleName);
+        if (Upper)
+          {
+            UpperScale = NewScale;
+            UpperScaleOffset = 0.0;
+          }
+        else
+          {
+            LowerScale = NewScale;
+            LowerScaleOffset = 0.0;
+          } /*if*/
+        ScaleLength = getWidth();
+        invalidate();
+      } /*SetScale*/
+
 /*
     Mapping between image coordinates and view coordinates
 */
@@ -128,7 +149,8 @@ public class SlideView extends android.view.View
             /*TheScale =*/ UpperScale,
             /*Upper =*/ true,
             /*Pos =*/ new PointF(getWidth() / 2.0f, getHeight() * 0.25f),
-            /*Alignment =*/ Paint.Align.CENTER
+            /*Alignment =*/ Paint.Align.CENTER,
+            /*Color =*/ 0x000000
           );
         Scales.DrawLabel
           (
@@ -136,7 +158,8 @@ public class SlideView extends android.view.View
             /*TheScale =*/ LowerScale,
             /*Upper =*/ false,
             /*Pos =*/ new PointF(getWidth() / 2.0f, getHeight() * 0.75f),
-            /*Alignment =*/ Paint.Align.CENTER
+            /*Alignment =*/ Paint.Align.CENTER,
+            /*Color =*/ 0x000000
           );
         g.save(android.graphics.Canvas.MATRIX_SAVE_FLAG);
         final android.graphics.Matrix m1 = g.getMatrix();

@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Infinirule</string>
+
+    <string name="set_upper">Upper scale...</string>
+    <string name="set_lower">Lower scale...</string>
+
+    <string name="picker_prompt">Select %s scale</string>
+    <string name="upper">upper</string>
+    <string name="lower">lower</string>
 </resources>

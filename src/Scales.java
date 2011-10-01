@@ -8,6 +8,14 @@ import android.graphics.Typeface;
 public class Scales
   {
     public static final char VarEscape = '\u1e8b'; /* indicates where to substitute variable name */
+    public static final String UpperVarName = "x";
+    public static final String LowerVarName = "y";
+
+    public static final java.util.Locale StdLocale = java.util.Locale.US;
+      /* for all those places I don't want formatting to be locale-specific */
+    public static float FontSize;
+    public static final Typeface NormalStyle = Typeface.defaultFromStyle(Typeface.NORMAL);
+    public static final Typeface ItalicStyle = Typeface.defaultFromStyle(Typeface.ITALIC);
 
     public interface Scale /* implemented by all slide-rule scales */
       {
@@ -70,7 +78,7 @@ public class Scales
       {
         final Paint LineHow = new Paint();
         final Paint TextHow = new Paint();
-        TextHow.setTextSize(TextHow.getTextSize() * 2.0f); /* TBD fudge */
+        TextHow.setTextSize(FontSize);
         final float Length1 = 20.0f;
         final float Length2 = Length1 / 2.0f;
         for (int i = 1; i < NrPrimarySteps; ++i)
@@ -93,7 +101,7 @@ public class Scales
                 DrawCenteredText
                   (
                     /*Draw =*/ g,
-                    /*TheText =*/ String.format("%d", i),
+                    /*TheText =*/ String.format(StdLocale, "%d", i),
                     /*x =*/ Left1,
                     /*y =*/ TopEdge ? Length1 : - Length1,
                     /*UsePaint =*/ TextHow
@@ -108,26 +116,28 @@ public class Scales
           } /*for*/
       } /*DrawGraduations*/
 
-    public static void DrawLabel
+    public static float DrawLabel
       (
-        Canvas g,
+        Canvas g, /* null to only determine string width */
         Scale TheScale,
         boolean Upper,
-        PointF Pos,
-        Paint.Align Alignment
+        PointF Pos, /* position for rendering, ignored if g is null */
+        Paint.Align Alignment, /* alignment for rendering, ignored if g is null */
+        int Color
       )
-      /* draws the label for the specified scale, doing appropriate variable
+      /* draws/measures the label for the specified scale, doing appropriate variable
         substitution depending on Upper. */
       {
         final Paint LabelHow = new Paint();
-        final Typeface NormalStyle = Typeface.defaultFromStyle(Typeface.NORMAL);
-        final Typeface ItalicStyle = Typeface.defaultFromStyle(Typeface.ITALIC);
-        LabelHow.setTextSize(LabelHow.getTextSize() * 2.0f); /* TBD fudge */
-        final PointF LabelPos = new PointF(Pos.x, Pos.y);
+        LabelHow.setTextSize(FontSize);
+        final PointF LabelPos = g != null ? new PointF(Pos.x, Pos.y) : null;
         final String Template = TheScale.Name();
         float TotalLength = 0.0f;
-        for (boolean Render = Alignment == Paint.Align.LEFT;;)
+        for (boolean Render = g != null && Alignment == Paint.Align.LEFT;;)
           {
+          /* first pass: determine total length; second pass: actually draw */
+          /* first pass unneeded if alignment is LEFT */
+          /* second pass unneeded if only measuring length and not drawing */
             int CharPos = 0;
             StringBuilder CurSeg = null;
             for (;;)
@@ -146,6 +156,7 @@ public class Scales
                         LabelHow.setTextSkewX(0.0f);
                         if (Render)
                           {
+                            LabelHow.setColor(Color);
                             g.drawText(SegStr, LabelPos.x, LabelPos.y, LabelHow);
                             LabelPos.x += LabelHow.measureText(SegStr);
                           }
@@ -160,14 +171,16 @@ public class Scales
                      {
                      /* found another occurrence of VarEscape, substitute
                         with appropriate variable name */
-                        final String VarStr = Upper ? "x" : "y";
+                        final String VarStr = Upper ? UpperVarName : LowerVarName;
                         LabelHow.setTypeface(ItalicStyle);
                         if (!ItalicStyle.isItalic())
                           {
+                          /* fake it */
                             LabelHow.setTextSkewX(-0.25f); /* as per docs recommendation */
                           } /*if*/
                         if (Render)
                           {
+                            LabelHow.setColor(Color);
                             g.drawText(VarStr, LabelPos.x, LabelPos.y, LabelHow);
                             LabelPos.x += LabelHow.measureText(VarStr);
                           }
@@ -189,11 +202,13 @@ public class Scales
                   } /*if*/
                 ++CharPos;
               } /*for*/
-            if (Render)
+            if (Render || g == null)
                 break;
             LabelPos.x -= TotalLength / (Alignment == Paint.Align.CENTER ? 2.0f : 1.0f);
             Render = true;
           } /*for*/
+        return
+            TotalLength;
       } /*DrawLabel*/
 
 /*
