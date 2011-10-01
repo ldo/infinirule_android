@@ -6,22 +6,8 @@
 >
     <nz.gen.geek_central.infinirule.SlideView
         android:layout_width="fill_parent"
-        android:layout_height="100dp"
+        android:layout_height="200dp"
         android:id="@+id/slide_view"
         android:layout_centerVertical="true"
-    />
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="30dp"
-        android:gravity="center"
-        android:layout_alignParentTop="true"
-        android:id="@+id/label_upper"
-    />
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="30dp"
-        android:gravity="center"
-        android:layout_alignParentBottom="true"
-        android:id="@+id/label_lower"
     />
 </RelativeLayout>

@@ -4,12 +4,12 @@ package nz.gen.geek_central.infinirule;
 */
 
 import android.graphics.PointF;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.view.MotionEvent;
-import android.widget.TextView;
 
 public class SlideView extends android.view.View
   {
-    private TextView UpperLabel, LowerLabel;
     private Scales.Scale Scale1, Scale2;
     private double Offset1, Offset2;
     private int ScaleLength; /* in pixels */
@@ -71,26 +71,6 @@ public class SlideView extends android.view.View
           } /*if*/
       } /*onLayout*/
 
-    public void SetLabelViews
-      (
-        TextView UpperLabel,
-        TextView LowerLabel
-      )
-      {
-        this.UpperLabel = UpperLabel;
-        this.LowerLabel = LowerLabel;
-        UpperLabel.setText
-          (
-            android.text.Html.fromHtml(Scale1.Name()),
-            TextView.BufferType.SPANNABLE
-          );
-        LowerLabel.setText
-          (
-            android.text.Html.fromHtml(Scale1.Name()),
-            TextView.BufferType.SPANNABLE
-          );
-      } /*SetLabelViews*/
-
 /*
     Mapping between image coordinates and view coordinates
 */
@@ -143,6 +123,91 @@ public class SlideView extends android.view.View
       )
       {
         g.drawColor(0xfffffada);
+        for (boolean Upper = false;;)
+          {
+            final Paint LabelHow = new Paint();
+            final Typeface NormalStyle = Typeface.defaultFromStyle(Typeface.NORMAL);
+            final Typeface ItalicStyle = Typeface.defaultFromStyle(Typeface.ITALIC);
+            LabelHow.setTextSize(LabelHow.getTextSize() * 2.0f); /* TBD fudge */
+            final PointF LabelPos = new PointF
+              (
+                getWidth() / 2.0f,
+                getHeight() * (Upper ? 0.25f : 0.75f)
+              );
+            final String Template = (Upper ? Scale1 : Scale2).Name();
+            float TotalLength = 0.0f;
+            for (boolean Render = false;;)
+              {
+                int CharPos = 0;
+                StringBuilder CurSeg = null;
+                for (;;)
+                  {
+                    if
+                      (
+                            CharPos == Template.length()
+                        ||
+                            Template.charAt(CharPos) == Scales.VarEscape
+                      )
+                      {
+                        if (CurSeg != null)
+                          {
+                            final String SegStr = CurSeg.toString();
+                            LabelHow.setTypeface(NormalStyle);
+                            LabelHow.setTextSkewX(0.0f);
+                            if (Render)
+                              {
+                                g.drawText(SegStr, LabelPos.x, LabelPos.y, LabelHow);
+                                LabelPos.x += LabelHow.measureText(SegStr);
+                              }
+                            else
+                              {
+                                TotalLength += LabelHow.measureText(SegStr);
+                              } /*if*/
+                            CurSeg = null;
+                          } /*if*/
+                        if (CharPos == Template.length())
+                            break;
+                         {
+                         /* found another occurrence of VarEscape, substitute
+                            with appropriate variable name */
+                            final String VarStr = Upper ? "x" : "y";
+                            LabelHow.setTypeface(ItalicStyle);
+                            if (!ItalicStyle.isItalic())
+                              {
+                                LabelHow.setTextSkewX(-0.25f); /* as per docs recommendation */
+                              } /*if*/
+                            if (Render)
+                              {
+                                g.drawText(VarStr, LabelPos.x, LabelPos.y, LabelHow);
+                                LabelPos.x += LabelHow.measureText(VarStr);
+                              }
+                            else
+                              {
+                                TotalLength += LabelHow.measureText(VarStr);
+                              } /*if*/
+                         }
+                        if (CharPos + 1 == Template.length())
+                            break;
+                      }
+                    else
+                      {
+                        if (CurSeg == null)
+                          {
+                            CurSeg = new StringBuilder();
+                          } /*if*/
+                        CurSeg.append(Template.charAt(CharPos));
+                      } /*if*/
+                    ++CharPos;
+                  } /*for*/
+                if (Render)
+                    break;
+                LabelPos.x -= TotalLength / 2.0f;
+                Render = true;
+              } /*for*/
+            if (Upper)
+                break;
+            Upper = true;
+          } /*for*/
         g.save(android.graphics.Canvas.MATRIX_SAVE_FLAG);
         final android.graphics.Matrix m1 = g.getMatrix();
         final android.graphics.Matrix m2 = g.getMatrix();

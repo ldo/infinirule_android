@@ -5,10 +5,13 @@ import android.graphics.Paint;
 
 public class Scales
   {
+    public static final char VarEscape = '\u1e8b'; /* indicates where to substitute variable name */
+
     public interface Scale
       {
         public String Name();
-          /* the unique, user-visible name of this scale. */
+          /* the unique, user-visible name of this scale. Instances of VarEscape
+            will be replaced with a variable name. */
 
         public double ValueAt
           (
@@ -62,7 +65,7 @@ public class Scales
         public String Name()
           {
             return
-                "<I>x</I>";
+                "\u1e8b";
           } /*Name*/
 
         public double ValueAt
@@ -92,7 +95,7 @@ public class Scales
           {
             final Paint LineHow = new Paint();
             final Paint TextHow = new Paint();
-            TextHow.setTextSize(TextHow.getTextSize() * 2.0f);
+            TextHow.setTextSize(TextHow.getTextSize() * 2.0f); /* TBD fudge */
             final float Length1 = 20.0f;
             final float Length2 = Length1 / 2.0f;
             for (int i = 1; i < 10; ++i)
