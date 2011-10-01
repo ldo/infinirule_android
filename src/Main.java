@@ -11,6 +11,11 @@ public class Main extends android.app.Activity
       {
         super.onCreate(SavedInstanceState);
         setContentView(R.layout.main);
+        ((SlideView)findViewById(R.id.slide_view)).SetLabelViews
+          (
+            /*UpperLabel =*/ (android.widget.TextView)findViewById(R.id.label_upper),
+            /*LowerLabel =*/ (android.widget.TextView)findViewById(R.id.label_lower)
+          );
       /* more TBD */
       } /*onCreate*/
 

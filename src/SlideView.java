@@ -5,9 +5,11 @@ package nz.gen.geek_central.infinirule;
 
 import android.graphics.PointF;
 import android.view.MotionEvent;
+import android.widget.TextView;
 
 public class SlideView extends android.view.View
   {
+    private TextView UpperLabel, LowerLabel;
     private Scales.Scale Scale1, Scale2;
     private double Offset1, Offset2;
     private int ScaleLength; /* in pixels */
@@ -69,6 +71,26 @@ public class SlideView extends android.view.View
           } /*if*/
       } /*onLayout*/
 
+    public void SetLabelViews
+      (
+        TextView UpperLabel,
+        TextView LowerLabel
+      )
+      {
+        this.UpperLabel = UpperLabel;
+        this.LowerLabel = LowerLabel;
+        UpperLabel.setText
+          (
+            android.text.Html.fromHtml(Scale1.Name()),
+            TextView.BufferType.SPANNABLE
+          );
+        LowerLabel.setText
+          (
+            android.text.Html.fromHtml(Scale1.Name()),
+            TextView.BufferType.SPANNABLE
+          );
+      } /*SetLabelViews*/
+
 /*
     Mapping between image coordinates and view coordinates
 */
@@ -120,7 +142,6 @@ public class SlideView extends android.view.View
         android.graphics.Canvas g
       )
       {
-      /* scale names TBD */
         g.drawColor(0xfffffada);
         g.save(android.graphics.Canvas.MATRIX_SAVE_FLAG);
         final android.graphics.Matrix m1 = g.getMatrix();
