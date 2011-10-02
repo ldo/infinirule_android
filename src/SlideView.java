@@ -246,7 +246,9 @@ public class SlideView extends android.view.View
         MovingBothScales,
         MovingLowerScale,
       } /*MovingState*/
-    MovingState MovingWhat = MovingState.MovingNothing;
+    private MovingState MovingWhat = MovingState.MovingNothing;
+    private boolean PrecisionMove = false;
+    private final float PrecisionFactor = 10.0f;
 
     @Override
     public boolean onTouchEvent
@@ -277,6 +279,7 @@ public class SlideView extends android.view.View
               {
                 MovingWhat = MovingState.MovingBothScales;
               } /*if*/
+            PrecisionMove = Math.abs(LastMouse1.y - getHeight() / 2.0f) / getHeight() < 0.2f;
             Handled = true;
         break;
         case MotionEvent.ACTION_POINTER_DOWN:
@@ -353,7 +356,7 @@ public class SlideView extends android.view.View
                           )
                           {
                           /* simultaneous scrolling of both scales */
-                            final PointF
+                            PointF
                                 ThisMouseUpper, ThisMouseLower, LastMouseUpper, LastMouseLower;
                             if (ThisMouse1.y < getHeight() / 2.0f)
                               {
@@ -368,6 +371,19 @@ public class SlideView extends android.view.View
                                 LastMouseUpper = LastMouse2;
                                 ThisMouseLower = ThisMouse1;
                                 LastMouseLower = LastMouse1;
+                              } /*if*/
+                            if (PrecisionMove)
+                              {
+                                ThisMouseUpper = new PointF
+                                  (
+                                    LastMouseUpper.x + (ThisMouseUpper.x - LastMouseUpper.x) / PrecisionFactor,
+                                    ThisMouseUpper.y
+                                  );
+                                ThisMouseLower = new PointF
+                                  (
+                                    LastMouseLower.x + (ThisMouseLower.x - LastMouseLower.x) / PrecisionFactor,
+                                    ThisMouseLower.y
+                                  );
                               } /*if*/
                             UpperScaleOffset =
                                 FindScaleOffset
@@ -387,7 +403,7 @@ public class SlideView extends android.view.View
                           }
                         else
                           {
-                            final PointF ThisMouse =
+                            PointF ThisMouse =
                                 ThisMouse1 != null ?
                                     ThisMouse2 != null ?
                                         new PointF
@@ -411,6 +427,14 @@ public class SlideView extends android.view.View
                                         LastMouse1
                                 :
                                     LastMouse2;
+                            if (PrecisionMove)
+                              {
+                                ThisMouse = new PointF
+                                  (
+                                    LastMouse.x + (ThisMouse.x - LastMouse.x) / PrecisionFactor,
+                                    ThisMouse.y
+                                  );
+                              } /*if*/
                             switch (MovingWhat)
                               {
                             case MovingCursor:
@@ -419,37 +443,35 @@ public class SlideView extends android.view.View
                             break;
                             case MovingBothScales:
                             case MovingLowerScale:
+                                for (boolean Upper = false;;)
                                   {
-                                    for (boolean Upper = false;;)
-                                      {
-                                        final double ScaleSize =
-                                            ((Scales.Scale)(Upper ? UpperScale : LowerScale)).Size();
-                                        final double NewOffset =
-                                            FindScaleOffset
+                                    final double ScaleSize =
+                                        ((Scales.Scale)(Upper ? UpperScale : LowerScale)).Size();
+                                    final double NewOffset =
+                                        FindScaleOffset
+                                          (
+                                            ThisMouse.x,
+                                            ScaleSize,
+                                            ViewToScale
                                               (
-                                                ThisMouse.x,
+                                                LastMouse.x,
                                                 ScaleSize,
-                                                ViewToScale
-                                                  (
-                                                    LastMouse.x,
-                                                    ScaleSize,
-                                                    Upper ? UpperScaleOffset : LowerScaleOffset
-                                                  )
-                                              );
-                                        if (Upper)
-                                          {
-                                            UpperScaleOffset = NewOffset;
-                                          }
-                                        else
-                                          {
-                                            LowerScaleOffset = NewOffset;
-                                          } /*if*/
-                                        if (Upper || MovingWhat != MovingState.MovingBothScales)
-                                            break;
-                                        Upper = true;
-                                      } /*for*/
-                                    invalidate();
-                                  }
+                                                Upper ? UpperScaleOffset : LowerScaleOffset
+                                              )
+                                          );
+                                    if (Upper)
+                                      {
+                                        UpperScaleOffset = NewOffset;
+                                      }
+                                    else
+                                      {
+                                        LowerScaleOffset = NewOffset;
+                                      } /*if*/
+                                    if (Upper || MovingWhat != MovingState.MovingBothScales)
+                                        break;
+                                    Upper = true;
+                                  } /*for*/
+                                invalidate();
                                 if
                                   (
                                         ThisMouse1 != null
@@ -461,7 +483,7 @@ public class SlideView extends android.view.View
                                             ThisMouse2.y < getHeight() / 2.0f
                                   )
                                   {
-                                  /* pinch to zoom */
+                                  /* pinch to zoom--note no PrecisionMove here */
                                     final float LastDistance = (float)Math.hypot
                                       (
                                         LastMouse1.x - LastMouse2.x,
