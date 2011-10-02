@@ -98,36 +98,39 @@ public class SlideView extends android.view.View
     public float ScaleToView
       (
         double Pos, /* [0.0 .. 1.0) */
+        double Size,
         double Offset
       )
       /* returns a position on a scale, offset by the given amount,
         converted to view coordinates. */
       {
         return
-            (float)((Pos + Offset) * ScaleLength);
+            (float)((Pos + Offset) * Size * ScaleLength);
       } /*ScaleToView*/
 
     public double ViewToScale
       (
         float Coord,
+        double Size,
         double Offset
       )
       /* returns a view coordinate converted to the corresponding
         position on a scale offset by the given amount. */
       {
         return
-            Coord / ScaleLength - Offset;
+            Coord / Size / ScaleLength - Offset;
       } /*ViewToScale*/
 
     public double FindScaleOffset
       (
         float Coord,
+        double Size,
         double Pos
       )
       /* finds the offset value such that the specified view coordinate
         maps to the specified position on a scale. */
       {
-        final double Offset = Coord / ScaleLength - Pos;
+        final double Offset = Coord / Size / ScaleLength - Pos;
         return
             Offset - Math.ceil(Offset);
       } /*FindScaleOffset*/
@@ -164,17 +167,30 @@ public class SlideView extends android.view.View
         g.save(android.graphics.Canvas.MATRIX_SAVE_FLAG);
         final android.graphics.Matrix m1 = g.getMatrix();
         final android.graphics.Matrix m2 = g.getMatrix();
-        final int ScaleRepeat = (getWidth() + ScaleLength - 1) / ScaleLength;
-        m1.preTranslate((float)(UpperScaleOffset * ScaleLength), getHeight() / 2.0f);
-        m2.preTranslate((float)(LowerScaleOffset * ScaleLength), getHeight() / 2.0f);
-        for (int i = -1; i <= ScaleRepeat; ++i)
+        for (boolean Upper = false;;)
           {
-            g.setMatrix(m1);
-            UpperScale.Draw(g, ScaleLength, false);
-            m1.preTranslate(ScaleLength, 0.0f);
-            g.setMatrix(m2);
-            LowerScale.Draw(g, ScaleLength, true);
-            m2.preTranslate(ScaleLength, 0.0f);
+            final android.graphics.Matrix m = Upper ? m1 : m2;
+            final Scales.Scale TheScale = Upper ? UpperScale : LowerScale;
+            final int ScaleRepeat =
+                    (getWidth() + (int)(ScaleLength * TheScale.Size() - 1))
+                /
+                    (int)(ScaleLength * TheScale.Size());
+            m.preTranslate
+              (
+                (float)(
+                    (Upper ? UpperScaleOffset : LowerScaleOffset) * ScaleLength * TheScale.Size()
+                ),
+                getHeight() / 2.0f
+              );
+            for (int i = -1; i <= ScaleRepeat; ++i)
+              {
+                g.setMatrix(m);
+                TheScale.Draw(g, (float)(ScaleLength * TheScale.Size()), !Upper);
+                m.preTranslate((float)(ScaleLength * TheScale.Size()), 0.0f);
+              } /*for*/
+            if (Upper)
+                break;
+            Upper = true;
           } /*for*/
         g.restore();
       } /*onDraw*/
@@ -292,13 +308,15 @@ public class SlideView extends android.view.View
                                 FindScaleOffset
                                   (
                                     ThisMouseUpper.x,
-                                    ViewToScale(LastMouseUpper.x, UpperScaleOffset)
+                                    UpperScale.Size(),
+                                    ViewToScale(LastMouseUpper.x, UpperScale.Size(), UpperScaleOffset)
                                   );
                             LowerScaleOffset =
                                 FindScaleOffset
                                   (
                                     ThisMouseLower.x,
-                                    ViewToScale(LastMouseLower.x, LowerScaleOffset)
+                                    LowerScale.Size(),
+                                    ViewToScale(LastMouseLower.x, LowerScale.Size(), LowerScaleOffset)
                                   );
                             invalidate();
                           }
@@ -328,18 +346,22 @@ public class SlideView extends android.view.View
                                         LastMouse1
                                 :
                                     LastMouse2;
-                            final boolean UpperScale = ThisMouse.y < getHeight() / 2.0f;
+                            final boolean Upper = ThisMouse.y < getHeight() / 2.0f;
+                            final double ScaleSize =
+                                ((Scales.Scale)(Upper ? UpperScale : LowerScale)).Size();
                             final double NewOffset =
                                 FindScaleOffset
                                   (
                                     ThisMouse.x,
+                                    ScaleSize,
                                     ViewToScale
                                       (
                                         LastMouse.x,
-                                        UpperScale ? UpperScaleOffset : LowerScaleOffset
+                                        ScaleSize,
+                                        Upper ? UpperScaleOffset : LowerScaleOffset
                                       )
                                   );
-                            if (UpperScale)
+                            if (Upper)
                               {
                                 UpperScaleOffset = NewOffset;
                               }

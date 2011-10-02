@@ -23,6 +23,10 @@ public class Scales
           /* the unique, user-visible name of this scale. Instances of VarEscape
             will be replaced with a variable name. */
 
+        public double Size();
+          /* returns a relative measure of size, e.g. 1.0 for C & D scales,
+            2.0 for square root, 0.5 for A & B (squares). */
+
         public double ValueAt
           (
             double Pos /* [0.0 .. 1.0) */
@@ -36,7 +40,7 @@ public class Scales
         public void Draw
           (
             Canvas g, /* draw it starting at (0, 0) here */
-            int PixelsWide, /* total width */
+            float ScaleLength, /* total width */
             boolean TopEdge /* false for bottom edge */
           );
       } /*Scale*/
@@ -69,7 +73,7 @@ public class Scales
     public static void DrawGraduations
       (
         Canvas g,
-        int PixelsWide,
+        float ScaleLength,
         boolean TopEdge,
         Scale TheScale,
         int NrPrimarySteps
@@ -83,8 +87,8 @@ public class Scales
         final float Length2 = Length1 / 2.0f;
         for (int i = 1; i < NrPrimarySteps; ++i)
           {
-            final float Left1 = (float)(TheScale.PosAt(i) * PixelsWide);
-            final float Right1 = (float)(TheScale.PosAt((i + 1)) * PixelsWide);
+            final float Left1 = (float)(TheScale.PosAt(i) * ScaleLength);
+            final float Right1 = (float)(TheScale.PosAt((i + 1)) * ScaleLength);
             if
               (
                 !g.quickReject
@@ -106,10 +110,10 @@ public class Scales
                     /*y =*/ TopEdge ? Length1 : - Length1,
                     /*UsePaint =*/ TextHow
                   );
-              /* TBD determine number of graduation levels based on PixelsWide */
+              /* TBD determine number of graduation levels based on ScaleLength */
                 for (int j = 1; j < 10; ++j)
                   {
-                    final float Left2 = (float)(TheScale.PosAt((10 * i + j) / 10.0) * PixelsWide);
+                    final float Left2 = (float)(TheScale.PosAt((10 * i + j) / 10.0) * ScaleLength);
                     g.drawLine(Left2, 0.0f, Left2, TopEdge ? Length2 : - Length2, LineHow);
                   } /*for*/
               } /*if*/
@@ -223,6 +227,12 @@ public class Scales
                 "\u1e8b";
           } /*Name*/
 
+        public double Size()
+          {
+            return
+                1.0;
+          } /*Size*/
+
         public double ValueAt
           (
             double Pos
@@ -244,14 +254,14 @@ public class Scales
         public void Draw
           (
             Canvas g,
-            int PixelsWide,
+            float ScaleLength,
             boolean TopEdge
           )
           {
             DrawGraduations
               (
                 /*g =*/ g,
-                /*PixelsWide =*/ PixelsWide,
+                /*ScaleLength =*/ ScaleLength,
                 /*TopEdge =*/ TopEdge,
                 /*TheScale =*/ this,
                 /*NrPrimarySteps =*/ 10
