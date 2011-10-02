@@ -222,18 +222,32 @@ public class Scales
     The actual scales
 */
 
-    public static class XScale implements Scale
+    public static class XNScale implements Scale
+      /* produces a scale x**n for any integer n */
       {
+        public final String ScaleName;
+        public final int Power;
+
+        public XNScale
+          (
+            String ScaleName,
+            int Power
+          )
+          {
+            this.ScaleName = ScaleName;
+            this.Power = Power;
+          } /*XNScale*/
+
         public String Name()
           {
             return
-                "\u1e8b";
+                ScaleName;
           } /*Name*/
 
         public double Size()
           {
             return
-                1.0;
+                1.0 / Math.abs(Power);
           } /*Size*/
 
         public double ValueAt
@@ -242,7 +256,7 @@ public class Scales
           )
           {
             return
-                Math.pow(10.0, Pos) / 10.0;
+                Math.pow(10.0, Power > 0 ? Pos : 1.0 - Pos) / 10.0;
           } /*ValueAt*/
 
         public double PosAt
@@ -251,7 +265,10 @@ public class Scales
           )
           {
             return
-                Math.log10(Value * 10.0);
+                Power > 0 ?
+                    Math.log10(Value * 10.0)
+                :
+                    1.0 - Math.log10(Value * 10.0);
           } /*PosAt*/
 
         public void Draw
@@ -267,75 +284,10 @@ public class Scales
                 /*ScaleLength =*/ ScaleLength,
                 /*TopEdge =*/ TopEdge,
                 /*TheScale =*/ this,
-                /*NrPrimarySteps =*/ 10
+                /*NrPrimarySteps =*/ Power > 0 ? 10 : -10
               );
           } /*Draw*/
-      } /*XScale*/
-
-    public static class XRecipScale implements Scale
-      {
-        public String Name()
-          {
-            return
-                "1/\u1e8b";
-          } /*Name*/
-
-        public double Size()
-          {
-            return
-                1.0;
-          } /*Size*/
-
-        public double ValueAt
-          (
-            double Pos
-          )
-          {
-            return
-                Math.pow(10.0, 1.0 - Pos) / 10.0;
-          } /*ValueAt*/
-
-        public double PosAt
-          (
-            double Value
-          )
-          {
-            return
-                1.0 - Math.log10(Value * 10.0);
-          } /*PosAt*/
-
-        public void Draw
-          (
-            Canvas g,
-            float ScaleLength,
-            boolean TopEdge
-          )
-          {
-            DrawGraduations
-              (
-                /*g =*/ g,
-                /*ScaleLength =*/ ScaleLength,
-                /*TopEdge =*/ TopEdge,
-                /*TheScale =*/ this,
-                /*NrPrimarySteps =*/ -10
-              );
-          } /*Draw*/
-      } /*XRecipScale*/
-
-    public static class X2Scale extends XScale
-      {
-        public String Name()
-          {
-            return
-                "\u1e8b²";
-          } /*Name*/
-
-        public double Size()
-          {
-            return
-                0.5;
-          } /*Size*/
-      } /*X2Scale*/
+      } /*XNScale*/
 
     public static java.util.Map<String, Scale> KnownScales =
         new java.util.HashMap<String, Scale>();
@@ -346,9 +298,9 @@ public class Scales
             Scale s :
                 new Scale[]
                     {
-                        new XScale(),
-                        new XRecipScale(),
-                        new X2Scale(),
+                        new XNScale("\u1e8b", 1),
+                        new XNScale("1/\u1e8b", -1),
+                        new XNScale("\u1e8b²", 2),
                       /* more TBD */
                     }
           )
@@ -356,4 +308,11 @@ public class Scales
             KnownScales.put(s.Name(), s);
           } /*for*/
       } /*static*/
+
+    public static Scale DefaultScale()
+      {
+        return
+            KnownScales.get("\u1e8b");
+      } /*DefaultScale*/
+
   } /*Scales*/

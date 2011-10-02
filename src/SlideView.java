@@ -16,7 +16,7 @@ public class SlideView extends android.view.View
     private void Init()
       /* common code for all constructors */
       {
-        UpperScale = new Scales.XScale();
+        UpperScale = Scales.DefaultScale();
         LowerScale = UpperScale;
         UpperScaleOffset = 0.0;
         LowerScaleOffset = 0.0;
