@@ -153,7 +153,7 @@ public class SlideView extends android.view.View
             /*Upper =*/ true,
             /*Pos =*/ new PointF(getWidth() / 2.0f, getHeight() * 0.25f),
             /*Alignment =*/ Paint.Align.CENTER,
-            /*Color =*/ 0x000000
+            /*Color =*/ 0xff000000
           );
         Scales.DrawLabel
           (
@@ -162,7 +162,7 @@ public class SlideView extends android.view.View
             /*Upper =*/ false,
             /*Pos =*/ new PointF(getWidth() / 2.0f, getHeight() * 0.75f),
             /*Alignment =*/ Paint.Align.CENTER,
-            /*Color =*/ 0x000000
+            /*Color =*/ 0xff000000
           );
         g.save(android.graphics.Canvas.MATRIX_SAVE_FLAG);
         final android.graphics.Matrix m1 = g.getMatrix();
