@@ -70,6 +70,54 @@ public class Scales
           );
       } /*DrawCenteredText*/
 
+    private static void DrawSubGraduations
+      (
+        Canvas g,
+        float ScaleLength,
+        boolean TopEdge,
+        Scale TheScale,
+        int NrPrimarySteps, /* negative to go backwards */
+        float ParentMarkerLength,
+        double BaseOffset,
+        double Division,
+        Paint LineHow
+      )
+      {
+        final float MarkerLength = ParentMarkerLength * 0.65f;
+        float PrevMarkerX = 0.0f;
+        for (int j = 0; j <= 10; ++j)
+          {
+            final double ThisBaseOffset =
+                    BaseOffset
+                +
+                    j / Division / Math.abs((double)NrPrimarySteps);
+            final float MarkerX = (float)(TheScale.PosAt(ThisBaseOffset) * ScaleLength);
+            if (j != 0)
+              {
+                if (MarkerX - PrevMarkerX >= 30.0f)
+                  {
+                    DrawSubGraduations
+                      (
+                        /*g =*/ g,
+                        /*ScaleLength =*/ ScaleLength,
+                        /*TopEdge =*/ TopEdge,
+                        /*TheScale =*/ TheScale,
+                        /*NrPrimarySteps =*/ NrPrimarySteps,
+                        /*ParentMarkerLength =*/ MarkerLength,
+                        /*BaseOffset =*/ ThisBaseOffset,
+                        /*Division =*/ Division * 10.0,
+                        /*LineHow =*/ LineHow
+                      );
+                  } /*if*/
+                if (j != 10)
+                  {
+                    g.drawLine(MarkerX, 0.0f, MarkerX, TopEdge ? MarkerLength : - MarkerLength, LineHow);
+                  } /*if*/
+              } /*if*/
+            PrevMarkerX = MarkerX;
+          } /*for*/
+      } /*DrawSubGraduations*/
+
     public static void DrawGraduations
       (
         Canvas g,
@@ -84,11 +132,10 @@ public class Scales
         final Paint LineHow = new Paint();
         final Paint TextHow = new Paint();
         TextHow.setTextSize(FontSize);
-        final float Length1 = 20.0f;
-        final float Length2 = Length1 / 2.0f;
-        for (int i = NrPrimarySteps > 0 ? (IncludeZero ? 0 : 1) : - NrPrimarySteps;;)
+        final float MarkerLength = 20.0f;
+        for (int i = NrPrimarySteps > 0 ? 0 : - NrPrimarySteps;;)
           {
-            if (i == (NrPrimarySteps > 0 ? NrPrimarySteps : (IncludeZero ? -1 : 0)))
+            if (NrPrimarySteps > 0 && i == NrPrimarySteps)
                 break;
             final float Left1 = (float)(TheScale.PosAt(i / Math.abs((double)NrPrimarySteps)) * ScaleLength);
             final float Right1 = (float)(TheScale.PosAt((i + (NrPrimarySteps > 0 ? +1 : -1)) / Math.abs((double)NrPrimarySteps)) * ScaleLength);
@@ -97,29 +144,46 @@ public class Scales
                 !g.quickReject
                   (
                     /*left =*/ Left1,
-                    /*top =*/ TopEdge ? 0.0f : - Length1,
+                    /*top =*/ TopEdge ? 0.0f : - MarkerLength,
                     /*right =*/ Right1,
-                    /*bottom =*/ TopEdge ? Length1 : 0.0f,
+                    /*bottom =*/ TopEdge ? MarkerLength : 0.0f,
                     /*type =*/ Canvas.EdgeType.AA
                   )
               )
               {
-                g.drawLine(Left1, 0.0f, Left1, TopEdge ? Length1 : - Length1, LineHow);
-                DrawCenteredText
-                  (
-                    /*Draw =*/ g,
-                    /*TheText =*/ String.format(StdLocale, "%d", i),
-                    /*x =*/ Left1,
-                    /*y =*/ TopEdge ? Length1 : - Length1,
-                    /*UsePaint =*/ TextHow
-                  );
-              /* TBD determine number of graduation levels based on ScaleLength */
-                for (int j = 1; j < 10; ++j)
+                if (i != (NrPrimarySteps > 0 ? 0 : - NrPrimarySteps))
                   {
-                    final float Left2 = (float)(TheScale.PosAt((10 * (i - (NrPrimarySteps < 0 ? 1 : 0)) + j) / 10.0 / Math.abs((double)NrPrimarySteps)) * ScaleLength);
-                    g.drawLine(Left2, 0.0f, Left2, TopEdge ? Length2 : - Length2, LineHow);
-                  } /*for*/
+                    g.drawLine(Left1, 0.0f, Left1, TopEdge ? MarkerLength : - MarkerLength, LineHow);
+                  } /*if*/
+                if (IncludeZero || i != (NrPrimarySteps > 0 ? 0 : - NrPrimarySteps))
+                  {
+                    DrawCenteredText
+                      (
+                        /*Draw =*/ g,
+                        /*TheText =*/ String.format(StdLocale, "%d", i),
+                        /*x =*/ Left1,
+                        /*y =*/ TopEdge ? MarkerLength : - MarkerLength,
+                        /*UsePaint =*/ TextHow
+                      );
+                  } /*if*/
+                DrawSubGraduations
+                  (
+                    /*g =*/ g,
+                    /*ScaleLength =*/ ScaleLength,
+                    /*TopEdge =*/ TopEdge,
+                    /*TheScale =*/ TheScale,
+                    /*NrPrimarySteps =*/ NrPrimarySteps,
+                    /*ParentMarkerLength =*/ MarkerLength,
+                    /*BaseOffset =*/
+                            (i - (NrPrimarySteps < 0 ? 1 : 0))
+                        /
+                            Math.abs((double)NrPrimarySteps),
+                    /*Division =*/ 10.0,
+                    /*LineHow =*/ LineHow
+                  );
               } /*if*/
+            if (NrPrimarySteps < 0 && i == 0)
+                break;
             i += NrPrimarySteps > 0 ? +1 : -1;
           } /*for*/
       } /*DrawGraduations*/
