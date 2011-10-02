@@ -161,7 +161,12 @@ public class Scales
                   )
               )
               {
-                if (i != (NrPrimarySteps > 0 ? 0 : - NrPrimarySteps))
+                if
+                  (
+                        NrPrimarySteps > 0 && IncludeZero
+                    ||
+                        i != (NrPrimarySteps > 0 ? 0 : - NrPrimarySteps)
+                  )
                   {
                     g.drawLine(Left1, 0.0f, Left1, TopEdge ? MarkerLength : - MarkerLength, LineHow);
                   } /*if*/
