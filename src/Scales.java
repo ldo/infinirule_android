@@ -76,7 +76,7 @@ public class Scales
         float ScaleLength,
         boolean TopEdge,
         Scale TheScale,
-        int NrPrimarySteps
+        int NrPrimarySteps /* negative to go backwards */
       )
       /* common routine for drawing scale graduations. */
       {
@@ -85,10 +85,12 @@ public class Scales
         TextHow.setTextSize(FontSize);
         final float Length1 = 20.0f;
         final float Length2 = Length1 / 2.0f;
-        for (int i = 1; i < NrPrimarySteps; ++i)
+        for (int i = NrPrimarySteps > 0 ? 1 : - NrPrimarySteps;;)
           {
-            final float Left1 = (float)(TheScale.PosAt(i) * ScaleLength);
-            final float Right1 = (float)(TheScale.PosAt((i + 1)) * ScaleLength);
+            if (i == (NrPrimarySteps > 0 ? NrPrimarySteps : 0))
+                break;
+            final float Left1 = (float)(TheScale.PosAt(i / Math.abs((double)NrPrimarySteps)) * ScaleLength);
+            final float Right1 = (float)(TheScale.PosAt((i + (NrPrimarySteps > 0 ? +1 : -1)) / Math.abs((double)NrPrimarySteps)) * ScaleLength);
             if
               (
                 !g.quickReject
@@ -113,10 +115,11 @@ public class Scales
               /* TBD determine number of graduation levels based on ScaleLength */
                 for (int j = 1; j < 10; ++j)
                   {
-                    final float Left2 = (float)(TheScale.PosAt((10 * i + j) / 10.0) * ScaleLength);
+                    final float Left2 = (float)(TheScale.PosAt((10 * (i - (NrPrimarySteps < 0 ? 1 : 0)) + j) / 10.0 / Math.abs((double)NrPrimarySteps)) * ScaleLength);
                     g.drawLine(Left2, 0.0f, Left2, TopEdge ? Length2 : - Length2, LineHow);
                   } /*for*/
               } /*if*/
+            i += NrPrimarySteps > 0 ? +1 : -1;
           } /*for*/
       } /*DrawGraduations*/
 
@@ -239,7 +242,7 @@ public class Scales
           )
           {
             return
-                Math.pow(10.0, Pos);
+                Math.pow(10.0, Pos) / 10.0;
           } /*ValueAt*/
 
         public double PosAt
@@ -248,7 +251,7 @@ public class Scales
           )
           {
             return
-                Math.log10(Value);
+                Math.log10(Value * 10.0);
           } /*PosAt*/
 
         public void Draw
@@ -268,6 +271,56 @@ public class Scales
               );
           } /*Draw*/
       } /*XScale*/
+
+    public static class XRecipScale implements Scale
+      {
+        public String Name()
+          {
+            return
+                "1/\u1e8b";
+          } /*Name*/
+
+        public double Size()
+          {
+            return
+                1.0;
+          } /*Size*/
+
+        public double ValueAt
+          (
+            double Pos
+          )
+          {
+            return
+                Math.pow(10.0, 1.0 - Pos) / 10.0;
+          } /*ValueAt*/
+
+        public double PosAt
+          (
+            double Value
+          )
+          {
+            return
+                1.0 - Math.log10(Value * 10.0);
+          } /*PosAt*/
+
+        public void Draw
+          (
+            Canvas g,
+            float ScaleLength,
+            boolean TopEdge
+          )
+          {
+            DrawGraduations
+              (
+                /*g =*/ g,
+                /*ScaleLength =*/ ScaleLength,
+                /*TopEdge =*/ TopEdge,
+                /*TheScale =*/ this,
+                /*NrPrimarySteps =*/ -10
+              );
+          } /*Draw*/
+      } /*XRecipScale*/
 
     public static class X2Scale extends XScale
       {
@@ -294,6 +347,7 @@ public class Scales
                 new Scale[]
                     {
                         new XScale(),
+                        new XRecipScale(),
                         new X2Scale(),
                       /* more TBD */
                     }
