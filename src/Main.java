@@ -29,6 +29,8 @@ public class Main extends android.app.Activity
       {
         super.onCreate(SavedInstanceState);
         BuildActivityResultActions();
+        Global.MainMetrics = new android.util.DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(Global.MainMetrics);
         Scales.FontSize = getResources().getDimension(R.dimen.font_size);
         setContentView(R.layout.main);
         Slide = (SlideView)findViewById(R.id.slide_view);

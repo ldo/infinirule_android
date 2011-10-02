@@ -11,8 +11,6 @@ public class Scales
     public static final String UpperVarName = "x";
     public static final String LowerVarName = "y";
 
-    public static final java.util.Locale StdLocale = java.util.Locale.US;
-      /* for all those places I don't want formatting to be locale-specific */
     public static float FontSize;
     public static final Typeface NormalStyle = Typeface.defaultFromStyle(Typeface.NORMAL);
     public static final Typeface ItalicStyle = Typeface.defaultFromStyle(Typeface.ITALIC);
@@ -160,7 +158,7 @@ public class Scales
                     DrawCenteredText
                       (
                         /*Draw =*/ g,
-                        /*TheText =*/ String.format(StdLocale, "%d", i),
+                        /*TheText =*/ String.format(Global.StdLocale, "%d", i),
                         /*x =*/ Left1,
                         /*y =*/ TopEdge ? MarkerLength : - MarkerLength,
                         /*UsePaint =*/ TextHow

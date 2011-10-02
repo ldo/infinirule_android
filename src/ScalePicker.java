@@ -10,7 +10,6 @@ public class ScalePicker extends android.app.Activity
 
     private static boolean Reentered = false; /* sanity check */
     private static ScalePicker Current = null;
-    private android.util.DisplayMetrics MainMetrics;
 
     private static boolean Upper;
 
@@ -132,9 +131,7 @@ public class ScalePicker extends android.app.Activity
                               *
                                 1.2
                               *
-                                MainMetrics.densityDpi
-                              /
-                                android.util.DisplayMetrics.DENSITY_DEFAULT
+                                Global.PixelDensity()
                             ),
                             100
                           ),
@@ -146,15 +143,13 @@ public class ScalePicker extends android.app.Activity
                             *
                                 2.0
                             *
-                                MainMetrics.densityDpi
-                            /
-                                android.util.DisplayMetrics.DENSITY_DEFAULT
+                                Global.PixelDensity()
                             ),
                             64
                           ),
                     /*config =*/ android.graphics.Bitmap.Config.ARGB_8888
                   );
-                ItemBits.setDensity(MainMetrics.densityDpi);
+                ItemBits.setDensity(Global.MainMetrics.densityDpi);
                 final android.graphics.Canvas ItemDraw = new android.graphics.Canvas(ItemBits);
                 ItemDraw.drawColor(0xff000000);
                 Scales.DrawLabel
@@ -195,15 +190,12 @@ public class ScalePicker extends android.app.Activity
       {
         super.onCreate(SavedInstanceState);
         Current = this;
-        final android.view.Display MainDisplay = getWindowManager().getDefaultDisplay();
-        MainMetrics = new android.util.DisplayMetrics();
-        MainDisplay.getMetrics(MainMetrics);
         setContentView(R.layout.scale_picker);
         ((android.widget.TextView)findViewById(R.id.prompt)).setText
           (
             String.format
               (
-                Scales.StdLocale,
+                Global.StdLocale,
                 getString(R.string.picker_prompt),
                 getString(Upper ? R.string.upper : R.string.lower)
               )

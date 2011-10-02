@@ -11,16 +11,29 @@ public class SlideView extends android.view.View
   {
     private Scales.Scale UpperScale, LowerScale;
     private double UpperScaleOffset, LowerScaleOffset; /* (-1.0 .. 0.0] */
+    private float CursorX; /* view x-coordinate */
+    private static final float HalfCursorWidth = 60.0f; /* in device-independent pixels */
     private int ScaleLength; /* in pixels */
+
+    public void Reset()
+      {
+        UpperScaleOffset = 0.0;
+        LowerScaleOffset = 0.0;
+        CursorX = 0.0f;
+        if (ScaleLength > 0)
+          {
+            ScaleLength = getWidth();
+          } /*if*/
+        invalidate();
+      } /*Reset*/
 
     private void Init()
       /* common code for all constructors */
       {
         UpperScale = Scales.DefaultScale();
         LowerScale = UpperScale;
-        UpperScaleOffset = 0.0;
-        LowerScaleOffset = 0.0;
         ScaleLength = -1; /* proper value deferred to onLayout */
+        Reset();
       } /*Init*/
 
     public SlideView
@@ -87,6 +100,7 @@ public class SlideView extends android.view.View
             LowerScale = NewScale;
             LowerScaleOffset = 0.0;
           } /*if*/
+        CursorX = 0.0f;
         ScaleLength = getWidth();
         invalidate();
       } /*SetScale*/
@@ -193,6 +207,26 @@ public class SlideView extends android.view.View
             Upper = true;
           } /*for*/
         g.restore();
+          {
+            final float CursorLeft = CursorX - HalfCursorWidth * Global.PixelDensity();
+            final float CursorRight = CursorX + HalfCursorWidth * Global.PixelDensity();
+            final Paint CursorHow = new Paint();
+            g.drawLine(CursorX, 0.0f, CursorX, getHeight(), CursorHow);
+            CursorHow.setStyle(Paint.Style.FILL);
+            CursorHow.setColor(0x20202020);
+            g.drawRect
+              (
+                /*left =*/ CursorLeft,
+                /*top =*/ 0.0f,
+                /*right =*/ CursorRight,
+                /*bottom =*/ getHeight(),
+                /*paint =*/ CursorHow
+              );
+            CursorHow.setStyle(Paint.Style.STROKE);
+            CursorHow.setColor(0x80808080);
+            g.drawLine(CursorLeft, 0.0f, CursorLeft, getHeight(), CursorHow);
+            g.drawLine(CursorRight, 0.0f, CursorRight, getHeight(), CursorHow);
+          }
       } /*onDraw*/
 
 /*
@@ -205,6 +239,13 @@ public class SlideView extends android.view.View
     private int
         Mouse1ID = -1,
         Mouse2ID = -1;
+    private enum MovingState
+      {
+        MovingNothing,
+        MovingCursor,
+        MovingScales,
+      } /*MovingState*/
+    MovingState MovingWhat = MovingState.MovingNothing;
 
     @Override
     public boolean onTouchEvent
@@ -218,9 +259,23 @@ public class SlideView extends android.view.View
         case MotionEvent.ACTION_DOWN:
             LastMouse1 = new PointF(TheEvent.getX(), TheEvent.getY());
             Mouse1ID = TheEvent.getPointerId(0);
+            if
+              (
+                    CursorX - HalfCursorWidth * Global.PixelDensity() <= LastMouse1.x
+                &&
+                    LastMouse1.x < CursorX + HalfCursorWidth * Global.PixelDensity()
+              )
+              {
+                MovingWhat = MovingState.MovingCursor;
+              }
+            else
+              {
+                MovingWhat = MovingState.MovingScales;
+              } /*if*/
             Handled = true;
         break;
         case MotionEvent.ACTION_POINTER_DOWN:
+            if (MovingWhat == MovingState.MovingScales)
               {
                 final int PointerIndex =
                         (TheEvent.getAction() & MotionEvent.ACTION_POINTER_ID_MASK)
@@ -242,7 +297,7 @@ public class SlideView extends android.view.View
                     Mouse2ID = MouseID;
                     LastMouse2 = MousePos;
                   } /*if*/
-              }
+              } /*if*/
             Handled = true;
         break;
         case MotionEvent.ACTION_MOVE:
@@ -346,66 +401,77 @@ public class SlideView extends android.view.View
                                         LastMouse1
                                 :
                                     LastMouse2;
-                            final boolean Upper = ThisMouse.y < getHeight() / 2.0f;
-                            final double ScaleSize =
-                                ((Scales.Scale)(Upper ? UpperScale : LowerScale)).Size();
-                            final double NewOffset =
-                                FindScaleOffset
-                                  (
-                                    ThisMouse.x,
-                                    ScaleSize,
-                                    ViewToScale
-                                      (
-                                        LastMouse.x,
-                                        ScaleSize,
-                                        Upper ? UpperScaleOffset : LowerScaleOffset
-                                      )
-                                  );
-                            if (Upper)
+                            switch (MovingWhat)
                               {
-                                UpperScaleOffset = NewOffset;
-                              }
-                            else
-                              {
-                                LowerScaleOffset = NewOffset;
-                              } /*if*/
-                            invalidate();
-                          } /*if*/
-                        if
-                          (
-                                ThisMouse1 != null
-                            &&
-                                ThisMouse2 != null
-                            &&
-                                    ThisMouse1.y < getHeight() / 2.0f
-                                ==
-                                    ThisMouse2.y < getHeight() / 2.0f
-                          )
-                          {
-                          /* pinch to zoom */
-                            final float LastDistance = (float)Math.hypot
-                              (
-                                LastMouse1.x - LastMouse2.x,
-                                LastMouse1.y - LastMouse2.y
-                              );
-                            final float ThisDistance = (float)Math.hypot
-                              (
-                                ThisMouse1.x - ThisMouse2.x,
-                                ThisMouse1.y - ThisMouse2.y
-                              );
-                            if
-                              (
-                                    LastDistance != 0.0f
-                                &&
-                                    ThisDistance != 0.0f
-                              )
-                              {
-                                ScaleLength =
-                                    (int)(
-                                        ScaleLength * ThisDistance /  LastDistance
-                                    );
+                            case MovingCursor:
+                                CursorX = Math.max(0.0f, Math.min(CursorX + ThisMouse.x - LastMouse.x, getWidth()));
                                 invalidate();
-                              } /*if*/
+                            break;
+                            case MovingScales:
+                                  {
+                                    final boolean Upper = ThisMouse.y < getHeight() / 2.0f;
+                                    final double ScaleSize =
+                                        ((Scales.Scale)(Upper ? UpperScale : LowerScale)).Size();
+                                    final double NewOffset =
+                                        FindScaleOffset
+                                          (
+                                            ThisMouse.x,
+                                            ScaleSize,
+                                            ViewToScale
+                                              (
+                                                LastMouse.x,
+                                                ScaleSize,
+                                                Upper ? UpperScaleOffset : LowerScaleOffset
+                                              )
+                                          );
+                                    if (Upper)
+                                      {
+                                        UpperScaleOffset = NewOffset;
+                                      }
+                                    else
+                                      {
+                                        LowerScaleOffset = NewOffset;
+                                      } /*if*/
+                                    invalidate();
+                                  }
+                                if
+                                  (
+                                        ThisMouse1 != null
+                                    &&
+                                        ThisMouse2 != null
+                                    &&
+                                            ThisMouse1.y < getHeight() / 2.0f
+                                        ==
+                                            ThisMouse2.y < getHeight() / 2.0f
+                                  )
+                                  {
+                                  /* pinch to zoom */
+                                    final float LastDistance = (float)Math.hypot
+                                      (
+                                        LastMouse1.x - LastMouse2.x,
+                                        LastMouse1.y - LastMouse2.y
+                                      );
+                                    final float ThisDistance = (float)Math.hypot
+                                      (
+                                        ThisMouse1.x - ThisMouse2.x,
+                                        ThisMouse1.y - ThisMouse2.y
+                                      );
+                                    if
+                                      (
+                                            LastDistance != 0.0f
+                                        &&
+                                            ThisDistance != 0.0f
+                                      )
+                                      {
+                                        ScaleLength =
+                                            (int)(
+                                                ScaleLength * ThisDistance /  LastDistance
+                                            );
+                                        invalidate();
+                                      } /*if*/
+                                  } /*if*/
+                            break;
+                              } /*switch*/
                           } /*if*/
                         LastMouse1 = ThisMouse1;
                         LastMouse2 = ThisMouse2;
@@ -442,6 +508,7 @@ public class SlideView extends android.view.View
             LastMouse2 = null;
             Mouse1ID = -1;
             Mouse2ID = -1;
+            MovingWhat = MovingState.MovingNothing;
             Handled = true;
         break;
           } /*switch*/
