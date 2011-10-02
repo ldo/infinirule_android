@@ -138,6 +138,10 @@ public class Scales
         final Paint LineHow = new Paint();
         final Paint TextHow = new Paint();
         TextHow.setTextSize(FontSize);
+        if (NrPrimarySteps < 0)
+          {
+            TextHow.setColor(0xfff20001);
+          } /*if*/
         final float MarkerLength = 20.0f;
         for (int i = NrPrimarySteps > 0 ? 0 : - NrPrimarySteps;;)
           {
