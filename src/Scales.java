@@ -76,7 +76,8 @@ public class Scales
         float ScaleLength,
         boolean TopEdge,
         Scale TheScale,
-        int NrPrimarySteps /* negative to go backwards */
+        int NrPrimarySteps, /* negative to go backwards */
+        boolean IncludeZero
       )
       /* common routine for drawing scale graduations. */
       {
@@ -85,9 +86,9 @@ public class Scales
         TextHow.setTextSize(FontSize);
         final float Length1 = 20.0f;
         final float Length2 = Length1 / 2.0f;
-        for (int i = NrPrimarySteps > 0 ? 1 : - NrPrimarySteps;;)
+        for (int i = NrPrimarySteps > 0 ? (IncludeZero ? 0 : 1) : - NrPrimarySteps;;)
           {
-            if (i == (NrPrimarySteps > 0 ? NrPrimarySteps : 0))
+            if (i == (NrPrimarySteps > 0 ? NrPrimarySteps : (IncludeZero ? -1 : 0)))
                 break;
             final float Left1 = (float)(TheScale.PosAt(i / Math.abs((double)NrPrimarySteps)) * ScaleLength);
             final float Right1 = (float)(TheScale.PosAt((i + (NrPrimarySteps > 0 ? +1 : -1)) / Math.abs((double)NrPrimarySteps)) * ScaleLength);
@@ -284,10 +285,62 @@ public class Scales
                 /*ScaleLength =*/ ScaleLength,
                 /*TopEdge =*/ TopEdge,
                 /*TheScale =*/ this,
-                /*NrPrimarySteps =*/ Power > 0 ? 10 : -10
+                /*NrPrimarySteps =*/ Power > 0 ? 10 : -10,
+                /*IncludeZero =*/ false
               );
           } /*Draw*/
       } /*XNScale*/
+
+    public static class LogXScale implements Scale
+      {
+        public String Name()
+          {
+            return
+                "log10 \u1e8b";
+          } /*Name*/
+
+        public double Size()
+          {
+            return
+                1.0;
+          } /*Size*/
+
+        public double ValueAt
+          (
+            double Pos
+          )
+          {
+            return
+                Pos;
+          } /*ValueAt*/
+
+        public double PosAt
+          (
+            double Value
+          )
+          {
+            return
+                Value;
+          } /*PosAt*/
+
+        public void Draw
+          (
+            Canvas g,
+            float ScaleLength,
+            boolean TopEdge
+          )
+          {
+            DrawGraduations
+              (
+                /*g =*/ g,
+                /*ScaleLength =*/ ScaleLength,
+                /*TopEdge =*/ TopEdge,
+                /*TheScale =*/ this,
+                /*NrPrimarySteps =*/ 10,
+                /*IncludeZero =*/ true
+              );
+          } /*Draw*/
+      } /*LogXScale*/
 
     public static java.util.Map<String, Scale> KnownScales =
         new java.util.HashMap<String, Scale>();
@@ -301,6 +354,10 @@ public class Scales
                         new XNScale("\u1e8b", 1),
                         new XNScale("1/\u1e8b", -1),
                         new XNScale("\u1e8b²", 2),
+                        new XNScale("\u1e8b³", 3),
+                        new XNScale("1/\u1e8b²", -2),
+                        new XNScale("1/\u1e8b³", -3),
+                        new LogXScale(),
                       /* more TBD */
                     }
           )
