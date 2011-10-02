@@ -269,6 +269,21 @@ public class Scales
           } /*Draw*/
       } /*XScale*/
 
+    public static class X2Scale extends XScale
+      {
+        public String Name()
+          {
+            return
+                "\u1e8b²";
+          } /*Name*/
+
+        public double Size()
+          {
+            return
+                0.5;
+          } /*Size*/
+      } /*X2Scale*/
+
     public static java.util.Map<String, Scale> KnownScales =
         new java.util.HashMap<String, Scale>();
     static
@@ -279,6 +294,7 @@ public class Scales
                 new Scale[]
                     {
                         new XScale(),
+                        new X2Scale(),
                       /* more TBD */
                     }
           )
