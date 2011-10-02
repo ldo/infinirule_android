@@ -82,6 +82,7 @@ public class Scales
       )
       {
         final float MarkerLength = ParentMarkerLength * 0.65f;
+        final float MidMarkerLength = ParentMarkerLength * 0.82f;
         float PrevMarkerX = 0.0f;
         for (int j = 0; j <= 10; ++j)
           {
@@ -109,7 +110,14 @@ public class Scales
                   } /*if*/
                 if (j != 10)
                   {
-                    g.drawLine(MarkerX, 0.0f, MarkerX, TopEdge ? MarkerLength : - MarkerLength, LineHow);
+                    g.drawLine
+                      (
+                        MarkerX,
+                        0.0f,
+                        MarkerX,
+                        (j == 5 ? MidMarkerLength : MarkerLength) * (TopEdge ? +1 : -1),
+                        LineHow
+                      );
                   } /*if*/
               } /*if*/
             PrevMarkerX = MarkerX;
