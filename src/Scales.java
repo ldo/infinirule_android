@@ -93,7 +93,7 @@ public class Scales
             final float MarkerX = (float)(TheScale.PosAt(ThisBaseOffset) * ScaleLength);
             if (j != 0)
               {
-                if (MarkerX - PrevMarkerX >= 30.0f)
+                if (Math.abs(MarkerX - PrevMarkerX) >= 30.0f)
                   {
                     DrawSubGraduations
                       (
