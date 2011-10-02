@@ -243,7 +243,8 @@ public class SlideView extends android.view.View
       {
         MovingNothing,
         MovingCursor,
-        MovingScales,
+        MovingBothScales,
+        MovingLowerScale,
       } /*MovingState*/
     MovingState MovingWhat = MovingState.MovingNothing;
 
@@ -268,14 +269,23 @@ public class SlideView extends android.view.View
               {
                 MovingWhat = MovingState.MovingCursor;
               }
+            else if (LastMouse1.y > getHeight() / 2.0f)
+              {
+                MovingWhat = MovingState.MovingLowerScale;
+              }
             else
               {
-                MovingWhat = MovingState.MovingScales;
+                MovingWhat = MovingState.MovingBothScales;
               } /*if*/
             Handled = true;
         break;
         case MotionEvent.ACTION_POINTER_DOWN:
-            if (MovingWhat == MovingState.MovingScales)
+            if
+              (
+                    MovingWhat == MovingState.MovingLowerScale
+                ||
+                    MovingWhat == MovingState.MovingBothScales
+              )
               {
                 final int PointerIndex =
                         (TheEvent.getAction() & MotionEvent.ACTION_POINTER_ID_MASK)
@@ -407,31 +417,37 @@ public class SlideView extends android.view.View
                                 CursorX = Math.max(0.0f, Math.min(CursorX + ThisMouse.x - LastMouse.x, getWidth()));
                                 invalidate();
                             break;
-                            case MovingScales:
+                            case MovingBothScales:
+                            case MovingLowerScale:
                                   {
-                                    final boolean Upper = ThisMouse.y < getHeight() / 2.0f;
-                                    final double ScaleSize =
-                                        ((Scales.Scale)(Upper ? UpperScale : LowerScale)).Size();
-                                    final double NewOffset =
-                                        FindScaleOffset
-                                          (
-                                            ThisMouse.x,
-                                            ScaleSize,
-                                            ViewToScale
+                                    for (boolean Upper = false;;)
+                                      {
+                                        final double ScaleSize =
+                                            ((Scales.Scale)(Upper ? UpperScale : LowerScale)).Size();
+                                        final double NewOffset =
+                                            FindScaleOffset
                                               (
-                                                LastMouse.x,
+                                                ThisMouse.x,
                                                 ScaleSize,
-                                                Upper ? UpperScaleOffset : LowerScaleOffset
-                                              )
-                                          );
-                                    if (Upper)
-                                      {
-                                        UpperScaleOffset = NewOffset;
-                                      }
-                                    else
-                                      {
-                                        LowerScaleOffset = NewOffset;
-                                      } /*if*/
+                                                ViewToScale
+                                                  (
+                                                    LastMouse.x,
+                                                    ScaleSize,
+                                                    Upper ? UpperScaleOffset : LowerScaleOffset
+                                                  )
+                                              );
+                                        if (Upper)
+                                          {
+                                            UpperScaleOffset = NewOffset;
+                                          }
+                                        else
+                                          {
+                                            LowerScaleOffset = NewOffset;
+                                          } /*if*/
+                                        if (Upper || MovingWhat != MovingState.MovingBothScales)
+                                            break;
+                                        Upper = true;
+                                      } /*for*/
                                     invalidate();
                                   }
                                 if
