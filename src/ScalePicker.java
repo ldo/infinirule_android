@@ -149,7 +149,7 @@ public class ScalePicker extends android.app.Activity
                           ),
                     /*config =*/ android.graphics.Bitmap.Config.ARGB_8888
                   );
-                ItemBits.setDensity(Global.MainMetrics.densityDpi);
+              /* ItemBits.setDensity(Global.MainMetrics.densityDpi); */ /* no need? */
                 final android.graphics.Canvas ItemDraw = new android.graphics.Canvas(ItemBits);
                 ItemDraw.drawColor(0xff000000);
                 Scales.DrawLabel
