@@ -2,5 +2,5 @@
 <resources>
     <dimen name="font_size">16sp</dimen>
     <dimen name="primary_marker_length">20dp</dimen>
-    <dimen name="half_cursor_width">60dp</dimen>
+    <dimen name="half_cursor_width">40dp</dimen>
 </resources>
