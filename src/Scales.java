@@ -137,6 +137,8 @@ public class Scales
       {
         final Paint LineHow = new Paint();
         final Paint TextHow = new Paint();
+      /* LineHow.setAntiAlias(true); */ /* doesn't look good */
+        TextHow.setAntiAlias(true);
         TextHow.setTextSize(FontSize);
         if (NrPrimarySteps < 0)
           {
@@ -215,6 +217,7 @@ public class Scales
         substitution depending on Upper. */
       {
         final Paint LabelHow = new Paint();
+        LabelHow.setAntiAlias(true);
         LabelHow.setTextSize(FontSize);
         final PointF LabelPos = g != null ? new PointF(Pos.x, Pos.y) : null;
         final String Template = TheScale.Name();
