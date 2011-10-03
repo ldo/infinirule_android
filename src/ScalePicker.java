@@ -11,6 +11,7 @@ public class ScalePicker extends android.app.Activity
     private static ScalePicker Current = null;
 
     private static Global.ScaleSelector WhichScale;
+    private static String CurScaleName;
 
     private android.widget.ListView PickerListView;
     private SelectedItemAdapter PickerList;
@@ -22,11 +23,12 @@ public class ScalePicker extends android.app.Activity
 
         public PickerItem
           (
-            String Name
+            String Name,
+            boolean Selected
           )
           {
             this.Name = Name;
-            this.Selected = false;
+            this.Selected = Selected;
           } /*PickerItem*/
 
       } /*PickerItem*/
@@ -173,6 +175,11 @@ public class ScalePicker extends android.app.Activity
             android.widget.RadioButton ThisChecked =
                 (android.widget.RadioButton)TheView.findViewById(R.id.item_checked);
             ThisChecked.setChecked(ThisItem.Selected);
+            if (ThisItem.Selected)
+              {
+                CurSelected = ThisItem;
+                LastChecked = ThisChecked;
+              } /*if*/
             final OnSetCheck ThisSetCheck = new OnSetCheck(ThisItem);
             ThisChecked.setOnClickListener(ThisSetCheck);
               /* otherwise radio button can get checked but I don't notice */
@@ -244,7 +251,14 @@ public class ScalePicker extends android.app.Activity
                     Scales.KnownScales.entrySet()
               )
               {
-                ResultTemp.add(new PickerItem(ThisScale.getValue().Name()));
+                ResultTemp.add
+                  (
+                    new PickerItem
+                      (
+                        ThisScale.getValue().Name(),
+                        ThisScale.getValue().Name().equals(CurScaleName)
+                      )
+                  );
               } /*for*/
             for (PickerItem ThisItem : ResultTemp)
               {
@@ -301,13 +315,15 @@ public class ScalePicker extends android.app.Activity
       (
         android.app.Activity Caller,
         Global.ScaleSelector WhichScale,
-        int RequestCode
+        int RequestCode,
+        String CurScaleName
       )
       {
         if (!Reentered)
           {
             Reentered = true; /* until Picker activity terminates */
             ScalePicker.WhichScale = WhichScale;
+            ScalePicker.CurScaleName = CurScaleName;
             Caller.startActivityForResult
               (
                 new android.content.Intent(android.content.Intent.ACTION_PICK)

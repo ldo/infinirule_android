@@ -111,6 +111,32 @@ public class SlideView extends android.view.View
         invalidate();
       } /*SetScale*/
 
+    public String GetScaleName
+      (
+        Global.ScaleSelector WhichScale
+      )
+      {
+        /*final*/ Scales.Scale TheScale
+            = null; /*sigh*/
+        switch (WhichScale)
+          {
+        case TopScale:
+            TheScale = TopScale;
+        break;
+        case UpperScale:
+            TheScale = UpperScale;
+        break;
+        case LowerScale:
+            TheScale = LowerScale;
+        break;
+        case BottomScale:
+            TheScale = BottomScale;
+        break;
+          } /*switch*/
+        return
+            TheScale.Name();
+      } /*GetScaleName*/
+
 /*
     Mapping between image coordinates and view coordinates
 */

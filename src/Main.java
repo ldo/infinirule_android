@@ -86,7 +86,13 @@ public class Main extends android.app.Activity
                   {
                     public void run()
                       {
-                        ScalePicker.Launch(Main.this, s.WhichScale, s.RequestCode);
+                        ScalePicker.Launch
+                          (
+                            /*Caller =*/ Main.this,
+                            /*WhichScale =*/ s.WhichScale,
+                            /*RequestCode =*/s.RequestCode,
+                            /*CurScaleName =*/ Slide.GetScaleName(s.WhichScale)
+                          );
                       } /*run*/
                   } /*Runnable*/
               );
