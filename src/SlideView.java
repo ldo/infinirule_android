@@ -267,10 +267,14 @@ public class SlideView extends android.view.View
                 m.preTranslate
                   (
                     (float)(
-                            (Upper ?
-                                Edge ? TopScaleOffset : UpperScaleOffset
-                            :
-                                Edge ? BottomScaleOffset : LowerScaleOffset
+                            (
+                                (Upper ?
+                                    Edge ? TopScaleOffset : UpperScaleOffset
+                                :
+                                    Edge ? BottomScaleOffset : LowerScaleOffset
+                                )
+                            +
+                                TheScale.ExtraOffset()
                             )
                         *
                             ScaleLength

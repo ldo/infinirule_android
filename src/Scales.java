@@ -25,6 +25,9 @@ public class Scales
           /* returns a relative measure of size, e.g. 1.0 for C & D scales,
             2.0 for square root, 0.5 for A & B (squares). */
 
+        public double ExtraOffset();
+          /* nonzero for folded versions of scales */
+
         public double ValueAt
           (
             double Pos /* [0.0 .. 1.0) */
@@ -321,15 +324,18 @@ public class Scales
       {
         public final String ScaleName;
         public final int Power;
+        public final double Offset;
 
         public XNScale
           (
             String ScaleName,
-            int Power
+            int Power,
+            double Offset
           )
           {
             this.ScaleName = ScaleName;
             this.Power = Power;
+            this.Offset = Offset;
           } /*XNScale*/
 
         public String Name()
@@ -343,6 +349,12 @@ public class Scales
             return
                 1.0 / Math.abs(Power);
           } /*Size*/
+
+        public double ExtraOffset()
+          {
+            return
+                Offset;
+          } /*ExtraOffset*/
 
         public double ValueAt
           (
@@ -398,6 +410,12 @@ public class Scales
                 1.0;
           } /*Size*/
 
+        public double ExtraOffset()
+          {
+            return
+                0.0;
+          } /*ExtraOffset*/
+
         public double ValueAt
           (
             double Pos
@@ -444,13 +462,14 @@ public class Scales
             Scale s :
                 new Scale[]
                     {
-                        new XNScale("\u1e8b", 1),
-                        new XNScale("1/\u1e8b", -1),
-                        new XNScale("\u1e8b²", 2),
-                        new XNScale("\u1e8b³", 3),
-                        new XNScale("1/\u1e8b²", -2),
-                        new XNScale("1/\u1e8b³", -3),
+                        new XNScale("\u1e8b", 1, 0.0),
+                        new XNScale("1/\u1e8b", -1, 0.0),
+                        new XNScale("\u1e8b²", 2, 0.0),
+                        new XNScale("\u1e8b³", 3, 0.0),
+                        new XNScale("1/\u1e8b²", -2, 0.0),
+                        new XNScale("1/\u1e8b³", -3, 0.0),
                         new LogXScale(),
+                        new XNScale("\u03c0\u1e8b", 1, - Math.log10(Math.PI)),
                       /* more TBD */
                     }
           )
