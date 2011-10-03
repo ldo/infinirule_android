@@ -108,11 +108,7 @@ public class ScalePicker extends android.app.Activity
             final android.widget.ImageView ItemDisplay =
                 (android.widget.ImageView)TheView.findViewById(R.id.select_name);
               {
-                final android.graphics.Paint LabelHow = new android.graphics.Paint();
-                LabelHow.setTypeface(Scales.NormalStyle);
-                LabelHow.setTextSize(Scales.FontSize);
-                final android.graphics.Rect TextBounds = new android.graphics.Rect();
-                LabelHow.getTextBounds("W", 0, 1, TextBounds);
+                final android.graphics.Rect TextBounds = Scales.GetCharacterCellBounds();
                 final android.graphics.Bitmap ItemBits = android.graphics.Bitmap.createBitmap
                   (
                     /*width =*/

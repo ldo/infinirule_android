@@ -159,13 +159,19 @@ public class SlideView extends android.view.View
       )
       {
         g.drawColor(0xfffffada);
+        final android.graphics.Rect TextBounds = Scales.GetCharacterCellBounds();
         Scales.DrawLabel
           (
             /*g =*/ g,
             /*TheScale =*/ UpperScale,
             /*Upper =*/ true,
-            /*Pos =*/ new PointF(getWidth() / 2.0f, getHeight() * 0.25f),
-            /*Alignment =*/ Paint.Align.CENTER,
+            /*Pos =*/
+                new PointF
+                  (
+                    Scales.PrimaryMarkerLength / 2.0f,
+                    getHeight() * 0.5f - (Scales.PrimaryMarkerLength + TextBounds.bottom) * 1.5f
+                  ),
+            /*Alignment =*/ Paint.Align.LEFT,
             /*Color =*/ 0xff000000
           );
         Scales.DrawLabel
@@ -173,8 +179,13 @@ public class SlideView extends android.view.View
             /*g =*/ g,
             /*TheScale =*/ LowerScale,
             /*Upper =*/ false,
-            /*Pos =*/ new PointF(getWidth() / 2.0f, getHeight() * 0.75f),
-            /*Alignment =*/ Paint.Align.CENTER,
+            /*Pos =*/
+                new PointF
+                  (
+                    Scales.PrimaryMarkerLength / 2.0f,
+                    getHeight() * 0.5f + (Scales.PrimaryMarkerLength - TextBounds.top) * 1.5f
+                  ),
+            /*Alignment =*/ Paint.Align.LEFT,
             /*Color =*/ 0xff000000
           );
         g.save(android.graphics.Canvas.MATRIX_SAVE_FLAG);

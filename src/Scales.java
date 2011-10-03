@@ -68,6 +68,18 @@ public class Scales
           );
       } /*DrawCenteredText*/
 
+    public static android.graphics.Rect GetCharacterCellBounds()
+      /* returns the bounds of the character “W” in the label font. */
+      {
+        final Paint LabelHow = new Paint();
+        LabelHow.setTypeface(NormalStyle);
+        LabelHow.setTextSize(FontSize);
+        final android.graphics.Rect TextBounds = new android.graphics.Rect();
+        LabelHow.getTextBounds("W", 0, 1, TextBounds);
+        return
+            TextBounds;
+      } /*GetCharacterCellBounds*/
+
     private static void DrawSubGraduations
       (
         Canvas g,
