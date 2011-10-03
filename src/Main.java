@@ -28,6 +28,7 @@ public class Main extends android.app.Activity
       )
       {
         super.onCreate(SavedInstanceState);
+        requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
         BuildActivityResultActions();
         Global.MainMetrics = new android.util.DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(Global.MainMetrics);
