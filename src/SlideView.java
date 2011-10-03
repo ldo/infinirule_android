@@ -93,19 +93,28 @@ public class SlideView extends android.view.View
       )
       {
         final Scales.Scale NewScale = Scales.KnownScales.get(NewScaleName);
+      /* note I need to reset scale offsets to keep scales on the same side in sync */
         switch (WhichScale)
           {
         case TopScale:
             TopScale = NewScale;
+            TopScaleOffset = 0.0;
+            UpperScaleOffset = 0.0;
         break;
         case UpperScale:
             UpperScale = NewScale;
+            TopScaleOffset = 0.0;
+            UpperScaleOffset = 0.0;
         break;
         case LowerScale:
             LowerScale = NewScale;
+            LowerScaleOffset = 0.0;
+            BottomScaleOffset = 0.0;
         break;
         case BottomScale:
             BottomScale = NewScale;
+            LowerScaleOffset = 0.0;
+            BottomScaleOffset = 0.0;
         break;
           } /*switch*/
         invalidate();
