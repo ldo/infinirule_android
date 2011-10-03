@@ -12,7 +12,6 @@ public class SlideView extends android.view.View
     private Scales.Scale UpperScale, LowerScale;
     private double UpperScaleOffset, LowerScaleOffset; /* (-1.0 .. 0.0] */
     private float CursorX; /* view x-coordinate */
-    private static final float HalfCursorWidth = 60.0f; /* in device-independent pixels */
     private int ScaleLength; /* in pixels */
 
     public void Reset()
@@ -208,8 +207,8 @@ public class SlideView extends android.view.View
           } /*for*/
         g.restore();
           {
-            final float CursorLeft = CursorX - HalfCursorWidth * Global.PixelDensity();
-            final float CursorRight = CursorX + HalfCursorWidth * Global.PixelDensity();
+            final float CursorLeft = CursorX - Scales.HalfCursorWidth;
+            final float CursorRight = CursorX + Scales.HalfCursorWidth;
             final Paint CursorHow = new Paint();
             g.drawLine(CursorX, 0.0f, CursorX, getHeight(), CursorHow);
             CursorHow.setStyle(Paint.Style.FILL);
@@ -264,9 +263,9 @@ public class SlideView extends android.view.View
             Mouse1ID = TheEvent.getPointerId(0);
             if
               (
-                    CursorX - HalfCursorWidth * Global.PixelDensity() <= LastMouse1.x
+                    CursorX - Scales.HalfCursorWidth <= LastMouse1.x
                 &&
-                    LastMouse1.x < CursorX + HalfCursorWidth * Global.PixelDensity()
+                    LastMouse1.x < CursorX + Scales.HalfCursorWidth
               )
               {
                 MovingWhat = MovingState.MovingCursor;

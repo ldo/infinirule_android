@@ -11,7 +11,7 @@ public class Scales
     public static final String UpperVarName = "x";
     public static final String LowerVarName = "y";
 
-    public static float FontSize;
+    public static float FontSize, PrimaryMarkerLength, HalfCursorWidth;
     public static final Typeface NormalStyle = Typeface.defaultFromStyle(Typeface.NORMAL);
     public static final Typeface ItalicStyle = Typeface.defaultFromStyle(Typeface.ITALIC);
 
@@ -142,7 +142,6 @@ public class Scales
           {
             TextHow.setColor(0xfff20001);
           } /*if*/
-        final float MarkerLength = 20.0f;
         for (int i = NrPrimarySteps > 0 ? 0 : - NrPrimarySteps;;)
           {
             if (NrPrimarySteps > 0 && i == NrPrimarySteps)
@@ -154,9 +153,9 @@ public class Scales
                 !g.quickReject
                   (
                     /*left =*/ Left1,
-                    /*top =*/ TopEdge ? 0.0f : - MarkerLength,
+                    /*top =*/ TopEdge ? 0.0f : - PrimaryMarkerLength,
                     /*right =*/ Right1,
-                    /*bottom =*/ TopEdge ? MarkerLength : 0.0f,
+                    /*bottom =*/ TopEdge ? PrimaryMarkerLength : 0.0f,
                     /*type =*/ Canvas.EdgeType.AA
                   )
               )
@@ -168,7 +167,7 @@ public class Scales
                         i != (NrPrimarySteps > 0 ? 0 : - NrPrimarySteps)
                   )
                   {
-                    g.drawLine(Left1, 0.0f, Left1, TopEdge ? MarkerLength : - MarkerLength, LineHow);
+                    g.drawLine(Left1, 0.0f, Left1, TopEdge ? PrimaryMarkerLength : - PrimaryMarkerLength, LineHow);
                   } /*if*/
                 if (IncludeZero || i != (NrPrimarySteps > 0 ? 0 : - NrPrimarySteps))
                   {
@@ -177,7 +176,7 @@ public class Scales
                         /*Draw =*/ g,
                         /*TheText =*/ String.format(Global.StdLocale, "%d", i),
                         /*x =*/ Left1,
-                        /*y =*/ TopEdge ? MarkerLength : - MarkerLength,
+                        /*y =*/ TopEdge ? PrimaryMarkerLength : - PrimaryMarkerLength,
                         /*UsePaint =*/ TextHow
                       );
                   } /*if*/
@@ -188,7 +187,7 @@ public class Scales
                     /*TopEdge =*/ TopEdge,
                     /*TheScale =*/ TheScale,
                     /*NrPrimarySteps =*/ NrPrimarySteps,
-                    /*ParentMarkerLength =*/ MarkerLength,
+                    /*ParentMarkerLength =*/ PrimaryMarkerLength,
                     /*BaseOffset =*/
                             (i - (NrPrimarySteps < 0 ? 1 : 0))
                         /

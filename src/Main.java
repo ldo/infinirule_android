@@ -32,7 +32,12 @@ public class Main extends android.app.Activity
         BuildActivityResultActions();
         Global.MainMetrics = new android.util.DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(Global.MainMetrics);
-        Scales.FontSize = getResources().getDimension(R.dimen.font_size);
+          {
+            final android.content.res.Resources Resources = getResources();
+            Scales.PrimaryMarkerLength = Resources.getDimension(R.dimen.primary_marker_length);
+            Scales.FontSize = Resources.getDimension(R.dimen.font_size);
+            Scales.HalfCursorWidth = Resources.getDimension(R.dimen.half_cursor_width);
+          }
         setContentView(R.layout.main);
         Slide = (SlideView)findViewById(R.id.slide_view);
       } /*onCreate*/
