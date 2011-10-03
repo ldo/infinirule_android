@@ -19,4 +19,12 @@ public class Global
                 android.util.DisplayMetrics.DENSITY_DEFAULT;
       } /*PixelDensity*/
 
+    public static enum ScaleSelector
+      {
+        TopScale,
+        UpperScale,
+        LowerScale,
+        BottomScale,
+      } /*ScaleSelector*/
+
   } /*Global*/

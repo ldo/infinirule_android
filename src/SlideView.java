@@ -9,15 +9,17 @@ import android.view.MotionEvent;
 
 public class SlideView extends android.view.View
   {
-    private Scales.Scale UpperScale, LowerScale;
-    private double UpperScaleOffset, LowerScaleOffset; /* (-1.0 .. 0.0] */
+    private Scales.Scale TopScale, UpperScale, LowerScale, BottomScale;
+    private double TopScaleOffset, UpperScaleOffset, LowerScaleOffset, BottomScaleOffset; /* (-1.0 .. 0.0] */
     private float CursorX; /* view x-coordinate */
     private int ScaleLength; /* in pixels */
 
     public void Reset()
       {
+        TopScaleOffset = 0.0;
         UpperScaleOffset = 0.0;
         LowerScaleOffset = 0.0;
+        BottomScaleOffset = 0.0;
         CursorX = 0.0f;
         if (ScaleLength > 0)
           {
@@ -29,8 +31,10 @@ public class SlideView extends android.view.View
     private void Init()
       /* common code for all constructors */
       {
-        UpperScale = Scales.DefaultScale();
-        LowerScale = UpperScale;
+        TopScale = Scales.DefaultScale(Global.ScaleSelector.TopScale);
+        UpperScale = Scales.DefaultScale(Global.ScaleSelector.UpperScale);
+        LowerScale = Scales.DefaultScale(Global.ScaleSelector.LowerScale);
+        BottomScale = Scales.DefaultScale(Global.ScaleSelector.BottomScale);
         ScaleLength = -1; /* proper value deferred to onLayout */
         Reset();
       } /*Init*/
@@ -85,22 +89,25 @@ public class SlideView extends android.view.View
     public void SetScale
       (
         String NewScaleName,
-        boolean Upper
+        Global.ScaleSelector WhichScale
       )
       {
         final Scales.Scale NewScale = Scales.KnownScales.get(NewScaleName);
-        if (Upper)
+        switch (WhichScale)
           {
+        case TopScale:
+            TopScale = NewScale;
+        break;
+        case UpperScale:
             UpperScale = NewScale;
-            UpperScaleOffset = 0.0;
-          }
-        else
-          {
+        break;
+        case LowerScale:
             LowerScale = NewScale;
-            LowerScaleOffset = 0.0;
-          } /*if*/
-        CursorX = 0.0f;
-        ScaleLength = getWidth();
+        break;
+        case BottomScale:
+            BottomScale = NewScale;
+        break;
+          } /*switch*/
         invalidate();
       } /*SetScale*/
 
@@ -163,6 +170,20 @@ public class SlideView extends android.view.View
         Scales.DrawLabel
           (
             /*g =*/ g,
+            /*TheScale =*/ TopScale,
+            /*Upper =*/ true,
+            /*Pos =*/
+                new PointF
+                  (
+                    Scales.PrimaryMarkerLength / 2.0f,
+                    (Scales.PrimaryMarkerLength - TextBounds.top) * 1.5f
+                  ),
+            /*Alignment =*/ Paint.Align.LEFT,
+            /*Color =*/ 0xff000000
+          );
+        Scales.DrawLabel
+          (
+            /*g =*/ g,
             /*TheScale =*/ UpperScale,
             /*Upper =*/ true,
             /*Pos =*/
@@ -188,35 +209,71 @@ public class SlideView extends android.view.View
             /*Alignment =*/ Paint.Align.LEFT,
             /*Color =*/ 0xff000000
           );
-        g.save(android.graphics.Canvas.MATRIX_SAVE_FLAG);
-        final android.graphics.Matrix m1 = g.getMatrix();
-        final android.graphics.Matrix m2 = g.getMatrix();
+        Scales.DrawLabel
+          (
+            /*g =*/ g,
+            /*TheScale =*/ BottomScale,
+            /*Upper =*/ false,
+            /*Pos =*/
+                new PointF
+                  (
+                    Scales.PrimaryMarkerLength / 2.0f,
+                    getHeight() - (Scales.PrimaryMarkerLength + TextBounds.bottom) * 1.5f
+                  ),
+            /*Alignment =*/ Paint.Align.LEFT,
+            /*Color =*/ 0xff000000
+          );
+        final android.graphics.Matrix m_orig = g.getMatrix();
         for (boolean Upper = false;;)
           {
-            final android.graphics.Matrix m = Upper ? m1 : m2;
-            final Scales.Scale TheScale = Upper ? UpperScale : LowerScale;
-            final int ScaleRepeat =
-                    (getWidth() + (int)(ScaleLength * TheScale.Size() - 1))
-                /
-                    (int)(ScaleLength * TheScale.Size());
-            m.preTranslate
-              (
-                (float)(
-                    (Upper ? UpperScaleOffset : LowerScaleOffset) * ScaleLength * TheScale.Size()
-                ),
-                getHeight() / 2.0f
-              );
-            for (int i = -1; i <= ScaleRepeat; ++i)
+            for (boolean Edge = false;;)
               {
-                g.setMatrix(m);
-                TheScale.Draw(g, (float)(ScaleLength * TheScale.Size()), !Upper);
-                m.preTranslate((float)(ScaleLength * TheScale.Size()), 0.0f);
+                final android.graphics.Matrix m = new android.graphics.Matrix(m_orig);
+                final Scales.Scale TheScale =
+                    Upper ?
+                        Edge ? TopScale : UpperScale
+                    :
+                        Edge ? BottomScale : LowerScale;
+                final int ScaleRepeat =
+                        (getWidth() + (int)(ScaleLength * TheScale.Size() - 1))
+                    /
+                        (int)(ScaleLength * TheScale.Size());
+                m.preTranslate
+                  (
+                    (float)(
+                            (Upper ?
+                                Edge ? TopScaleOffset : UpperScaleOffset
+                            :
+                                Edge ? BottomScaleOffset : LowerScaleOffset
+                            )
+                        *
+                            ScaleLength
+                        *
+                            TheScale.Size()
+                    ),
+                        getHeight()
+                    *
+                        (Edge ?
+                            Upper ? 0.0f : 1.0f
+                        :
+                            0.5f
+                        )
+                  );
+                for (int i = -1; i <= ScaleRepeat; ++i)
+                  {
+                    g.setMatrix(m);
+                    TheScale.Draw(g, (float)(ScaleLength * TheScale.Size()), Upper == Edge);
+                    m.preTranslate((float)(ScaleLength * TheScale.Size()), 0.0f);
+                  } /*for*/
+                if (Edge)
+                    break;
+                Edge = true;
               } /*for*/
             if (Upper)
                 break;
             Upper = true;
           } /*for*/
-        g.restore();
+        g.setMatrix(m_orig);
           {
             final float CursorLeft = CursorX - Scales.HalfCursorWidth;
             final float CursorRight = CursorX + Scales.HalfCursorWidth;
@@ -395,6 +452,13 @@ public class SlideView extends android.view.View
                                     ThisMouseLower.y
                                   );
                               } /*if*/
+                            TopScaleOffset =
+                                FindScaleOffset
+                                  (
+                                    ThisMouseUpper.x,
+                                    TopScale.Size(),
+                                    ViewToScale(LastMouseUpper.x, TopScale.Size(), TopScaleOffset)
+                                  );
                             UpperScaleOffset =
                                 FindScaleOffset
                                   (
@@ -408,6 +472,13 @@ public class SlideView extends android.view.View
                                     ThisMouseLower.x,
                                     LowerScale.Size(),
                                     ViewToScale(LastMouseLower.x, LowerScale.Size(), LowerScaleOffset)
+                                  );
+                            BottomScaleOffset =
+                                FindScaleOffset
+                                  (
+                                    ThisMouseLower.x,
+                                    BottomScale.Size(),
+                                    ViewToScale(LastMouseLower.x, BottomScale.Size(), BottomScaleOffset)
                                   );
                             invalidate();
                           }
@@ -455,27 +526,43 @@ public class SlideView extends android.view.View
                             case MovingLowerScale:
                                 for (boolean Upper = false;;)
                                   {
-                                    final double ScaleSize =
+                                    final double Scale1Size =
+                                        ((Scales.Scale)(Upper ? TopScale : BottomScale)).Size();
+                                    final double Scale2Size =
                                         ((Scales.Scale)(Upper ? UpperScale : LowerScale)).Size();
-                                    final double NewOffset =
+                                    final double NewOffset1 =
                                         FindScaleOffset
                                           (
                                             ThisMouse.x,
-                                            ScaleSize,
+                                            Scale1Size,
                                             ViewToScale
                                               (
                                                 LastMouse.x,
-                                                ScaleSize,
+                                                Scale1Size,
+                                                Upper ? TopScaleOffset : BottomScaleOffset
+                                              )
+                                          );
+                                    final double NewOffset2 =
+                                        FindScaleOffset
+                                          (
+                                            ThisMouse.x,
+                                            Scale2Size,
+                                            ViewToScale
+                                              (
+                                                LastMouse.x,
+                                                Scale2Size,
                                                 Upper ? UpperScaleOffset : LowerScaleOffset
                                               )
                                           );
                                     if (Upper)
                                       {
-                                        UpperScaleOffset = NewOffset;
+                                        TopScaleOffset = NewOffset1;
+                                        UpperScaleOffset = NewOffset2;
                                       }
                                     else
                                       {
-                                        LowerScaleOffset = NewOffset;
+                                        BottomScaleOffset = NewOffset1;
+                                        LowerScaleOffset = NewOffset2;
                                       } /*if*/
                                     if (Upper || MovingWhat != MovingState.MovingBothScales)
                                         break;

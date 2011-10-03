@@ -1,17 +1,16 @@
 package nz.gen.geek_central.infinirule;
 /*
-    Let the user choose a new upper or lower scale
+    Let the user choose a new scale
 */
 
 public class ScalePicker extends android.app.Activity
   {
     public static final String NameID = "nz.gen.geek_central.infinirule.name";
-    public static final String UpperID = "nz.gen.geek_central.infinirule.upper";
 
     private static boolean Reentered = false; /* sanity check */
     private static ScalePicker Current = null;
 
-    private static boolean Upper;
+    private static Global.ScaleSelector WhichScale;
 
     private android.widget.ListView PickerListView;
     private SelectedItemAdapter PickerList;
@@ -119,7 +118,10 @@ public class ScalePicker extends android.app.Activity
                                   (
                                     /*g =*/ null,
                                     /*Scale =*/ Scales.KnownScales.get(ThisItem.Name),
-                                    /*Upper =*/ Upper,
+                                    /*Upper =*/
+                                            WhichScale == Global.ScaleSelector.TopScale
+                                        ||
+                                            WhichScale == Global.ScaleSelector.UpperScale,
                                     /*Pos =*/ null,
                                     /*Alignment =*/ android.graphics.Paint.Align.LEFT,
                                     /*Color =*/ 0
@@ -152,7 +154,10 @@ public class ScalePicker extends android.app.Activity
                   (
                     /*g =*/ ItemDraw,
                     /*Scale =*/ Scales.KnownScales.get(ThisItem.Name),
-                    /*Upper =*/ Upper,
+                    /*Upper =*/
+                            WhichScale == Global.ScaleSelector.TopScale
+                        ||
+                            WhichScale == Global.ScaleSelector.UpperScale,
                     /*Pos =*/
                         new android.graphics.PointF
                           (
@@ -187,13 +192,30 @@ public class ScalePicker extends android.app.Activity
         super.onCreate(SavedInstanceState);
         Current = this;
         setContentView(R.layout.scale_picker);
+        /*final*/ int SelectorID
+            = -1; /*sigh*/
+        switch (WhichScale)
+          {
+        case TopScale:
+            SelectorID = R.string.top;
+        break;
+        case UpperScale:
+            SelectorID = R.string.upper;
+        break;
+        case LowerScale:
+            SelectorID = R.string.lower;
+        break;
+        case BottomScale:
+            SelectorID = R.string.bottom;
+        break;
+          } /*switch*/
         ((android.widget.TextView)findViewById(R.id.prompt)).setText
           (
             String.format
               (
                 Global.StdLocale,
                 getString(R.string.picker_prompt),
-                getString(Upper ? R.string.upper : R.string.lower)
+                getString(SelectorID)
               )
           );
         PickerList = new SelectedItemAdapter(this, R.layout.scale_picker_item, getLayoutInflater());
@@ -255,7 +277,6 @@ public class ScalePicker extends android.app.Activity
                     android.app.Activity.RESULT_OK,
                     new android.content.Intent()
                         .putExtra(NameID, PickerList.CurSelected.Name)
-                        .putExtra(UpperID, Upper)
                   );
               } /*if*/
             finish();
@@ -279,14 +300,14 @@ public class ScalePicker extends android.app.Activity
     public static void Launch
       (
         android.app.Activity Caller,
-        boolean Upper,
+        Global.ScaleSelector WhichScale,
         int RequestCode
       )
       {
         if (!Reentered)
           {
             Reentered = true; /* until Picker activity terminates */
-            ScalePicker.Upper = Upper;
+            ScalePicker.WhichScale = WhichScale;
             Caller.startActivityForResult
               (
                 new android.content.Intent(android.content.Intent.ACTION_PICK)

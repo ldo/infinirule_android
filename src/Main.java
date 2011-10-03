@@ -16,8 +16,37 @@ public class Main extends android.app.Activity
     private java.util.Map<Integer, RequestResponseAction> ActivityResultActions;
 
   /* request codes, all arbitrarily assigned */
-    static final int SetUpperScaleRequest = 1;
-    static final int SetLowerScaleRequest = 2;
+    private static final int SetTopScaleRequest = 1;
+    private static final int SetUpperScaleRequest = 2;
+    private static final int SetLowerScaleRequest = 3;
+    private static final int SetBottomScaleRequest = 4;
+
+    private static class SetScaleEntry
+      {
+        public final int ResID;
+        public final int RequestCode;
+        public final Global.ScaleSelector WhichScale;
+
+        public SetScaleEntry
+          (
+            int ResID,
+            int RequestCode,
+            Global.ScaleSelector WhichScale
+          )
+          {
+            this.ResID = ResID;
+            this.RequestCode = RequestCode;
+            this.WhichScale = WhichScale;
+          } /*SetScaleEntry*/
+      } /*SetScaleEntry*/
+    private static final SetScaleEntry[] WhichScales =
+        new SetScaleEntry[]
+            {
+                new SetScaleEntry(R.string.set_top, SetTopScaleRequest, Global.ScaleSelector.TopScale),
+                new SetScaleEntry(R.string.set_upper, SetUpperScaleRequest, Global.ScaleSelector.UpperScale),
+                new SetScaleEntry(R.string.set_lower, SetLowerScaleRequest, Global.ScaleSelector.LowerScale),
+                new SetScaleEntry(R.string.set_bottom, SetBottomScaleRequest, Global.ScaleSelector.BottomScale),
+            };
 
     private SlideView Slide;
 
@@ -49,28 +78,20 @@ public class Main extends android.app.Activity
       )
       {
         OptionsMenu = new java.util.HashMap<android.view.MenuItem, Runnable>();
-        OptionsMenu.put
-          (
-            TheMenu.add(R.string.set_upper),
-            new Runnable()
-              {
-                public void run()
+        for (final SetScaleEntry s : WhichScales)
+          {
+            OptionsMenu.put
+              (
+                TheMenu.add(s.ResID),
+                new Runnable()
                   {
-                    ScalePicker.Launch(Main.this, true, SetUpperScaleRequest);
-                  } /*run*/
-              } /*Runnable*/
-          );
-        OptionsMenu.put
-          (
-            TheMenu.add(R.string.set_lower),
-            new Runnable()
-              {
-                public void run()
-                  {
-                    ScalePicker.Launch(Main.this, false, SetLowerScaleRequest);
-                  } /*run*/
-              } /*Runnable*/
-          );
+                    public void run()
+                      {
+                        ScalePicker.Launch(Main.this, s.WhichScale, s.RequestCode);
+                      } /*run*/
+                  } /*Runnable*/
+              );
+          } /*for*/
         return
             true;
       } /*onCreateOptionsMenu*/
@@ -78,36 +99,24 @@ public class Main extends android.app.Activity
     void BuildActivityResultActions()
       {
         ActivityResultActions = new java.util.HashMap<Integer, RequestResponseAction>();
-        ActivityResultActions.put
-          (
-            SetUpperScaleRequest,
-            new RequestResponseAction()
-              {
-                public void Run
-                  (
-                    int ResultCode,
-                    android.content.Intent Data
-                  )
+        for (final SetScaleEntry s : WhichScales)
+          {
+            ActivityResultActions.put
+              (
+                s.RequestCode,
+                new RequestResponseAction()
                   {
-                    Slide.SetScale(Data.getStringExtra(ScalePicker.NameID), true);
-                  } /*Run*/
-              } /*RequestResponseAction*/
-          );
-        ActivityResultActions.put
-          (
-            SetLowerScaleRequest,
-            new RequestResponseAction()
-              {
-                public void Run
-                  (
-                    int ResultCode,
-                    android.content.Intent Data
-                  )
-                  {
-                    Slide.SetScale(Data.getStringExtra(ScalePicker.NameID), false);
-                  } /*Run*/
-              } /*RequestResponseAction*/
-          );
+                    public void Run
+                      (
+                        int ResultCode,
+                        android.content.Intent Data
+                      )
+                      {
+                        Slide.SetScale(Data.getStringExtra(ScalePicker.NameID), s.WhichScale);
+                      } /*Run*/
+                  } /*RequestResponseAction*/
+              );
+          } /*for*/
       } /*BuildActivityResultActions*/
 
     @Override

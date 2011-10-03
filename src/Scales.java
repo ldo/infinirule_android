@@ -459,10 +459,26 @@ public class Scales
           } /*for*/
       } /*static*/
 
-    public static Scale DefaultScale()
+    public static Scale DefaultScale
+      (
+        Global.ScaleSelector WhichScale
+      )
       {
+        /*final*/ Scale Result
+            = null; /*sigh*/
+        switch (WhichScale)
+          {
+        case UpperScale:
+        case LowerScale:
+            Result = KnownScales.get("\u1e8b");
+        break;
+        case TopScale:
+        case BottomScale:
+            Result = KnownScales.get("\u1e8b²");
+        break;
+          } /*switch*/
         return
-            KnownScales.get("\u1e8b");
+            Result;
       } /*DefaultScale*/
 
   } /*Scales*/
