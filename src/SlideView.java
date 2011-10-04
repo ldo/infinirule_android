@@ -669,9 +669,13 @@ public class SlideView extends android.view.View
                                       )
                                       {
                                         ScaleLength =
-                                            (int)(
-                                                ScaleLength * ThisDistance /  LastDistance
-                                            );
+                                            Math.max
+                                              (
+                                                (int)(
+                                                    ScaleLength * ThisDistance /  LastDistance
+                                                ),
+                                                getWidth()
+                                              );
                                         invalidate();
                                       } /*if*/
                                   } /*if*/
