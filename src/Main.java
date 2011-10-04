@@ -62,8 +62,14 @@ public class Main extends android.app.Activity
         getWindowManager().getDefaultDisplay().getMetrics(Global.MainMetrics);
           {
             final android.content.res.Resources Resources = getResources();
+            Scales.BackgroundColor = Resources.getColor(R.color.background);
+            Scales.MainColor = Resources.getColor(R.color.main);
+            Scales.AltColor = Resources.getColor(R.color.alt);
+            Scales.CursorFillColor = Resources.getColor(R.color.cursor_fill);
+            Scales.CursorEdgeColor = Resources.getColor(R.color.cursor_edge);
             Scales.PrimaryMarkerLength = Resources.getDimension(R.dimen.primary_marker_length);
             Scales.FontSize = Resources.getDimension(R.dimen.font_size);
+            Scales.HalfLayoutHeight = Resources.getDimension(R.dimen.half_layout_height);
             Scales.HalfCursorWidth = Resources.getDimension(R.dimen.half_cursor_width);
           }
         setContentView(R.layout.main);

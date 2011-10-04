@@ -11,7 +11,8 @@ public class Scales
     public static final String UpperVarName = "x";
     public static final String LowerVarName = "y";
 
-    public static float FontSize, PrimaryMarkerLength, HalfCursorWidth;
+    public static int BackgroundColor, MainColor, AltColor, CursorFillColor, CursorEdgeColor;
+    public static float FontSize, PrimaryMarkerLength, HalfLayoutHeight, HalfCursorWidth;
     public static final Typeface NormalStyle = Typeface.defaultFromStyle(Typeface.NORMAL);
     public static final Typeface ItalicStyle = Typeface.defaultFromStyle(Typeface.ITALIC);
 
@@ -22,7 +23,7 @@ public class Scales
             will be replaced with a variable name. */
 
         public double Size();
-          /* returns a relative measure of size, e.g. 1.0 for C & D scales,
+          /* returns a measure of relative scale length, e.g. 1.0 for C & D scales,
             2.0 for square root, 0.5 for A & B (squares). */
 
         public double ExtraOffset();
@@ -32,11 +33,13 @@ public class Scales
           (
             double Pos /* [0.0 .. 1.0) */
           );
+          /* returns scale reading at specified position. */
 
         public double PosAt
           (
             double Value /* whatever range is returned by ValueAt */
           );
+          /* returns position corresponding to specified scale reading. */
 
         public void Draw
           (
@@ -157,7 +160,7 @@ public class Scales
         TextHow.setTextSize(FontSize);
         if (NrPrimarySteps < 0)
           {
-            TextHow.setColor(0xfff20001);
+            TextHow.setColor(AltColor);
           } /*if*/
         for (int i = NrPrimarySteps > 0 ? 0 : - NrPrimarySteps;;)
           {

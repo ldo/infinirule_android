@@ -200,7 +200,19 @@ public class SlideView extends android.view.View
         android.graphics.Canvas g
       )
       {
-        g.drawColor(0xfffffada);
+          {
+            final Paint BGHow = new Paint();
+            BGHow.setColor(Scales.BackgroundColor);
+            BGHow.setStyle(Paint.Style.FILL);
+            g.drawRect
+              (
+                /*left =*/ 0.0f,
+                /*top =*/ getHeight() / 2.0f - Scales.HalfLayoutHeight,
+                /*right =*/ getWidth(),
+                /*bottom =*/ getHeight() / 2.0f + Scales.HalfLayoutHeight,
+                /*paint =*/ BGHow
+              );
+          }
         final android.graphics.Rect TextBounds = Scales.GetCharacterCellBounds();
         Scales.DrawLabel
           (
@@ -211,10 +223,10 @@ public class SlideView extends android.view.View
                 new PointF
                   (
                     Scales.PrimaryMarkerLength / 2.0f,
-                    (Scales.PrimaryMarkerLength - TextBounds.top) * 1.5f
+                    getHeight() / 2.0f - Scales.HalfLayoutHeight + (Scales.PrimaryMarkerLength - TextBounds.top) * 1.5f
                   ),
             /*Alignment =*/ Paint.Align.LEFT,
-            /*Color =*/ 0xff000000
+            /*Color =*/ Scales.MainColor
           );
         Scales.DrawLabel
           (
@@ -228,7 +240,7 @@ public class SlideView extends android.view.View
                     getHeight() * 0.5f - (Scales.PrimaryMarkerLength + TextBounds.bottom) * 1.5f
                   ),
             /*Alignment =*/ Paint.Align.LEFT,
-            /*Color =*/ 0xff000000
+            /*Color =*/ Scales.MainColor
           );
         Scales.DrawLabel
           (
@@ -242,7 +254,7 @@ public class SlideView extends android.view.View
                     getHeight() * 0.5f + (Scales.PrimaryMarkerLength - TextBounds.top) * 1.5f
                   ),
             /*Alignment =*/ Paint.Align.LEFT,
-            /*Color =*/ 0xff000000
+            /*Color =*/ Scales.MainColor
           );
         Scales.DrawLabel
           (
@@ -253,10 +265,10 @@ public class SlideView extends android.view.View
                 new PointF
                   (
                     Scales.PrimaryMarkerLength / 2.0f,
-                    getHeight() - (Scales.PrimaryMarkerLength + TextBounds.bottom) * 1.5f
+                    getHeight() / 2.0f + Scales.HalfLayoutHeight - (Scales.PrimaryMarkerLength + TextBounds.bottom) * 1.5f
                   ),
             /*Alignment =*/ Paint.Align.LEFT,
-            /*Color =*/ 0xff000000
+            /*Color =*/ Scales.MainColor
           );
         final android.graphics.Matrix m_orig = g.getMatrix();
         for (boolean Upper = false;;)
@@ -290,12 +302,15 @@ public class SlideView extends android.view.View
                         *
                             TheScale.Size()
                     ),
-                        getHeight()
-                    *
+                        getHeight() / 2.0f
+                    +
                         (Edge ?
-                            Upper ? 0.0f : 1.0f
+                            Upper ?
+                                - Scales.HalfLayoutHeight
+                            :
+                                + Scales.HalfLayoutHeight
                         :
-                            0.5f
+                            0.0f
                         )
                   );
                 for (int i = -1; i <= ScaleRepeat; ++i)
@@ -319,7 +334,7 @@ public class SlideView extends android.view.View
             final Paint CursorHow = new Paint();
             g.drawLine(CursorX, 0.0f, CursorX, getHeight(), CursorHow);
             CursorHow.setStyle(Paint.Style.FILL);
-            CursorHow.setColor(0x20202020);
+            CursorHow.setColor(Scales.CursorFillColor);
             g.drawRect
               (
                 /*left =*/ CursorLeft,
@@ -329,7 +344,7 @@ public class SlideView extends android.view.View
                 /*paint =*/ CursorHow
               );
             CursorHow.setStyle(Paint.Style.STROKE);
-            CursorHow.setColor(0x80808080);
+            CursorHow.setColor(Scales.CursorEdgeColor);
             g.drawLine(CursorLeft, 0.0f, CursorLeft, getHeight(), CursorHow);
             g.drawLine(CursorRight, 0.0f, CursorRight, getHeight(), CursorHow);
           }
