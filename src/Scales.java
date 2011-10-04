@@ -114,6 +114,7 @@ public class Scales
         float ParentMarkerLength,
         double LeftArg,
         double RightArg,
+        int NrSteps,
         double Leftmost,
         double Rightmost,
         Paint LineHow
@@ -123,9 +124,9 @@ public class Scales
         final float MidMarkerLength = ParentMarkerLength * 0.82f;
         float PrevMarkerX = 0.0f;
         double PrevArg = 0.0;
-        for (int j = 0; j <= 10; ++j)
+        for (int j = 0; j <= NrSteps; ++j)
           {
-            final double ThisArg = LeftArg + j / 10.0 * (RightArg - LeftArg);
+            final double ThisArg = LeftArg + (double)j / NrSteps * (RightArg - LeftArg);
             final float MarkerX = (float)(TheScale.PosAt(ThisArg) * ScaleLength);
             if (j != 0)
               {
@@ -155,6 +156,7 @@ public class Scales
                         /*ParentMarkerLength =*/ MarkerLength,
                         /*LeftArg =*/ PrevArg,
                         /*RightArg =*/ ThisArg,
+                        /*NrSteps =*/ 10,
                         /*Leftmost =*/ Leftmost,
                         /*Rightmost =*/ Rightmost,
                         /*LineHow =*/ LineHow
@@ -169,7 +171,7 @@ public class Scales
                         )
                         /* marker is within scale */
                     &&
-                        j != 10
+                        j != NrSteps
                   )
                   {
                     g.drawLine
@@ -177,7 +179,15 @@ public class Scales
                         MarkerX,
                         0.0f,
                         MarkerX,
-                        (j == 5 ? MidMarkerLength : MarkerLength) * (TopEdge ? +1 : -1),
+                            (j % 10 == 0 ?
+                                ParentMarkerLength
+                            : j % 10 == 5 ?
+                                MidMarkerLength
+                            :
+                                MarkerLength
+                            )
+                        *
+                            (TopEdge ? +1 : -1),
                         LineHow
                       );
                   } /*if*/
@@ -194,6 +204,7 @@ public class Scales
         boolean TopEdge,
         Scale TheScale,
         double[] PrimaryGraduations, /* in order of increasing X-coordinate, length must be at least 2 */
+        int[] NrDivisions, /* length must equal PrimaryGraduations.length - 1 */
         double Leftmost, /* at or after PrimaryGraduations[0] */
         double Rightmost, /* at or before PrimaryGraduations[PrimaryGraduations.length - 1] */
         int NrDecimals,
@@ -204,7 +215,7 @@ public class Scales
         final boolean Decreasing = PrimaryGraduations[1] < PrimaryGraduations[0];
         final Paint LineHow = new Paint();
         final Paint TextHow = new Paint();
-      /* No anti-aliasing for LineHow, doesn't look good */
+      /* No anti-aliasing for LineHow, looks best without */
         TextHow.setAntiAlias(true);
         TextHow.setTextSize(FontSize);
         if (Decreasing)
@@ -260,6 +271,7 @@ public class Scales
                     /*ParentMarkerLength =*/ PrimaryMarkerLength,
                     /*LeftArg =*/ PrimaryGraduations[i],
                     /*RightArg =*/ PrimaryGraduations[i + 1],
+                    /*NrSteps =*/ NrDivisions[i],
                     /*Leftmost =*/ Leftmost,
                     /*Rightmost =*/ Rightmost,
                     /*LineHow =*/ LineHow
@@ -297,6 +309,11 @@ public class Scales
             Graduations[NrPrimarySteps > 0 ? i : NrGraduations - 1 - i] =
                 (i + (IncludeZero ? 0 : 1)) / Math.abs((double)NrPrimarySteps);
           } /*for*/
+        final int[] NrDivisions = new int[NrGraduations - 1];
+        for (int i = 0; i < NrDivisions.length; ++i)
+          {
+            NrDivisions[i] = 10;
+          } /*for*/
         DrawGraduations
           (
             /*g =*/ g,
@@ -304,6 +321,7 @@ public class Scales
             /*TopEdge =*/ TopEdge,
             /*TheScale =*/ TheScale,
             /*PrimaryGraduations =*/ Graduations,
+            /*NrDivisions =*/ NrDivisions,
             /*Leftmost =*/ Graduations[0],
             /*Rightmost =*/ Graduations[Graduations.length - 1],
             /*NrDecimals =*/ 0,
@@ -545,6 +563,309 @@ public class Scales
           } /*Draw*/
       } /*LogXScale*/
 
+    public static class ASinATanXScale implements Scale
+      /* asin/atan X in degrees, ≤ 5.7° */
+      {
+        public String Name()
+          {
+            return
+                "asin°|atan° \u1e8b ≤ 5.7°";
+          } /*Name*/
+
+        public double Size()
+          {
+            return
+                1.0;
+          } /*Size*/
+
+        public double ExtraOffset()
+          {
+            return
+                0.0;
+          } /*ExtraOffset*/
+
+        public double ValueAt
+          (
+            double Pos
+          )
+          {
+            return
+                Math.pow(10.0, Pos) * 18.0 / Math.PI;
+          } /*ValueAt*/
+
+        public double PosAt
+          (
+            double Value
+          )
+          {
+            return
+                Math.log10(Value * Math.PI / 18.0);
+          } /*PosAt*/
+
+        public void Draw
+          (
+            Canvas g,
+            float ScaleLength,
+            boolean TopEdge
+          )
+          {
+            final double[] Graduations = new double[]
+                {
+                    0.0,
+                    1.0,
+                    1.5,
+                    2.0,
+                    2.5,
+                    3.0,
+                    4.0,
+                    5.0,
+                    6.0,
+                };
+            final int[] NrDivisions = new int[]
+                {
+                    10,
+                    5,
+                    5,
+                    5,
+                    10,
+                    10,
+                    10,
+                    10,
+                };
+            DrawGraduations
+              (
+                /*g =*/ g,
+                /*ScaleLength =*/ ScaleLength,
+                /*TopEdge =*/ TopEdge,
+                /*TheScale =*/ this,
+                /*PrimaryGraduations =*/ Graduations,
+                /*NrDivisions =*/ NrDivisions,
+                /*Leftmost =*/ 1.8 / Math.PI,
+                /*Rightmost =*/ 18.0 / Math.PI,
+                /*NrDecimals =*/ 1,
+                /*Multiplier =*/ 1
+              );
+          } /*Draw*/
+      } /*ASinATanXScale*/
+
+    public static class ASinACosXScale implements Scale
+      /* asin/acos X in degrees, ≥ 5.7° */
+      {
+        public final String ScaleName;
+        public final boolean CosScale;
+
+        public ASinACosXScale
+          (
+            boolean CosScale
+          )
+          {
+            this.CosScale = CosScale;
+            ScaleName = String.format
+              (
+                Global.StdLocale,
+                "a%s° \u1e8b ≥ 5.7°",
+                CosScale ? "cos" : "sin"
+              );
+          } /*ASinACosXScale*/
+
+        public String Name()
+          {
+            return
+                ScaleName;
+          } /*Name*/
+
+        public double Size()
+          {
+            return
+                1.0;
+          } /*Size*/
+
+        public double ExtraOffset()
+          {
+            return
+                0.0;
+          } /*ExtraOffset*/
+
+        public double ValueAt
+          (
+            double Pos
+          )
+          {
+            final double T = Math.pow(10.0, Pos - 1.0);
+            return
+                Math.toDegrees
+                  (
+                    CosScale ?
+                        Math.acos(T)
+                    :
+                        Math.asin(T)
+                  );
+          } /*ValueAt*/
+
+        public double PosAt
+          (
+            double Value
+          )
+          {
+            final double T = Math.toRadians(Value);
+            return
+                    Math.log10
+                      (
+                        CosScale ?
+                            Math.cos(T)
+                        :
+                            Math.sin(T)
+                      )
+                +
+                    1.0;
+          } /*PosAt*/
+
+        public void Draw
+          (
+            Canvas g,
+            float ScaleLength,
+            boolean TopEdge
+          )
+          {
+            final double[] Graduations = new double[]
+                {
+                    4.0,
+                    6.0,
+                    8.0,
+                    10.0,
+                    15.0,
+                    20.0,
+                    30.0,
+                    40.0,
+                    70.0,
+                    90.0,
+                };
+            final int[] NrDivisions = new int[]
+                {
+                    20,
+                    20,
+                    20,
+                    25,
+                    25,
+                    10,
+                    10,
+                    30,
+                    4,
+                };
+            double Leftmost = 18.0 / Math.PI;
+            double Rightmost = 90.0;
+            if (CosScale)
+              {
+                for (int i = 0; i < Graduations.length; ++i)
+                  {
+                    Graduations[i] = 90.0 - Graduations[i];
+                  } /*for*/
+                Leftmost = 90.0 - Leftmost;
+                Rightmost = 90.0 - Rightmost;
+              } /*if*/
+            DrawGraduations
+              (
+                /*g =*/ g,
+                /*ScaleLength =*/ ScaleLength,
+                /*TopEdge =*/ TopEdge,
+                /*TheScale =*/ this,
+                /*PrimaryGraduations =*/ Graduations,
+                /*NrDivisions =*/ NrDivisions,
+                /*Leftmost =*/ Leftmost,
+                /*Rightmost =*/ Rightmost,
+                /*NrDecimals =*/ 1,
+                /*Multiplier =*/ 1
+              );
+          } /*Draw*/
+      } /*ASinACosXScale*/
+
+    public static class ATanXScale implements Scale
+      /* atan X in degrees, ≥ 5.7° */
+      {
+        public String Name()
+          {
+            return
+                "atan° \u1e8b ≥ 5.7°";
+          } /*Name*/
+
+        public double Size()
+          {
+            return
+                1.0;
+          } /*Size*/
+
+        public double ExtraOffset()
+          {
+            return
+                0.0;
+          } /*ExtraOffset*/
+
+        public double ValueAt
+          (
+            double Pos
+          )
+          {
+            return
+                Math.toDegrees(Math.atan(Math.pow(10.0, Pos - 1.0)));
+          } /*ValueAt*/
+
+        public double PosAt
+          (
+            double Value
+          )
+          {
+            return
+                    Math.log10(Math.tan(Math.toRadians(Value)))
+                +
+                    1.0;
+          } /*PosAt*/
+
+        public void Draw
+          (
+            Canvas g,
+            float ScaleLength,
+            boolean TopEdge
+          )
+          {
+            final double[] Graduations = new double[]
+                {
+                    4.0,
+                    6.0,
+                    8.0,
+                    10.0,
+                    15.0,
+                    20.0,
+                    30.0,
+                    40.0,
+                    45.0,
+                };
+            final int[] NrDivisions = new int[]
+                {
+                    20,
+                    20,
+                    20,
+                    25,
+                    25,
+                    10,
+                    10,
+                    5,
+                };
+            DrawGraduations
+              (
+                /*g =*/ g,
+                /*ScaleLength =*/ ScaleLength,
+                /*TopEdge =*/ TopEdge,
+                /*TheScale =*/ this,
+                /*PrimaryGraduations =*/ Graduations,
+                /*NrDivisions =*/ NrDivisions,
+                /*Leftmost =*/ 18.0 / Math.PI,
+                /*Rightmost =*/ 45.0,
+                /*NrDecimals =*/ 1,
+                /*Multiplier =*/ 1
+              );
+          } /*Draw*/
+      } /*ATanXScale*/
+
     public static java.util.Map<String, Scale> KnownScales =
         new java.util.HashMap<String, Scale>();
     static
@@ -562,7 +883,10 @@ public class Scales
                         new XNScale("1/\u1e8b³", -3, 0.0),
                         new LogXScale(),
                         new XNScale("\u03c0\u1e8b", 1, - Math.log10(Math.PI)),
-                      /* more TBD */
+                        new ASinATanXScale(),
+                        new ASinACosXScale(false),
+                        new ASinACosXScale(true),
+                        new ATanXScale(),
                     }
           )
           {
