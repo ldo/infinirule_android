@@ -416,7 +416,7 @@ public class SlideView extends android.view.View
               {
                 MovingWhat = MovingState.MovingBothScales;
               } /*if*/
-            PrecisionMove = Math.abs(LastMouse1.y - getHeight() / 2.0f) / getHeight() < 0.2f;
+            PrecisionMove = Math.abs(LastMouse1.y - getHeight() / 2.0f) > Scales.HalfLayoutHeight;
             Handled = true;
         break;
         case MotionEvent.ACTION_POINTER_DOWN:
