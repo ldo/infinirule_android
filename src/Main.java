@@ -102,6 +102,17 @@ public class Main extends android.app.Activity
       )
       {
         OptionsMenu = new java.util.HashMap<android.view.MenuItem, Runnable>();
+        OptionsMenu.put
+          (
+            TheMenu.add(R.string.reset),
+            new Runnable()
+              {
+                public void run()
+                  {
+                    Slide.Reset();
+                  } /*run*/
+              } /*Runnable*/
+          );
         for (final SetScaleEntry s : WhichScales)
           {
             OptionsMenu.put

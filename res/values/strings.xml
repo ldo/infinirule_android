@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">Infinirule</string>
 
+    <string name="reset">Reset</string>
     <string name="set_top">Top scale...</string>
     <string name="set_upper">Upper scale...</string>
     <string name="set_lower">Lower scale...</string>
