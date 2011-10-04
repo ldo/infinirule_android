@@ -1,0 +1,33 @@
+Infinirule is a virtual slide rule application for Android. It
+transcends the limitations of real physical slide rules by allowing
+variable precision--just keep zooming in to get more--and
+automatically wrapping scales around--like a circular slide rule, but
+without the bulk. And though it only shows four scales at a time,
+you can select any combination of the available scale types.
+
+Like most slide rules, Infinirule consists of 3 movable parts,
+including the cursor. The top two scales move together, as do the
+bottom two. Dragging the top half moves the entire rule left or right,
+while dragging the bottom half only moves that. Use two fingers to
+pinch-zoom the rule horizontally to adjust the precision. Dragging in
+the space below or above the rule scales engages “precision” moving at
+1/10th speed, for fine adjustments. You can move either the scales or
+the cursor in this way.
+
+Scale names are displayed as the formulas for computing their values,
+rather than the traditional labels (“C”, “D” etc).
+
+For more info about slide rules, visit the International Slide Rule
+Museum at <http://sliderulemuseum.com/>.
+
+Contents:
+    src/ -- Java sources for the Android app
+    res/ -- resources for the Android app
+    AndroidManifest.xml, build.xml, *.properties -- for driving
+        Google's Android build tools (note that you will have to
+        provide a couple more of these--see INSTALL for details)
+    README -- this file
+    INSTALL -- build/installation instructions
+    COPYING -- licence (GPLv3)
+
+Lawrence D'Oliveiro <ldo@geek-central.gen.nz>
