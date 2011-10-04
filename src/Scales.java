@@ -210,6 +210,7 @@ public class Scales
         if (Decreasing)
           {
             TextHow.setColor(AltColor);
+            TextHow.setTextAlign(Paint.Align.RIGHT);
           } /*if*/
         for (int i = 0; i < PrimaryGraduations.length - 1; ++i)
           {
