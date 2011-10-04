@@ -111,26 +111,40 @@ public class Scales
         float ScaleLength,
         boolean TopEdge,
         Scale TheScale,
-        int NrPrimarySteps, /* negative to go backwards */
         float ParentMarkerLength,
-        double BaseOffset,
-        double Division,
+        double LeftArg,
+        double RightArg,
+        double Leftmost,
+        double Rightmost,
         Paint LineHow
       )
       {
         final float MarkerLength = ParentMarkerLength * 0.65f;
         final float MidMarkerLength = ParentMarkerLength * 0.82f;
         float PrevMarkerX = 0.0f;
+        double PrevArg = 0.0;
         for (int j = 0; j <= 10; ++j)
           {
-            final double ThisBaseOffset =
-                    BaseOffset
-                +
-                    j / Division / Math.abs((double)NrPrimarySteps);
-            final float MarkerX = (float)(TheScale.PosAt(ThisBaseOffset) * ScaleLength);
+            final double ThisArg = LeftArg + j / 10.0 * (RightArg - LeftArg);
+            final float MarkerX = (float)(TheScale.PosAt(ThisArg) * ScaleLength);
             if (j != 0)
               {
-                if (Math.abs(MarkerX - PrevMarkerX) >= 30.0f)
+                if
+                  (
+                        (LeftArg < RightArg ?
+                                ThisArg >= Leftmost && ThisArg <= Rightmost
+                            ||
+                                PrevArg >= Leftmost && PrevArg <= Rightmost
+                        :
+                                ThisArg >= Rightmost && ThisArg <= Leftmost
+                            ||
+                                PrevArg >= Rightmost && PrevArg <= Leftmost
+                        )
+                        /* at least some part of interval is within scale */
+                    &&
+                        MarkerX - PrevMarkerX >= 30.0f
+                          /* worth subdividing further */
+                  )
                   {
                     DrawSubGraduations
                       (
@@ -138,14 +152,25 @@ public class Scales
                         /*ScaleLength =*/ ScaleLength,
                         /*TopEdge =*/ TopEdge,
                         /*TheScale =*/ TheScale,
-                        /*NrPrimarySteps =*/ NrPrimarySteps,
                         /*ParentMarkerLength =*/ MarkerLength,
-                        /*BaseOffset =*/ ThisBaseOffset,
-                        /*Division =*/ Division * 10.0,
+                        /*LeftArg =*/ PrevArg,
+                        /*RightArg =*/ ThisArg,
+                        /*Leftmost =*/ Leftmost,
+                        /*Rightmost =*/ Rightmost,
                         /*LineHow =*/ LineHow
                       );
                   } /*if*/
-                if (j != 10)
+                if
+                  (
+                        (LeftArg < RightArg ?
+                            ThisArg >= Leftmost && ThisArg <= Rightmost
+                        :
+                            ThisArg >= Rightmost && ThisArg <= Leftmost
+                        )
+                        /* marker is within scale */
+                    &&
+                        j != 10
+                  )
                   {
                     g.drawLine
                       (
@@ -157,6 +182,7 @@ public class Scales
                       );
                   } /*if*/
               } /*if*/
+            PrevArg = ThisArg;
             PrevMarkerX = MarkerX;
           } /*for*/
       } /*DrawSubGraduations*/
@@ -167,54 +193,59 @@ public class Scales
         float ScaleLength,
         boolean TopEdge,
         Scale TheScale,
-        int NrPrimarySteps, /* negative to go backwards */
-        boolean IncludeZero
+        double[] PrimaryGraduations, /* in order of increasing X-coordinate, length must be at least 2 */
+        double Leftmost, /* at or after PrimaryGraduations[0] */
+        double Rightmost, /* at or before PrimaryGraduations[PrimaryGraduations.length - 1] */
+        int NrDecimals,
+        int Multiplier
       )
-      /* common routine for drawing scale graduations. */
+      /* common routine for drawing general scale graduations. */
       {
+        final boolean Decreasing = PrimaryGraduations[1] < PrimaryGraduations[0];
         final Paint LineHow = new Paint();
         final Paint TextHow = new Paint();
-      /* LineHow.setAntiAlias(true); */ /* doesn't look good */
+      /* No anti-aliasing for LineHow, doesn't look good */
         TextHow.setAntiAlias(true);
         TextHow.setTextSize(FontSize);
-        if (NrPrimarySteps < 0)
+        if (Decreasing)
           {
             TextHow.setColor(AltColor);
           } /*if*/
-        for (int i = NrPrimarySteps > 0 ? 0 : - NrPrimarySteps;;)
+        for (int i = 0; i < PrimaryGraduations.length - 1; ++i)
           {
-            if (NrPrimarySteps > 0 && i == NrPrimarySteps)
-                break;
-            final float Left1 = (float)(TheScale.PosAt(i / Math.abs((double)NrPrimarySteps)) * ScaleLength);
-            final float Right1 = (float)(TheScale.PosAt((i + (NrPrimarySteps > 0 ? +1 : -1)) / Math.abs((double)NrPrimarySteps)) * ScaleLength);
+            final float LeftPos = (float)(TheScale.PosAt(PrimaryGraduations[i]) * ScaleLength);
+            final float RightPos = (float)(TheScale.PosAt(PrimaryGraduations[i + 1]) * ScaleLength);
             if
               (
                 !g.quickReject
                   (
-                    /*left =*/ Left1,
+                    /*left =*/ LeftPos,
                     /*top =*/ TopEdge ? 0.0f : - PrimaryMarkerLength,
-                    /*right =*/ Right1,
+                    /*right =*/ RightPos,
                     /*bottom =*/ TopEdge ? PrimaryMarkerLength : 0.0f,
                     /*type =*/ Canvas.EdgeType.AA
                   )
               )
               {
-                if
-                  (
-                        NrPrimarySteps > 0 && IncludeZero
-                    ||
-                        i != (NrPrimarySteps > 0 ? 0 : - NrPrimarySteps)
-                  )
+                if (i != 0 || Leftmost == PrimaryGraduations[0])
                   {
-                    g.drawLine(Left1, 0.0f, Left1, TopEdge ? PrimaryMarkerLength : - PrimaryMarkerLength, LineHow);
-                  } /*if*/
-                if (IncludeZero || i != (NrPrimarySteps > 0 ? 0 : - NrPrimarySteps))
-                  {
+                    g.drawLine
+                      (
+                        LeftPos, 0.0f,
+                        LeftPos, TopEdge ? PrimaryMarkerLength : - PrimaryMarkerLength,
+                        LineHow
+                      );
                     DrawCenteredText
                       (
                         /*Draw =*/ g,
-                        /*TheText =*/ String.format(Global.StdLocale, "%d", i),
-                        /*x =*/ Left1,
+                        /*TheText =*/
+                            String.format
+                              (
+                                Global.StdLocale,
+                                String.format(Global.StdLocale, "%%.%df", NrDecimals),
+                                PrimaryGraduations[i] * Multiplier
+                              ),
+                        /*x =*/ LeftPos,
                         /*y =*/ TopEdge ? PrimaryMarkerLength : - PrimaryMarkerLength,
                         /*UsePaint =*/ TextHow
                       );
@@ -225,21 +256,59 @@ public class Scales
                     /*ScaleLength =*/ ScaleLength,
                     /*TopEdge =*/ TopEdge,
                     /*TheScale =*/ TheScale,
-                    /*NrPrimarySteps =*/ NrPrimarySteps,
                     /*ParentMarkerLength =*/ PrimaryMarkerLength,
-                    /*BaseOffset =*/
-                            (i - (NrPrimarySteps < 0 ? 1 : 0))
-                        /
-                            Math.abs((double)NrPrimarySteps),
-                    /*Division =*/ 10.0,
+                    /*LeftArg =*/ PrimaryGraduations[i],
+                    /*RightArg =*/ PrimaryGraduations[i + 1],
+                    /*Leftmost =*/ Leftmost,
+                    /*Rightmost =*/ Rightmost,
                     /*LineHow =*/ LineHow
                   );
               } /*if*/
-            if (NrPrimarySteps < 0 && i == 0)
-                break;
-            i += NrPrimarySteps > 0 ? +1 : -1;
           } /*for*/
+        if (Leftmost != PrimaryGraduations[0])
+          {
+          /* draw alternate-colour marker indicating scale does not wraparound */
+            LineHow.setColor(AltColor);
+            g.drawLine
+              (
+                0.0f, 0.0f,
+                0.0f, TopEdge ? PrimaryMarkerLength : - PrimaryMarkerLength,
+                LineHow
+              );
+          } /*if*/
       } /*DrawGraduations*/
+
+    public static void DrawSimpleGraduations
+      (
+        Canvas g,
+        float ScaleLength,
+        boolean TopEdge,
+        Scale TheScale,
+        int NrPrimarySteps, /* negative to go backwards */
+        boolean IncludeZero
+      )
+      /* common routine for drawing wrappable scale graduations. */
+      {
+        final int NrGraduations = Math.abs(NrPrimarySteps) + (IncludeZero ? 1 : 0);
+        final double[] Graduations = new double[NrGraduations];
+        for (int i = 0; i < NrGraduations; ++i)
+          {
+            Graduations[NrPrimarySteps > 0 ? i : NrGraduations - 1 - i] =
+                (i + (IncludeZero ? 0 : 1)) / Math.abs((double)NrPrimarySteps);
+          } /*for*/
+        DrawGraduations
+          (
+            /*g =*/ g,
+            /*ScaleLength =*/ ScaleLength,
+            /*TopEdge =*/ TopEdge,
+            /*TheScale =*/ TheScale,
+            /*PrimaryGraduations =*/ Graduations,
+            /*Leftmost =*/ Graduations[0],
+            /*Rightmost =*/ Graduations[Graduations.length - 1],
+            /*NrDecimals =*/ 0,
+            /*Multiplier =*/ 10
+          );
+      } /*DrawSimpleGraduations*/
 
     public static float DrawLabel
       (
@@ -262,7 +331,7 @@ public class Scales
         for (boolean Render = g != null && Alignment == Paint.Align.LEFT;;)
           {
           /* first pass: determine total length; second pass: actually draw */
-          /* first pass unneeded if alignment is LEFT */
+          /* first pass unneeded if drawing with alignment = LEFT */
           /* second pass unneeded if only measuring length and not drawing */
             int CharPos = 0;
             StringBuilder CurSeg = null;
@@ -406,7 +475,7 @@ public class Scales
             boolean TopEdge
           )
           {
-            DrawGraduations
+            DrawSimpleGraduations
               (
                 /*g =*/ g,
                 /*ScaleLength =*/ ScaleLength,
@@ -463,7 +532,7 @@ public class Scales
             boolean TopEdge
           )
           {
-            DrawGraduations
+            DrawSimpleGraduations
               (
                 /*g =*/ g,
                 /*ScaleLength =*/ ScaleLength,
