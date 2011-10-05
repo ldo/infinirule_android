@@ -866,6 +866,268 @@ public class Scales
           } /*Draw*/
       } /*ATanXScale*/
 
+    public static class ExpXScale implements Scale
+      {
+        public final String ScaleName;
+        public final int Level;
+        public final double Factor;
+
+        public ExpXScale
+          (
+            String ScaleName,
+            int Level
+          )
+          {
+            this.ScaleName = ScaleName;
+            this.Level = Level;
+            Factor = Math.pow(10.0, 1 - Math.abs(Level)) * Math.signum(Level);
+          } /*ExpXScale*/
+
+        public String Name()
+          {
+            return
+                ScaleName;
+          } /*Name*/
+
+        public double Size()
+          {
+            return
+                1.0;
+          } /*Size*/
+
+        public double ExtraOffset()
+          {
+            return
+                0.0;
+          } /*ExtraOffset*/
+
+        public double ValueAt
+          (
+            double Pos
+          )
+          {
+            return
+                Math.exp(Math.pow(10.0, Pos) * Factor);
+          } /*ValueAt*/
+
+        public double PosAt
+          (
+            double Value
+          )
+          {
+            return
+                Math.log10(Math.log(Value) / Factor);
+          } /*PosAt*/
+
+        public void Draw
+          (
+            Canvas g,
+            float ScaleLength,
+            boolean TopEdge
+          )
+          {
+            double[] Graduations;
+            double Leftmost, Rightmost;
+            int[] NrDivisions;
+            int NrDecimals;
+            switch(Level)
+              {
+            default: /*sigh*/
+            case 1:
+                Graduations = new double[]
+                    {
+                        2.0,
+                        3.0,
+                        4.0,
+                        5.0,
+                        10.0,
+                        20.0,
+                        30.0,
+                        50.0,
+                        100.0,
+                        300.0,
+                        1000.0,
+                        5000.0,
+                        10000.0,
+                        20000.0,
+                    };
+                NrDivisions = new int[]
+                    {
+                        10,
+                        10,
+                        10,
+                        5,
+                        10,
+                        10,
+                        20,
+                        5,
+                        20,
+                        7,
+                        4,
+                        5,
+                        2,
+                    };
+                Leftmost = Math.exp(1.0);
+                Rightmost = Math.exp(10.0);
+                NrDecimals = 0;
+            break;
+            case 2:
+                Graduations = new double[]
+                    {
+                        1.10,
+                        1.11,
+                        1.15,
+                        1.2,
+                        2.0,
+                        3.0,
+                    };
+                NrDivisions = new int[]
+                    {
+                        1,
+                        4,
+                        5,
+                        8,
+                        10,
+                    };
+                Leftmost = Math.exp(0.1);
+                Rightmost = Math.exp(1.0);
+                NrDecimals = 2;
+            break;
+            case 3:
+                Graduations = new double[]
+                    {
+                        1.00,
+                        1.01,
+                        1.02,
+                        1.03,
+                        1.04,
+                        1.05,
+                        1.06,
+                        1.07,
+                        1.08,
+                        1.09,
+                        1.10,
+                        1.11,
+                    };
+                NrDivisions = new int[]
+                    {
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                    };
+                Leftmost = Math.exp(0.01);
+                Rightmost = Math.exp(0.1);
+                NrDecimals = 3;
+            break;
+            case -1:
+                Graduations = new double[]
+                    {
+                        0.36,
+                        0.3,
+                        0.1,
+                        0.01,
+                        0.001,
+                        0.0001,
+                        0.00001,
+                    };
+                NrDivisions = new int[]
+                    {
+                        6,
+                        2,
+                        9,
+                        9,
+                        9,
+                        9,
+                    };
+                Leftmost = Math.exp(-1.0);
+                Rightmost = Math.exp(-10.0);
+                NrDecimals = 4;
+            break;
+            case -2:
+                Graduations = new double[]
+                    {
+                        0.95,
+                        0.90,
+                        0.85,
+                        0.80,
+                        0.70,
+                        0.60,
+                        0.50,
+                        0.40,
+                        0.30,
+                    };
+                NrDivisions = new int[]
+                    {
+                        5,
+                        5,
+                        5,
+                        1,
+                        1,
+                        1,
+                        1,
+                        1,
+                    };
+                Leftmost = Math.exp(-0.1);
+                Rightmost = Math.exp(-1.0);
+                NrDecimals = 2;
+            break;
+            case -3:
+                Graduations = new double[]
+                    {
+                        1.00,
+                        0.99,
+                        0.98,
+                        0.97,
+                        0.96,
+                        0.95,
+                        0.94,
+                        0.93,
+                        0.92,
+                        0.91,
+                        0.90,
+                    };
+                NrDivisions = new int[]
+                    {
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                    };
+                Leftmost = Math.exp(-0.01);
+                Rightmost = Math.exp(-0.1);
+                NrDecimals = 2;
+            break;
+              } /*switch*/
+            DrawGraduations
+              (
+                /*g =*/ g,
+                /*ScaleLength =*/ ScaleLength,
+                /*TopEdge =*/ TopEdge,
+                /*TheScale =*/ this,
+                /*PrimaryGraduations =*/ Graduations,
+                /*NrDivisions =*/ NrDivisions,
+                /*Leftmost =*/ Leftmost,
+                /*Rightmost =*/ Rightmost,
+                /*NrDecimals =*/ NrDecimals,
+                /*Multiplier =*/ 1
+              );
+          } /*Draw*/
+      } /*ExpXScale*/
+
     public static java.util.Map<String, Scale> KnownScales =
         new java.util.HashMap<String, Scale>();
     static
@@ -887,6 +1149,12 @@ public class Scales
                         new ASinACosXScale(false),
                         new ASinACosXScale(true),
                         new ATanXScale(),
+                        new ExpXScale("exp(\u1e8b)", 1),
+                        new ExpXScale("exp(0.1\u1e8b)", 2),
+                        new ExpXScale("exp(0.01\u1e8b)", 3),
+                        new ExpXScale("exp(-\u1e8b)", -1),
+                        new ExpXScale("exp(-0.1\u1e8b)", -2),
+                        new ExpXScale("exp(-0.01\u1e8b)", -3),
                     }
           )
           {
