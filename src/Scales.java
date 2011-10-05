@@ -564,12 +564,12 @@ public class Scales
       } /*LogXScale*/
 
     public static class ASinATanXScale implements Scale
-      /* asin/atan X in degrees, ≤ 5.7° */
+      /* 0.57° < asin/atan X in degrees ≤ 5.7° */
       {
         public String Name()
           {
             return
-                "asin°|atan° \u1e8b ≤ 5.7°";
+                "0.57° < asin°|atan° \u1e8b ≤ 5.7°";
           } /*Name*/
 
         public double Size()
@@ -649,7 +649,7 @@ public class Scales
       } /*ASinATanXScale*/
 
     public static class ASinACosXScale implements Scale
-      /* asin/acos X in degrees, ≥ 5.7° */
+      /* asin/acos X in degrees, > 5.7° */
       {
         public final String ScaleName;
         public final boolean CosScale;
@@ -663,7 +663,7 @@ public class Scales
             ScaleName = String.format
               (
                 Global.StdLocale,
-                "a%s° \u1e8b ≥ 5.7°",
+                "a%s° \u1e8b > 5.7°",
                 CosScale ? "cos" : "sin"
               );
           } /*ASinACosXScale*/
@@ -780,12 +780,12 @@ public class Scales
       } /*ASinACosXScale*/
 
     public static class ATanXScale implements Scale
-      /* atan X in degrees, ≥ 5.7° */
+      /* atan X in degrees, > 5.7° */
       {
         public String Name()
           {
             return
-                "atan° \u1e8b ≥ 5.7°";
+                "atan° \u1e8b > 5.7°";
           } /*Name*/
 
         public double Size()
