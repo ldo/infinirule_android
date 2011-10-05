@@ -21,6 +21,27 @@ package nz.gen.geek_central.infinirule;
 
 public class Main extends android.app.Activity
   {
+
+    public static byte[] ReadAll
+      (
+        java.io.InputStream From
+      )
+      /* reads all available data from From. */
+    throws java.io.IOException
+      {
+        java.io.ByteArrayOutputStream Result = new java.io.ByteArrayOutputStream();
+        final byte[] Buf = new byte[256]; /* just to reduce number of I/O operations */
+        for (;;)
+          {
+            final int BytesRead = From.read(Buf);
+            if (BytesRead < 0)
+                break;
+            Result.write(Buf, 0, BytesRead);
+          } /*for*/
+        return
+            Result.toByteArray();
+      } /*ReadAll*/
+
     private java.util.Map<android.view.MenuItem, Runnable> OptionsMenu;
 
     interface RequestResponseAction /* response to an activity result */
@@ -104,6 +125,29 @@ public class Main extends android.app.Activity
         OptionsMenu = new java.util.HashMap<android.view.MenuItem, Runnable>();
         OptionsMenu.put
           (
+            TheMenu.add(R.string.show_help),
+            new Runnable()
+              {
+                public void run()
+                  {
+                    startActivity
+                      (
+                        new android.content.Intent
+                          (
+                            android.content.Intent.ACTION_VIEW,
+                            android.net.Uri.fromParts
+                              (
+                                "file",
+                                "/android_asset/help/index.html",
+                                null
+                              )
+                          ).setClass(Main.this, Help.class)
+                      );
+                  } /*run*/
+              } /*Runnable*/
+          );
+        OptionsMenu.put
+          (
             TheMenu.add(R.string.reset),
             new Runnable()
               {
@@ -133,6 +177,57 @@ public class Main extends android.app.Activity
                   } /*Runnable*/
               );
           } /*for*/
+        OptionsMenu.put
+          (
+            TheMenu.add(R.string.about_me),
+            new Runnable()
+              {
+                public void run()
+                  {
+                    final android.content.Intent ShowAbout =
+                        new android.content.Intent(android.content.Intent.ACTION_VIEW);
+                    byte[] AboutRaw;
+                      {
+                        java.io.InputStream ReadAbout;
+                        try
+                          {
+                            ReadAbout = getAssets().open("help/about.html");
+                            AboutRaw = ReadAll(ReadAbout);
+                          }
+                        catch (java.io.IOException Failed)
+                          {
+                            throw new RuntimeException("can't read about page: " + Failed);
+                          } /*try*/
+                        try
+                          {
+                            ReadAbout.close();
+                          }
+                        catch (java.io.IOException WhoCares)
+                          {
+                          /* I mean, really? */
+                          } /*try*/
+                      }
+                    String VersionName;
+                    try
+                      {
+                        VersionName =
+                            getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+                      }
+                    catch (android.content.pm.PackageManager.NameNotFoundException CantFindMe)
+                      {
+                        VersionName = "CANTFINDME"; /*!*/
+                      } /*catch*/
+                    ShowAbout.putExtra
+                      (
+                        nz.gen.geek_central.infinirule.Help.ContentID,
+                        String.format(Global.StdLocale, new String(AboutRaw), VersionName)
+                            .getBytes()
+                      );
+                    ShowAbout.setClass(Main.this, Help.class);
+                    startActivity(ShowAbout);
+                  } /*run*/
+              } /*Runnable*/
+          );
         return
             true;
       } /*onCreateOptionsMenu*/

@@ -24,5 +24,8 @@
         <activity
             android:name="ScalePicker"
         />
+        <activity
+            android:name="Help"
+        />
     </application>
 </manifest> 

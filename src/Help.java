@@ -1,0 +1,106 @@
+package nz.gen.geek_central.infinirule;
+/*
+    Help-page display for Infinirule
+
+    Copyright 2011 Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
+
+    This program is free software: you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. If not, see
+    <http://www.gnu.org/licenses/>.
+*/
+
+public class Help extends android.app.Activity
+  {
+    public static String ContentID = "nz.gen.geek-central.infinirule.HelpContent";
+    android.webkit.WebView HelpView;
+  /* for remembering scroll position of last page displayed: */
+    static String LastURL, LastContent;
+    static android.graphics.Point LastScroll = null;
+
+    @Override
+    public void onCreate
+      (
+        android.os.Bundle SavedInstanceState
+      )
+      {
+        super.onCreate(SavedInstanceState);
+        setContentView(R.layout.help);
+        HelpView = (android.webkit.WebView)findViewById(R.id.help_view);
+        final android.content.Intent MyIntent = getIntent();
+        final byte[] Content = MyIntent.getByteArrayExtra(ContentID);
+        final String NewURL, NewContent;
+        if (Content != null)
+          {
+          /* show the specified help text */
+            NewContent = new String(Content);
+            HelpView.loadDataWithBaseURL
+              (
+                /*baseUrl =*/ null,
+                /*data =*/ NewContent,
+                /*mimeType =*/ null, /* text/html */
+                /*encoding =*/ "utf-8",
+                /*historyUrl =*/ null
+              );
+            NewURL = null;
+          }
+        else
+          {
+          /* assume URI was passed */
+            NewURL = MyIntent.getData().toString().intern();
+            NewContent = null;
+            HelpView.loadUrl(NewURL);
+          } /*if*/
+        if
+          (
+                NewURL != LastURL
+            ||
+                (NewContent != null && LastContent != null ?
+                    !NewContent.equals(LastContent)
+                :
+                    NewContent != LastContent
+                )
+          )
+          {
+            LastScroll = null;
+          } /*if*/
+        LastURL = NewURL;
+        LastContent = NewContent;
+        HelpView.setPictureListener
+          (
+            new android.webkit.WebView.PictureListener()
+              {
+                @Override
+                public void onNewPicture
+                  (
+                    android.webkit.WebView HelpView,
+                    android.graphics.Picture ThePicture
+                  )
+                  {
+                    if (LastScroll != null)
+                      {
+                        HelpView.scrollTo(LastScroll.x, LastScroll.y);
+                        LastScroll = null; /* only do once */
+                      } /*if*/
+                  } /*onNewPicture*/
+              } /*PictureListener*/
+          );
+      } /*onCreate*/
+
+    @Override
+    public void onDestroy()
+      {
+        LastScroll = new android.graphics.Point(HelpView.getScrollX(), HelpView.getScrollY());
+        super.onDestroy();
+      } /*onDestroy*/
+
+  } /*Help*/

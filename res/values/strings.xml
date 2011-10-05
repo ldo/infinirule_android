@@ -2,11 +2,13 @@
 <resources>
     <string name="app_name">Infinirule</string>
 
+    <string name="show_help">Help</string>
     <string name="reset">Reset</string>
     <string name="set_top">Top scale...</string>
     <string name="set_upper">Upper scale...</string>
     <string name="set_lower">Lower scale...</string>
     <string name="set_bottom">Bottom scale...</string>
+    <string name="about_me">About Infinirule...</string>
 
     <string name="picker_prompt">Select %s scale</string>
     <string name="top">top</string>
