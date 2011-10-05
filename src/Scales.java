@@ -1041,6 +1041,40 @@ public class Scales
                 Rightmost = Math.exp(0.1);
                 NrDecimals = 3;
             break;
+            case 4:
+                Graduations = new double[]
+                    {
+                        1.000,
+                        1.001,
+                        1.002,
+                        1.003,
+                        1.004,
+                        1.005,
+                        1.006,
+                        1.007,
+                        1.008,
+                        1.009,
+                        1.100,
+                        1.101,
+                    };
+                NrDivisions = new int[]
+                    {
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                    };
+                Leftmost = Math.exp(0.001);
+                Rightmost = Math.exp(0.01);
+                NrDecimals = 4;
+            break;
             case -1:
                 Graduations = new double[]
                     {
@@ -1125,6 +1159,38 @@ public class Scales
                 Rightmost = Math.exp(-0.1);
                 NrDecimals = 2;
             break;
+            case -4:
+                Graduations = new double[]
+                    {
+                        1.00,
+                        0.999,
+                        0.998,
+                        0.997,
+                        0.996,
+                        0.995,
+                        0.994,
+                        0.993,
+                        0.992,
+                        0.991,
+                        0.990,
+                    };
+                NrDivisions = new int[]
+                    {
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                    };
+                Leftmost = Math.exp(-0.001);
+                Rightmost = Math.exp(-0.01);
+                NrDecimals = 3;
+            break;
               } /*switch*/
             DrawGraduations
               (
@@ -1166,9 +1232,11 @@ public class Scales
                         new ExpXScale("exp(\u1e8b)", 1),
                         new ExpXScale("exp(0.1\u1e8b)", 2),
                         new ExpXScale("exp(0.01\u1e8b)", 3),
+                        new ExpXScale("exp(0.001\u1e8b)", 4),
                         new ExpXScale("exp(-\u1e8b)", -1),
                         new ExpXScale("exp(-0.1\u1e8b)", -2),
                         new ExpXScale("exp(-0.01\u1e8b)", -3),
+                        new ExpXScale("exp(-0.001\u1e8b)", -4),
                     }
           )
           {
