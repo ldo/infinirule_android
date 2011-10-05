@@ -3,17 +3,75 @@
 <HEAD>
 <META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=utf-8">
 <TITLE>Infinirule Help</TITLE>
+<STYLE TYPE="text/css">
+TABLE.labels
+  {
+    border-collapse : collapse;
+  }
+TABLE.labels > TBODY > TR > TH
+  {
+    border : 2px solid;
+    border-color : #C0C0C0;
+    padding : 0.25em;
+    font-weight : bold;
+  }
+TABLE.labels > TBODY > TR > TD
+  {
+    border : 1px solid;
+    border-color : #C0C0C0;
+    padding : 0.25em;
+    text-align : center;
+  }
+TABLE.labels > TBODY > TR > TD.unused
+  {
+    background : #D5D5D5;
+  }
+</STYLE>
 </HEAD>
 <BODY>
 <H1>Help Page for the Infinirule app</H1>
-<P>Infinirule is a virtual slide rule. It
-transcends the limitations of real physical slide rules by allowing
-variable precision—just keep zooming in to get more—and
-automatically wrapping scales around—like a circular slide rule, but
-without the bulk. And though it only shows four scales at a time,
-you can select any combination of the available scale types.
+<P>Infinirule is a virtual slide rule. It transcends the limitations
+of real physical slide rules by allowing variable precision—just keep
+zooming in to get more—and automatically wrapping scales around—like a
+circular slide rule, but without the bulk. And though it only shows
+four scales at a time, you can select any combination of the available
+scale types.
 
-<P>more TBD
+<P>For those familiar with conventional slide rules, scales are
+named in Infinirule according to the mathematical formula defining them,
+not according to the traditional scale labels. Here is a table of
+correspondences between traditional labels and Infinirule names:
+
+<TABLE CLASS="labels">
+<TR><TH>Conventional<BR>Label</TH><TH>Infinirule<BR>Name</TH></TR>
+<TR><TD>A</TD><TD><I>x</I><SUP>2</SUP></TD></TR>
+<TR><TD>B</TD><TD><I>y</I><SUP>2</SUP></TD></TR>
+<TR><TD>C</TD><TD><I>y</I></TD></TR>
+<TR><TD>CF</TD><TD>π<I>y</I></TD></TR>
+<TR><TD>CI</TD><TD>1/<I>y</I></TD></TR>
+<TR><TD>D</TD><TD><I>x</I></TD></TR>
+<TR><TD>DF</TD><TD>π<I>x</I></TD></TR>
+<TR><TD>DI</TD><TD>1/<I>x</I></TD></TR>
+<TR><TD>K</TD><TD><I>x</I><SUP>3</SUP></TD></TR>
+<TR><TD CLASS="unused"></TD><TD><I>y</I><SUP>3</SUP></TD></TR>
+<TR><TD>L</TD><TD>log10 <I>y</I></TD></TR>
+<TR><TD>S</TD><TD>asin° <I>y</I> ≥ 5.7°</TD></TR>
+<TR><TD>ST</TD><TD>asin°/atan° <I>y</I> ≤ 5.7°</TD></TR>
+<TR><TD>T</TD><TD>atan° <I>y</I> ≥ 5.7°</TD></TR>
+<TR><TD CLASS="unused"></TD><TD>acos° <I>y</I> ≥ 5.7°</TD></TR>
+</TABLE>
+
+<P>Note the following points:
+<UL>
+<LI>Any scale may be selected on either the body or the slide. For example,
+the conventional “K” scale is normally only found on the body, but Infinirule
+also allows ay “<I>y</I>³” scale on the slide. The variable “<I>x</I>”
+is used for scales on the body, and “<I>y</I>” for ones on the slide.
+<LI>Trig scales are named as arcsine, arccos and arctan, because they are
+in fact inverse trig functions of the <I>x</I> or <I>y</I> scales.
+<LI>Cosine is separated from sine onto its own scale, rather than having
+the numbers doubled up on the sine scale as with a conventional slide rule.
+</UL>
 
 <P>For more info about slide rules, visit the International Slide Rule
 Museum at <A HREF="http://sliderulemuseum.com/">sliderulemuseum.com</A>.
