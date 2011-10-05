@@ -37,40 +37,57 @@ circular slide rule, but without the bulk. And though it only shows
 four scales at a time, you can select any combination of the available
 scale types.
 
+<P>Like most slide rules, Infinirule consists of 3 movable parts: the
+top 2 scales are part of the <I>body</I>, the bottom 2 are the
+<I>slide</I>, and there is also the <I>cursor</I>, with a hairline for
+taking accurate readings. The top two scales move together, as do the
+bottom two. Dragging the body moves the entire rule left or right,
+while dragging the slide only moves that. Use two fingers in either
+the body or the slide to pinch-zoom the rule horizontally to adjust
+the precision. Dragging in the space below or above the rule scales
+engages “precision” moving at 1/10th speed, for fine adjustments. You
+can move either the scales or the cursor in this way.
+
 <P>For those familiar with conventional slide rules, scales are
 named in Infinirule according to the mathematical formula defining them,
 not according to the traditional scale labels. Here is a table of
 correspondences between traditional labels and Infinirule names:
 
 <TABLE CLASS="labels">
-<TR><TH>Conventional<BR>Label</TH><TH>Infinirule<BR>Name</TH></TR>
-<TR><TD>A</TD><TD><I>x</I><SUP>2</SUP></TD></TR>
-<TR><TD>B</TD><TD><I>y</I><SUP>2</SUP></TD></TR>
-<TR><TD>C</TD><TD><I>y</I></TD></TR>
-<TR><TD>CF</TD><TD>π<I>y</I></TD></TR>
-<TR><TD>CI</TD><TD>1/<I>y</I></TD></TR>
-<TR><TD>D</TD><TD><I>x</I></TD></TR>
-<TR><TD>DF</TD><TD>π<I>x</I></TD></TR>
-<TR><TD>DI</TD><TD>1/<I>x</I></TD></TR>
-<TR><TD>K</TD><TD><I>x</I><SUP>3</SUP></TD></TR>
-<TR><TD CLASS="unused"></TD><TD><I>y</I><SUP>3</SUP></TD></TR>
-<TR><TD>L</TD><TD>log10 <I>y</I></TD></TR>
-<TR><TD>S</TD><TD>asin° <I>y</I> ≥ 5.7°</TD></TR>
-<TR><TD>ST</TD><TD>asin°/atan° <I>y</I> ≤ 5.7°</TD></TR>
-<TR><TD>T</TD><TD>atan° <I>y</I> ≥ 5.7°</TD></TR>
-<TR><TD CLASS="unused"></TD><TD>acos° <I>y</I> ≥ 5.7°</TD></TR>
+<TR><TH>Traditional<BR>Label</TH><TH>Infinirule<BR>Name</TH><TH>Wrap</TH></TR>
+<TR><TD>A</TD><TD><I>x</I><SUP>2</SUP></TD><TD>yes</TD></TR>
+<TR><TD>B</TD><TD><I>y</I><SUP>2</SUP></TD><TD>yes</TD></TR>
+<TR><TD>C</TD><TD><I>y</I></TD><TD>yes</TD></TR>
+<TR><TD>CF</TD><TD>π<I>y</I></TD><TD>yes</TD></TR>
+<TR><TD>CI</TD><TD>1/<I>y</I></TD><TD>yes</TD></TR>
+<TR><TD>D</TD><TD><I>x</I></TD><TD>yes</TD></TR>
+<TR><TD>DF</TD><TD>π<I>x</I></TD><TD>yes</TD></TR>
+<TR><TD>DI</TD><TD>1/<I>x</I></TD><TD>yes</TD></TR>
+<TR><TD>K</TD><TD><I>x</I><SUP>3</SUP></TD><TD>yes</TD></TR>
+<TR><TD CLASS="unused"></TD><TD><I>y</I><SUP>3</SUP></TD><TD>yes</TD></TR>
+<TR><TD>L</TD><TD>log10 <I>y</I></TD><TD>yes</TD></TR>
+<TR><TD>S</TD><TD>asin° <I>y</I> ≥ 5.7°</TD><TD>no</TD></TR>
+<TR><TD>ST</TD><TD>asin°/atan° <I>y</I> ≤ 5.7°</TD><TD>no</TD></TR>
+<TR><TD>T</TD><TD>atan° <I>y</I> ≥ 5.7°</TD><TD>no</TD></TR>
+<TR><TD CLASS="unused"></TD><TD>acos° <I>y</I> ≥ 5.7°</TD><TD>no</TD></TR>
 </TABLE>
 
 <P>Note the following points:
 <UL>
-<LI>Any scale may be selected on either the body or the slide. For example,
-the conventional “K” scale is normally only found on the body, but Infinirule
-also allows ay “<I>y</I>³” scale on the slide. The variable “<I>x</I>”
-is used for scales on the body, and “<I>y</I>” for ones on the slide.
-<LI>Trig scales are named as arcsine, arccos and arctan, because they are
-in fact inverse trig functions of the <I>x</I> or <I>y</I> scales.
+<LI>Any scale may be selected on either the body or the slide. For
+example, the traditional “K” scale is normally only found on the body,
+but Infinirule also allows a “<I>y</I>³” scale on the slide. The
+variable “<I>x</I>” is used for scales on the body, and “<I>y</I>” for
+ones on the slide.
+<LI>Trig scales are named as arcsine, arccos and arctan, because they
+are in fact inverse trig functions of the <I>x</I> or <I>y</I> scales.
 <LI>Cosine is separated from sine onto its own scale, rather than having
-the numbers doubled up on the sine scale as with a conventional slide rule.
+the numbers doubled up on the sine scale as with a traditional slide rule.
+<LI>The “Wrap” column indicates whether the end of the scale
+seamlessly continues on from the beginning. Scales are always drawn
+with adjoining repeats, allowing you to take readings without worrying
+about running off the end. For ones which don’t wrap, a red marker
+line is drawn on the scale to indicate the discontinuity.
 </UL>
 
 <P>For more info about slide rules, visit the International Slide Rule
