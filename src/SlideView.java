@@ -162,13 +162,13 @@ public class SlideView extends android.view.View
         Global.ScaleSelector WhichScale
       )
       {
-        /*final*/ Scales.Scale TheScale
-            = null; /*sigh*/
+        final Scales.Scale TheScale;
         switch (WhichScale)
           {
         case TopScale:
             TheScale = TopScale;
         break;
+        default: /*sigh*/
         case UpperScale:
             TheScale = UpperScale;
         break;

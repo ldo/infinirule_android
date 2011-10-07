@@ -1249,10 +1249,10 @@ public class Scales
         Global.ScaleSelector WhichScale
       )
       {
-        /*final*/ Scale Result
-            = null; /*sigh*/
+        final Scale Result;
         switch (WhichScale)
           {
+        default: /*sigh*/
         case UpperScale:
         case LowerScale:
             Result = KnownScales.get("\u1e8b");

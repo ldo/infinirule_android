@@ -215,13 +215,13 @@ public class ScalePicker extends android.app.Activity
         super.onCreate(SavedInstanceState);
         Current = this;
         setContentView(R.layout.scale_picker);
-        /*final*/ int SelectorID
-            = -1; /*sigh*/
+        final int SelectorID;
         switch (WhichScale)
           {
         case TopScale:
             SelectorID = R.string.top;
         break;
+        default: /*sigh*/
         case UpperScale:
             SelectorID = R.string.upper;
         break;
