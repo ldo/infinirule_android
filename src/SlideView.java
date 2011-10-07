@@ -534,6 +534,11 @@ public class SlideView extends android.view.View
                     MovingWhat == MovingState.MovingBothScales
               )
               {
+                if (!MouseMoved)
+                  {
+                    getHandler().removeCallbacks(LongClicker);
+                    MouseMoved = true;
+                  } /*if*/
                 final int PointerIndex =
                         (TheEvent.getAction() & MotionEvent.ACTION_POINTER_ID_MASK)
                     >>
@@ -558,7 +563,7 @@ public class SlideView extends android.view.View
             Handled = true;
         break;
         case MotionEvent.ACTION_MOVE:
-            if (LastMouse1 != null)
+            if(LastMouse1 != null)
               {
                 final int Mouse1Index = TheEvent.findPointerIndex(Mouse1ID);
                 final int Mouse2Index =
@@ -685,131 +690,137 @@ public class SlideView extends android.view.View
                                         LastMouse1
                                 :
                                     LastMouse2;
-                            if (PrecisionMove)
-                              {
-                                ThisMouse = new PointF
-                                  (
-                                    LastMouse.x + (ThisMouse.x - LastMouse.x) / PrecisionFactor,
-                                    ThisMouse.y
-                                  );
-                              } /*if*/
-                            switch (MovingWhat)
-                              {
-                            case MovingCursor:
-                                CursorX = Math.max(0.0f, Math.min(CursorX + ThisMouse.x - LastMouse.x, getWidth()));
-                                invalidate();
-                            break;
-                            case MovingBothScales:
-                            case MovingLowerScale:
-                                for (boolean Upper = false;;)
-                                  {
-                                    final double Scale1Size =
-                                        ((Scales.Scale)(Upper ? TopScale : BottomScale)).Size();
-                                    final double Scale2Size =
-                                        ((Scales.Scale)(Upper ? UpperScale : LowerScale)).Size();
-                                    final double NewOffset1 =
-                                        FindScaleOffset
-                                          (
-                                            ThisMouse.x,
-                                            Scale1Size,
-                                            ViewToScale
-                                              (
-                                                LastMouse.x,
-                                                Scale1Size,
-                                                Upper ? TopScaleOffset : BottomScaleOffset
-                                              )
-                                          );
-                                    final double NewOffset2 =
-                                        FindScaleOffset
-                                          (
-                                            ThisMouse.x,
-                                            Scale2Size,
-                                            ViewToScale
-                                              (
-                                                LastMouse.x,
-                                                Scale2Size,
-                                                Upper ? UpperScaleOffset : LowerScaleOffset
-                                              )
-                                          );
-                                    if (Upper)
-                                      {
-                                        TopScaleOffset = NewOffset1;
-                                        UpperScaleOffset = NewOffset2;
-                                      }
-                                    else
-                                      {
-                                        BottomScaleOffset = NewOffset1;
-                                        LowerScaleOffset = NewOffset2;
-                                      } /*if*/
-                                    if (Upper || MovingWhat != MovingState.MovingBothScales)
-                                        break;
-                                    Upper = true;
-                                  } /*for*/
-                                invalidate();
-                                if
-                                  (
-                                        ThisMouse1 != null
-                                    &&
-                                        ThisMouse2 != null
-                                    &&
-                                            ThisMouse1.y < getHeight() / 2.0f
-                                        ==
-                                            ThisMouse2.y < getHeight() / 2.0f
-                                  )
-                                  {
-                                  /* pinch to zoom--note no PrecisionMove here */
-                                    final float LastDistance = (float)Math.hypot
-                                      (
-                                        LastMouse1.x - LastMouse2.x,
-                                        LastMouse1.y - LastMouse2.y
-                                      );
-                                    final float ThisDistance = (float)Math.hypot
-                                      (
-                                        ThisMouse1.x - ThisMouse2.x,
-                                        ThisMouse1.y - ThisMouse2.y
-                                      );
-                                    if
-                                      (
-                                            LastDistance != 0.0f
-                                        &&
-                                            ThisDistance != 0.0f
-                                      )
-                                      {
-                                        ScaleLength =
-                                            Math.max
-                                              (
-                                                (int)(
-                                                    ScaleLength * ThisDistance /  LastDistance
-                                                ),
-                                                getWidth()
-                                              );
-                                        invalidate();
-                                      } /*if*/
-                                  } /*if*/
-                            break;
-                              } /*switch*/
                             if
                               (
-                                    Math.hypot(ThisMouse.x - LastMouse.x, ThisMouse.y - LastMouse.y)
-                                >
-                                    4.0 /* TBD use android.view.ViewConfiguration.get(getContext()).getScaledTouchSlop */
+                                    MouseMoved
+                                ||
+                                        Math.hypot(ThisMouse.x - LastMouse.x, ThisMouse.y - LastMouse.y)
+                                    >
+                                        Math.sqrt(android.view.ViewConfiguration.get(getContext()).getScaledTouchSlop())
+                                          /* avoid accidentally moving anything during long-tap */
                               )
                               {
-                                getHandler().removeCallbacks(LongClicker);
-                                System.err.printf
-                                  (
-                                    "SlideView mouse moved, scaled touch slop = %d\n",
-                                    android.view.ViewConfiguration.get(getContext()).getScaledTouchSlop()
-                                  ); /* debug */
-                                MouseMoved = true;
+                                if (!MouseMoved)
+                                  {
+                                    getHandler().removeCallbacks(LongClicker);
+                                    System.err.printf
+                                      (
+                                        "SlideView mouse moved, scaled touch slop = %d\n",
+                                        android.view.ViewConfiguration.get(getContext()).getScaledTouchSlop()
+                                      ); /* debug */
+                                    MouseMoved = true;
+                                  } /*if*/
+                                if (PrecisionMove)
+                                  {
+                                    ThisMouse = new PointF
+                                      (
+                                        LastMouse.x + (ThisMouse.x - LastMouse.x) / PrecisionFactor,
+                                        ThisMouse.y
+                                      );
+                                  } /*if*/
+                                switch (MovingWhat)
+                                  {
+                                case MovingCursor:
+                                    CursorX = Math.max(0.0f, Math.min(CursorX + ThisMouse.x - LastMouse.x, getWidth()));
+                                    invalidate();
+                                break;
+                                case MovingBothScales:
+                                case MovingLowerScale:
+                                    for (boolean Upper = false;;)
+                                      {
+                                        final double Scale1Size =
+                                            ((Scales.Scale)(Upper ? TopScale : BottomScale)).Size();
+                                        final double Scale2Size =
+                                            ((Scales.Scale)(Upper ? UpperScale : LowerScale)).Size();
+                                        final double NewOffset1 =
+                                            FindScaleOffset
+                                              (
+                                                ThisMouse.x,
+                                                Scale1Size,
+                                                ViewToScale
+                                                  (
+                                                    LastMouse.x,
+                                                    Scale1Size,
+                                                    Upper ? TopScaleOffset : BottomScaleOffset
+                                                  )
+                                              );
+                                        final double NewOffset2 =
+                                            FindScaleOffset
+                                              (
+                                                ThisMouse.x,
+                                                Scale2Size,
+                                                ViewToScale
+                                                  (
+                                                    LastMouse.x,
+                                                    Scale2Size,
+                                                    Upper ? UpperScaleOffset : LowerScaleOffset
+                                                  )
+                                              );
+                                        if (Upper)
+                                          {
+                                            TopScaleOffset = NewOffset1;
+                                            UpperScaleOffset = NewOffset2;
+                                          }
+                                        else
+                                          {
+                                            BottomScaleOffset = NewOffset1;
+                                            LowerScaleOffset = NewOffset2;
+                                          } /*if*/
+                                        if (Upper || MovingWhat != MovingState.MovingBothScales)
+                                            break;
+                                        Upper = true;
+                                      } /*for*/
+                                    invalidate();
+                                    if
+                                      (
+                                            ThisMouse1 != null
+                                        &&
+                                            ThisMouse2 != null
+                                        &&
+                                                ThisMouse1.y < getHeight() / 2.0f
+                                            ==
+                                                ThisMouse2.y < getHeight() / 2.0f
+                                      )
+                                      {
+                                      /* pinch to zoom--note no PrecisionMove here */
+                                        final float LastDistance = (float)Math.hypot
+                                          (
+                                            LastMouse1.x - LastMouse2.x,
+                                            LastMouse1.y - LastMouse2.y
+                                          );
+                                        final float ThisDistance = (float)Math.hypot
+                                          (
+                                            ThisMouse1.x - ThisMouse2.x,
+                                            ThisMouse1.y - ThisMouse2.y
+                                          );
+                                        if
+                                          (
+                                                LastDistance != 0.0f
+                                            &&
+                                                ThisDistance != 0.0f
+                                          )
+                                          {
+                                            ScaleLength =
+                                                Math.max
+                                                  (
+                                                    (int)(
+                                                        ScaleLength * ThisDistance /  LastDistance
+                                                    ),
+                                                    getWidth()
+                                                  );
+                                            invalidate();
+                                          } /*if*/
+                                      } /*if*/
+                                break;
+                                  } /*switch*/
                               } /*if*/
+                            LastMouse1 = ThisMouse1;
+                            LastMouse2 = ThisMouse2;
                           } /*if*/
-                        LastMouse1 = ThisMouse1;
-                        LastMouse2 = ThisMouse2;
                       } /*if*/
                   } /*if*/
+                Handled = true;
               } /*if*/
-            Handled = MouseMoved;
         break;
         case MotionEvent.ACTION_POINTER_UP:
             if (LastMouse2 != null)
