@@ -89,6 +89,7 @@ public class Main
             };
 
     private SlideView Slide;
+    private android.text.ClipboardManager Clipboard;
 
     @Override
     public void onCreate
@@ -97,6 +98,7 @@ public class Main
       )
       {
         super.onCreate(SavedInstanceState);
+        Clipboard = (android.text.ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
         BuildActivityResultActions();
         Global.MainMetrics = new android.util.DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(Global.MainMetrics);
@@ -247,7 +249,88 @@ public class Main
         switch (MenuType)
           {
         case Cursor:
-          /* TBD copy/paste */
+            for (boolean Pasting = false;;)
+              {
+                for (final SetScaleEntry s : WhichScales)
+                  {
+                    ContextMenu.put
+                      (
+                        TheMenu.add
+                          (
+                            String.format
+                              (
+                                getString(Pasting ? R.string.paste_prompt : R.string.copy_prompt),
+                                getString(Global.ScaleNameID(s.WhichScale))
+                              )
+                          ),
+                        Pasting ?
+                            new Runnable()
+                              {
+                                public void run()
+                                  {
+                                    final CharSequence NumString = Clipboard.getText();
+                                    if (NumString != null)
+                                      {
+                                        final Scales.Scale TheScale = Slide.GetScale(s.WhichScale);
+                                        try
+                                          {
+                                            final double Value = Double.parseDouble(NumString.toString());
+                                            final double ScalePos = TheScale.PosAt(Value);
+                                            if (ScalePos >= TheScale.ValueAt(0.0) && ScalePos < TheScale.ValueAt(1.0)) /* TBD auto-range-adjust for wrapping scales? */
+                                              {
+                                                Slide.SetCursorPos(s.WhichScale, ScalePos);
+                                              }
+                                            else
+                                              {
+                                                android.widget.Toast.makeText
+                                                  (
+                                                    /*context =*/ Main.this,
+                                                    /*text =*/
+                                                        String.format
+                                                          (
+                                                            getString(R.string.paste_range),
+                                                            Global.FormatNumber(Value),
+                                                            getString(Global.ScaleNameID(s.WhichScale)),
+                                                            Global.FormatNumber(TheScale.ValueAt(0.0)),
+                                                            Global.FormatNumber(TheScale.ValueAt(1.0))
+                                                          ),
+                                                    /*duration =*/ android.widget.Toast.LENGTH_SHORT
+                                                  ).show();
+                                              } /*if*/
+                                          }
+                                        catch (NumberFormatException BadNum)
+                                          {
+                                            android.widget.Toast.makeText
+                                              (
+                                                /*context =*/ Main.this,
+                                                /*text =*/ getString(R.string.paste_nan),
+                                                /*duration =*/ android.widget.Toast.LENGTH_SHORT
+                                              ).show();
+                                          } /*try*/
+                                      } /*if*/
+                                  } /*run*/
+                              } /*Runnable*/
+                        :
+                            new Runnable()
+                              {
+                                public void run()
+                                  {
+                                    Clipboard.setText
+                                      (
+                                        Global.FormatNumber
+                                          (
+                                            Slide.GetScale(s.WhichScale)
+                                                .ValueAt(Slide.GetCursorPos(s.WhichScale))
+                                          )
+                                      );
+                                  } /*run*/
+                              } /*Runnable*/
+                      );
+                  } /*for*/
+                if (Pasting)
+                    break;
+                Pasting = true;
+              } /*for*/
         break;
         case Scales:
             for (final SetScaleEntry s : WhichScales)
@@ -271,7 +354,7 @@ public class Main
                                 /*Caller =*/ Main.this,
                                 /*WhichScale =*/ s.WhichScale,
                                 /*RequestCode =*/s.RequestCode,
-                                /*CurScaleName =*/ Slide.GetScaleName(s.WhichScale)
+                                /*CurScaleName =*/ Slide.GetScale(s.WhichScale).Name()
                               );
                           } /*run*/
                       } /*Runnable*/

@@ -70,4 +70,16 @@ public class Global
             SelectorID;
       } /*ScaleNameID*/
 
+    public static final int NrSigFigures = 4;
+      /* for formatting reals */
+
+    public static String FormatNumber
+      (
+        double Value
+      )
+      {
+        return
+            String.format(StdLocale, String.format(StdLocale, "%%.%de", NrSigFigures), Value);
+      } /*FormatNumber*/
+
   } /*Global*/

@@ -157,7 +157,7 @@ public class SlideView extends android.view.View
         invalidate();
       } /*SetScale*/
 
-    public String GetScaleName
+    public Scales.Scale GetScale
       (
         Global.ScaleSelector WhichScale
       )
@@ -180,8 +180,64 @@ public class SlideView extends android.view.View
         break;
           } /*switch*/
         return
-            TheScale.Name();
-      } /*GetScaleName*/
+            TheScale;
+      } /*GetScale*/
+
+    public double GetScaleOffset
+      (
+        Global.ScaleSelector TheScale
+      )
+      {
+        final double TheScaleOffset;
+        switch (TheScale)
+          {
+        case TopScale:
+            TheScaleOffset = TopScaleOffset;
+        break;
+        default: /*sigh*/
+        case UpperScale:
+            TheScaleOffset = UpperScaleOffset;
+        break;
+        case LowerScale:
+            TheScaleOffset = LowerScaleOffset;
+        break;
+        case BottomScale:
+            TheScaleOffset = BottomScaleOffset;
+        break;
+          } /*switch*/
+        return
+            TheScaleOffset;
+      } /*GetScaleOffset*/
+
+    public double GetCursorPos
+      (
+        Global.ScaleSelector ByScale
+      )
+      /* returns the cursor position relative to the specified scale. */
+      {
+        return
+            ViewToScale(CursorX, GetScale(ByScale).Size(), GetScaleOffset(ByScale));
+      } /*GetCursorPos*/
+
+    public void SetCursorPos
+      (
+        Global.ScaleSelector ByScale,
+        double NewPos
+      )
+      /* sets a new cursor position relative to the specified scale. */
+      {
+        CursorX =
+            Math.max
+              (
+                0,
+                Math.min
+                  (
+                    ScaleToView(NewPos, GetScale(ByScale).Size(), GetScaleOffset(ByScale)),
+                    getWidth()
+                  )
+              );
+        invalidate();
+      } /*SetCursorPos*/
 
     public void SetContextMenuAction
       (

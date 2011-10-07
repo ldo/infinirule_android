@@ -8,8 +8,13 @@
     <string name="about_me">About Infinirule...</string>
 
     <string name="picker_prompt">Select %s scale</string>
+    <string name="copy_prompt">Copy %s scale</string>
+    <string name="paste_prompt">Paste %s scale</string>
     <string name="top">top</string>
     <string name="upper">upper</string>
     <string name="lower">lower</string>
     <string name="bottom">bottom</string>
+
+    <string name="paste_nan">The Clipboard does not contain a valid number.</string>
+    <string name="paste_range">The Clipboard value %1$s lies outside the range of the %2$s scale [%3$s .. %4$s).</string>
 </resources>
