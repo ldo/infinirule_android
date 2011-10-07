@@ -19,7 +19,9 @@ package nz.gen.geek_central.infinirule;
     <http://www.gnu.org/licenses/>.
 */
 
-public class Main extends android.app.Activity
+public class Main
+    extends android.app.Activity
+    implements SlideView.ContextMenuAction
   {
 
     public static byte[] ReadAll
@@ -43,6 +45,7 @@ public class Main extends android.app.Activity
       } /*ReadAll*/
 
     private java.util.Map<android.view.MenuItem, Runnable> OptionsMenu;
+    private java.util.Map<android.view.MenuItem, Runnable> ContextMenu;
 
     interface RequestResponseAction /* response to an activity result */
       {
@@ -114,6 +117,7 @@ public class Main extends android.app.Activity
           }
         setContentView(R.layout.main);
         Slide = (SlideView)findViewById(R.id.slide_view);
+        Slide.SetContextMenuAction(this);
       } /*onCreate*/
 
     @Override
@@ -157,26 +161,6 @@ public class Main extends android.app.Activity
                   } /*run*/
               } /*Runnable*/
           );
-        for (final SetScaleEntry s : WhichScales)
-          {
-            OptionsMenu.put
-              (
-                TheMenu.add(s.ResID),
-                new Runnable()
-                  {
-                    public void run()
-                      {
-                        ScalePicker.Launch
-                          (
-                            /*Caller =*/ Main.this,
-                            /*WhichScale =*/ s.WhichScale,
-                            /*RequestCode =*/s.RequestCode,
-                            /*CurScaleName =*/ Slide.GetScaleName(s.WhichScale)
-                          );
-                      } /*run*/
-                  } /*Runnable*/
-              );
-          } /*for*/
         OptionsMenu.put
           (
             TheMenu.add(R.string.about_me),
@@ -255,6 +239,55 @@ public class Main extends android.app.Activity
           } /*for*/
       } /*BuildActivityResultActions*/
 
+    public void CreateContextMenu
+      (
+        android.view.ContextMenu TheMenu,
+        SlideView.ContextMenuTypes MenuType
+      )
+      {
+        System.err.println("Main.CreateContextMenu"); /* debug */
+        ContextMenu = new java.util.HashMap<android.view.MenuItem, Runnable>();
+        switch (MenuType)
+          {
+        case Cursor:
+          /* TBD copy/paste */
+        break;
+        case Scales:
+            for (final SetScaleEntry s : WhichScales)
+              {
+                ContextMenu.put
+                  (
+                    TheMenu.add(s.ResID),
+                    new Runnable()
+                      {
+                        public void run()
+                          {
+                            ScalePicker.Launch
+                              (
+                                /*Caller =*/ Main.this,
+                                /*WhichScale =*/ s.WhichScale,
+                                /*RequestCode =*/s.RequestCode,
+                                /*CurScaleName =*/ Slide.GetScaleName(s.WhichScale)
+                              );
+                          } /*run*/
+                      } /*Runnable*/
+                  );
+              } /*for*/
+        break;
+          } /*switch*/
+      } /*CreateContextMenu*/
+
+    @Override
+    public void onCreateContextMenu
+      (
+        android.view.ContextMenu TheMenu,
+        android.view.View TheView,
+        android.view.ContextMenu.ContextMenuInfo TheMenuInfo
+      )
+      {
+        System.err.println("Main.onCreateContextMenu"); /* debug */
+      } /*onCreateContextMenu*/
+
     @Override
     public boolean onOptionsItemSelected
       (
@@ -271,6 +304,24 @@ public class Main extends android.app.Activity
         return
             Handled;
       } /*onOptionsItemSelected*/
+
+    @Override
+    public boolean onContextItemSelected
+      (
+        android.view.MenuItem TheItem
+      )
+      {
+        System.err.println("Main.onContextItemSelected"); /* debug */
+        boolean Handled = false;
+        final Runnable Action = ContextMenu.get(TheItem);
+        if (Action != null)
+          {
+            Action.run();
+            Handled = true;
+          } /*if*/
+        return
+            Handled;
+      } /*onContextItemSelected*/
 
     @Override
     public void onActivityResult

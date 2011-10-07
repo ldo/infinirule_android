@@ -25,10 +25,26 @@ import android.view.MotionEvent;
 
 public class SlideView extends android.view.View
   {
+    public enum ContextMenuTypes
+     {
+        Cursor,
+        Scales,
+     } /*ContextMenuTypes*/
+    public interface ContextMenuAction
+      {
+        public void CreateContextMenu
+          (
+            android.view.ContextMenu TheMenu,
+            ContextMenuTypes MenuType
+          );
+      } /*ContextMenuAction*/
+
     private Scales.Scale TopScale, UpperScale, LowerScale, BottomScale;
     private double TopScaleOffset, UpperScaleOffset, LowerScaleOffset, BottomScaleOffset; /* (-1.0 .. 0.0] */
     private float CursorX; /* view x-coordinate */
     private int ScaleLength; /* in pixels */
+
+    private android.os.Vibrator Vibrate;
 
     public void Reset()
       {
@@ -44,7 +60,10 @@ public class SlideView extends android.view.View
         invalidate();
       } /*Reset*/
 
-    private void Init()
+    private void Init
+      (
+        android.content.Context Context
+      )
       /* common code for all constructors */
       {
         TopScale = Scales.DefaultScale(Global.ScaleSelector.TopScale);
@@ -52,6 +71,8 @@ public class SlideView extends android.view.View
         LowerScale = Scales.DefaultScale(Global.ScaleSelector.LowerScale);
         BottomScale = Scales.DefaultScale(Global.ScaleSelector.BottomScale);
         ScaleLength = -1; /* proper value deferred to onLayout */
+        Vibrate =
+            (android.os.Vibrator)Context.getSystemService(android.content.Context.VIBRATOR_SERVICE);
         Reset();
       } /*Init*/
 
@@ -61,7 +82,7 @@ public class SlideView extends android.view.View
       )
       {
         super(Context);
-        Init();
+        Init(Context);
       } /*SlideView*/
 
     public SlideView
@@ -81,7 +102,7 @@ public class SlideView extends android.view.View
       )
       {
         super(Context, Attributes, DefaultStyle);
-        Init();
+        Init(Context);
       } /*SlideView*/
 
     @Override
@@ -161,6 +182,14 @@ public class SlideView extends android.view.View
         return
             TheScale.Name();
       } /*GetScaleName*/
+
+    public void SetContextMenuAction
+      (
+        ContextMenuAction TheAction
+      )
+      {
+        DoContextMenu = TheAction;
+      } /*SetContextMenuAction*/
 
 /*
     Mapping between image coordinates and view coordinates
@@ -383,9 +412,28 @@ public class SlideView extends android.view.View
         MovingBothScales,
         MovingLowerScale,
       } /*MovingState*/
+    private ContextMenuAction DoContextMenu = null;
+    private boolean MouseMoved = false;
     private MovingState MovingWhat = MovingState.MovingNothing;
     private boolean PrecisionMove = false;
     private final float PrecisionFactor = 10.0f;
+
+    protected final Runnable LongClicker =
+      /* do my own long-click handling, because setOnLongClickListener doesn't seem to work */
+        new Runnable()
+          {
+            public void run()
+              {
+                System.err.println("SlideView: LongClicker activated"); /* debug */
+                showContextMenu();
+              /* stop handling cursor/scale movements */
+                LastMouse1 = null;
+                LastMouse2 = null;
+                Mouse1ID = -1;
+                Mouse2ID = -1;
+                MovingWhat = MovingState.MovingNothing;
+              } /*run*/
+          } /*Runnable*/;
 
     @Override
     public boolean onTouchEvent
@@ -394,6 +442,7 @@ public class SlideView extends android.view.View
       )
       {
         boolean Handled = false;
+        System.err.printf("SlideView touch event 0x%04x\n", TheEvent.getAction()); /* debug */
         switch (TheEvent.getAction() & (1 << MotionEvent.ACTION_POINTER_ID_SHIFT) - 1)
           {
         case MotionEvent.ACTION_DOWN:
@@ -417,7 +466,9 @@ public class SlideView extends android.view.View
                 MovingWhat = MovingState.MovingBothScales;
               } /*if*/
             PrecisionMove = Math.abs(LastMouse1.y - getHeight() / 2.0f) > Scales.HalfLayoutHeight;
+            MouseMoved = false;
             Handled = true;
+            getHandler().postDelayed(LongClicker, android.view.ViewConfiguration.getLongPressTimeout());
         break;
         case MotionEvent.ACTION_POINTER_DOWN:
             if
@@ -681,13 +732,28 @@ public class SlideView extends android.view.View
                                   } /*if*/
                             break;
                               } /*switch*/
+                            if
+                              (
+                                    Math.hypot(ThisMouse.x - LastMouse.x, ThisMouse.y - LastMouse.y)
+                                >
+                                    4.0 /* TBD use android.view.ViewConfiguration.get(getContext()).getScaledTouchSlop */
+                              )
+                              {
+                                getHandler().removeCallbacks(LongClicker);
+                                System.err.printf
+                                  (
+                                    "SlideView mouse moved, scaled touch slop = %d\n",
+                                    android.view.ViewConfiguration.get(getContext()).getScaledTouchSlop()
+                                  ); /* debug */
+                                MouseMoved = true;
+                              } /*if*/
                           } /*if*/
                         LastMouse1 = ThisMouse1;
                         LastMouse2 = ThisMouse2;
                       } /*if*/
                   } /*if*/
               } /*if*/
-            Handled = true;
+            Handled = MouseMoved;
         break;
         case MotionEvent.ACTION_POINTER_UP:
             if (LastMouse2 != null)
@@ -713,16 +779,37 @@ public class SlideView extends android.view.View
             Handled = true;
         break;
         case MotionEvent.ACTION_UP:
+            getHandler().removeCallbacks(LongClicker);
             LastMouse1 = null;
             LastMouse2 = null;
             Mouse1ID = -1;
             Mouse2ID = -1;
             MovingWhat = MovingState.MovingNothing;
-            Handled = true;
+            Handled = MouseMoved;
         break;
           } /*switch*/
         return
             Handled;
       } /*onTouchEvent*/
+
+    @Override
+    public void onCreateContextMenu
+      (
+        android.view.ContextMenu TheMenu
+      )
+      {
+        if (DoContextMenu != null)
+          {
+            Vibrate.vibrate(20);
+            DoContextMenu.CreateContextMenu
+              (
+                TheMenu,
+                MovingWhat == MovingState.MovingCursor ?
+                    ContextMenuTypes.Cursor
+                :
+                    ContextMenuTypes.Scales
+              );
+          } /*if*/
+      } /*onCreateContextMenu*/
 
   } /*SlideView*/
