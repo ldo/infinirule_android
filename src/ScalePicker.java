@@ -215,30 +215,13 @@ public class ScalePicker extends android.app.Activity
         super.onCreate(SavedInstanceState);
         Current = this;
         setContentView(R.layout.scale_picker);
-        final int SelectorID;
-        switch (WhichScale)
-          {
-        case TopScale:
-            SelectorID = R.string.top;
-        break;
-        default: /*sigh*/
-        case UpperScale:
-            SelectorID = R.string.upper;
-        break;
-        case LowerScale:
-            SelectorID = R.string.lower;
-        break;
-        case BottomScale:
-            SelectorID = R.string.bottom;
-        break;
-          } /*switch*/
         ((android.widget.TextView)findViewById(R.id.prompt)).setText
           (
             String.format
               (
                 Global.StdLocale,
                 getString(R.string.picker_prompt),
-                getString(SelectorID)
+                getString(Global.ScaleNameID(WhichScale))
               )
           );
         PickerList = new SelectedItemAdapter(this, R.layout.scale_picker_item, getLayoutInflater());

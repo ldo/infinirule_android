@@ -66,18 +66,15 @@ public class Main
 
     private static class SetScaleEntry
       {
-        public final int ResID;
         public final int RequestCode;
         public final Global.ScaleSelector WhichScale;
 
         public SetScaleEntry
           (
-            int ResID,
             int RequestCode,
             Global.ScaleSelector WhichScale
           )
           {
-            this.ResID = ResID;
             this.RequestCode = RequestCode;
             this.WhichScale = WhichScale;
           } /*SetScaleEntry*/
@@ -85,10 +82,10 @@ public class Main
     private static final SetScaleEntry[] WhichScales =
         new SetScaleEntry[]
             {
-                new SetScaleEntry(R.string.set_top, SetTopScaleRequest, Global.ScaleSelector.TopScale),
-                new SetScaleEntry(R.string.set_upper, SetUpperScaleRequest, Global.ScaleSelector.UpperScale),
-                new SetScaleEntry(R.string.set_lower, SetLowerScaleRequest, Global.ScaleSelector.LowerScale),
-                new SetScaleEntry(R.string.set_bottom, SetBottomScaleRequest, Global.ScaleSelector.BottomScale),
+                new SetScaleEntry(SetTopScaleRequest, Global.ScaleSelector.TopScale),
+                new SetScaleEntry(SetUpperScaleRequest, Global.ScaleSelector.UpperScale),
+                new SetScaleEntry(SetLowerScaleRequest, Global.ScaleSelector.LowerScale),
+                new SetScaleEntry(SetBottomScaleRequest, Global.ScaleSelector.BottomScale),
             };
 
     private SlideView Slide;
@@ -257,7 +254,14 @@ public class Main
               {
                 ContextMenu.put
                   (
-                    TheMenu.add(s.ResID),
+                    TheMenu.add
+                      (
+                        String.format
+                          (
+                            getString(R.string.set_scale),
+                            getString(Global.ScaleNameID(s.WhichScale))
+                          )
+                      ),
                     new Runnable()
                       {
                         public void run()

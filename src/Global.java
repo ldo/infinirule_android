@@ -43,4 +43,31 @@ public class Global
         BottomScale,
       } /*ScaleSelector*/
 
+    public static int ScaleNameID
+      (
+        ScaleSelector WhichScale
+      )
+      /* returns the string ID for an adjective to describe the specified scale. */
+      {
+        final int SelectorID;
+        switch (WhichScale)
+          {
+        case TopScale:
+            SelectorID = R.string.top;
+        break;
+        default: /*sigh*/
+        case UpperScale:
+            SelectorID = R.string.upper;
+        break;
+        case LowerScale:
+            SelectorID = R.string.lower;
+        break;
+        case BottomScale:
+            SelectorID = R.string.bottom;
+        break;
+          } /*switch*/
+        return
+            SelectorID;
+      } /*ScaleNameID*/
+
   } /*Global*/
