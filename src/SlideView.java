@@ -19,6 +19,7 @@ package nz.gen.geek_central.infinirule;
     <http://www.gnu.org/licenses/>.
 */
 
+import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.Paint;
 import android.view.MotionEvent;
@@ -39,12 +40,45 @@ public class SlideView extends android.view.View
           );
       } /*ContextMenuAction*/
 
+    private Matrix Orient, InverseOrient;
+      /* rotate entire display so rule is drawn in landscape orientation,
+        but context menus pop up in orientation of activity, which is portrait */
     private Scales.Scale TopScale, UpperScale, LowerScale, BottomScale;
     private double TopScaleOffset, UpperScaleOffset, LowerScaleOffset, BottomScaleOffset; /* (-1.0 .. 0.0] */
     private float CursorX; /* view x-coordinate */
     private int ScaleLength; /* in pixels */
 
     private android.os.Vibrator Vibrate;
+
+    private PointF GetPoint
+      (
+        PointF InCoord
+      )
+      /* returns InCoord transformed through InverseOrient. */
+      {
+        return
+            GetPoint(InCoord.x, InCoord.y);
+      } /*GetPoint*/
+
+    private PointF GetPoint
+      (
+        float X,
+        float Y
+      )
+      /* returns point (X, Y) transformed through InverseOrient. */
+      {
+        final float[] Coords = new float[] {X, Y};
+        InverseOrient.mapPoints(Coords);
+        return
+            new PointF(Coords[0], Coords[1]);
+      } /*GetPoint*/
+
+    private PointF GetViewDimensions()
+      /* returns the view dimensions rotated 90°. */
+      {
+        return
+            new PointF(getHeight(), getWidth());
+      } /*GetViewDimensions*/
 
     public void Reset()
       {
@@ -55,7 +89,7 @@ public class SlideView extends android.view.View
         CursorX = 0.0f;
         if (ScaleLength > 0)
           {
-            ScaleLength = getWidth();
+            ScaleLength = (int)GetViewDimensions().x;
           } /*if*/
         invalidate();
       } /*Reset*/
@@ -66,6 +100,8 @@ public class SlideView extends android.view.View
       )
       /* common code for all constructors */
       {
+        Orient = new Matrix();
+        InverseOrient = new Matrix();
         TopScale = Scales.DefaultScale(Global.ScaleSelector.TopScale);
         UpperScale = Scales.DefaultScale(Global.ScaleSelector.UpperScale);
         LowerScale = Scales.DefaultScale(Global.ScaleSelector.LowerScale);
@@ -117,9 +153,13 @@ public class SlideView extends android.view.View
       /* just a place to finish initialization after I know what my layout will be */
       {
         super.onLayout(Changed, Left, Top, Right, Bottom);
+        Orient.reset();
+        Orient.postTranslate(0, - getWidth());
+        Orient.postRotate(90f);
+        Orient.invert(InverseOrient);
         if (ScaleLength < 0)
           {
-            ScaleLength = getWidth();
+            ScaleLength = (int)GetViewDimensions().x;
           } /*if*/
       } /*onLayout*/
 
@@ -233,7 +273,7 @@ public class SlideView extends android.view.View
                 Math.min
                   (
                     ScaleToView(NewPos, GetScale(ByScale).Size(), GetScaleOffset(ByScale)),
-                    getWidth()
+                    GetViewDimensions().x
                   )
               );
         invalidate();
@@ -301,6 +341,9 @@ public class SlideView extends android.view.View
         android.graphics.Canvas g
       )
       {
+        final PointF ViewDimensions = GetViewDimensions();
+        g.save();
+        g.concat(Orient);
           {
             final Paint BGHow = new Paint();
             BGHow.setColor(Scales.BackgroundColor);
@@ -308,9 +351,9 @@ public class SlideView extends android.view.View
             g.drawRect
               (
                 /*left =*/ 0.0f,
-                /*top =*/ getHeight() / 2.0f - Scales.HalfLayoutHeight,
-                /*right =*/ getWidth(),
-                /*bottom =*/ getHeight() / 2.0f + Scales.HalfLayoutHeight,
+                /*top =*/ ViewDimensions.y / 2.0f - Scales.HalfLayoutHeight,
+                /*right =*/ ViewDimensions.x,
+                /*bottom =*/ ViewDimensions.y / 2.0f + Scales.HalfLayoutHeight,
                 /*paint =*/ BGHow
               );
           }
@@ -324,7 +367,7 @@ public class SlideView extends android.view.View
                 new PointF
                   (
                     Scales.PrimaryMarkerLength / 2.0f,
-                    getHeight() / 2.0f - Scales.HalfLayoutHeight + (Scales.PrimaryMarkerLength - TextBounds.top) * 1.5f
+                    ViewDimensions.y / 2.0f - Scales.HalfLayoutHeight + (Scales.PrimaryMarkerLength - TextBounds.top) * 1.5f
                   ),
             /*Alignment =*/ Paint.Align.LEFT,
             /*Color =*/ Scales.MainColor
@@ -338,7 +381,7 @@ public class SlideView extends android.view.View
                 new PointF
                   (
                     Scales.PrimaryMarkerLength / 2.0f,
-                    getHeight() * 0.5f - (Scales.PrimaryMarkerLength + TextBounds.bottom) * 1.5f
+                    ViewDimensions.y * 0.5f - (Scales.PrimaryMarkerLength + TextBounds.bottom) * 1.5f
                   ),
             /*Alignment =*/ Paint.Align.LEFT,
             /*Color =*/ Scales.MainColor
@@ -352,7 +395,7 @@ public class SlideView extends android.view.View
                 new PointF
                   (
                     Scales.PrimaryMarkerLength / 2.0f,
-                    getHeight() * 0.5f + (Scales.PrimaryMarkerLength - TextBounds.top) * 1.5f
+                    ViewDimensions.y * 0.5f + (Scales.PrimaryMarkerLength - TextBounds.top) * 1.5f
                   ),
             /*Alignment =*/ Paint.Align.LEFT,
             /*Color =*/ Scales.MainColor
@@ -366,7 +409,7 @@ public class SlideView extends android.view.View
                 new PointF
                   (
                     Scales.PrimaryMarkerLength / 2.0f,
-                    getHeight() / 2.0f + Scales.HalfLayoutHeight - (Scales.PrimaryMarkerLength + TextBounds.bottom) * 1.5f
+                    ViewDimensions.y / 2.0f + Scales.HalfLayoutHeight - (Scales.PrimaryMarkerLength + TextBounds.bottom) * 1.5f
                   ),
             /*Alignment =*/ Paint.Align.LEFT,
             /*Color =*/ Scales.MainColor
@@ -376,14 +419,14 @@ public class SlideView extends android.view.View
           {
             for (boolean Edge = false;;)
               {
-                final android.graphics.Matrix m = new android.graphics.Matrix(m_orig);
+                final android.graphics.Matrix m = new android.graphics.Matrix();
                 final Scales.Scale TheScale =
                     Upper ?
                         Edge ? TopScale : UpperScale
                     :
                         Edge ? BottomScale : LowerScale;
                 final int ScaleRepeat =
-                        (getWidth() + (int)(ScaleLength * TheScale.Size() - 1))
+                        (int)(ViewDimensions.x + ScaleLength * TheScale.Size() - 1)
                     /
                         (int)(ScaleLength * TheScale.Size());
                 m.preTranslate
@@ -403,7 +446,7 @@ public class SlideView extends android.view.View
                         *
                             TheScale.Size()
                     ),
-                        getHeight() / 2.0f
+                        ViewDimensions.y / 2.0f
                     +
                         (Edge ?
                             Upper ?
@@ -416,7 +459,8 @@ public class SlideView extends android.view.View
                   );
                 for (int i = -1; i <= ScaleRepeat; ++i)
                   {
-                    g.setMatrix(m);
+                    g.setMatrix(m_orig);
+                    g.concat(m);
                     TheScale.Draw(g, (float)(ScaleLength * TheScale.Size()), Upper == Edge);
                     m.preTranslate((float)(ScaleLength * TheScale.Size()), 0.0f);
                   } /*for*/
@@ -433,7 +477,7 @@ public class SlideView extends android.view.View
             final float CursorLeft = CursorX - Scales.HalfCursorWidth;
             final float CursorRight = CursorX + Scales.HalfCursorWidth;
             final Paint CursorHow = new Paint();
-            g.drawLine(CursorX, 0.0f, CursorX, getHeight(), CursorHow);
+            g.drawLine(CursorX, 0.0f, CursorX, ViewDimensions.y, CursorHow);
             CursorHow.setStyle(Paint.Style.FILL);
             CursorHow.setColor(Scales.CursorFillColor);
             g.drawRect
@@ -441,14 +485,15 @@ public class SlideView extends android.view.View
                 /*left =*/ CursorLeft,
                 /*top =*/ 0.0f,
                 /*right =*/ CursorRight,
-                /*bottom =*/ getHeight(),
+                /*bottom =*/ ViewDimensions.y,
                 /*paint =*/ CursorHow
               );
             CursorHow.setStyle(Paint.Style.STROKE);
             CursorHow.setColor(Scales.CursorEdgeColor);
-            g.drawLine(CursorLeft, 0.0f, CursorLeft, getHeight(), CursorHow);
-            g.drawLine(CursorRight, 0.0f, CursorRight, getHeight(), CursorHow);
+            g.drawLine(CursorLeft, 0.0f, CursorLeft, ViewDimensions.y, CursorHow);
+            g.drawLine(CursorRight, 0.0f, CursorRight, ViewDimensions.y, CursorHow);
           }
+        g.restore();
       } /*onDraw*/
 
 /*
@@ -497,12 +542,13 @@ public class SlideView extends android.view.View
         MotionEvent TheEvent
       )
       {
+        final PointF ViewDimensions = GetViewDimensions();
         boolean Handled = false;
         System.err.printf("SlideView touch event 0x%04x\n", TheEvent.getAction()); /* debug */
         switch (TheEvent.getAction() & (1 << MotionEvent.ACTION_POINTER_ID_SHIFT) - 1)
           {
         case MotionEvent.ACTION_DOWN:
-            LastMouse1 = new PointF(TheEvent.getX(), TheEvent.getY());
+            LastMouse1 = GetPoint(TheEvent.getX(), TheEvent.getY());
             Mouse1ID = TheEvent.getPointerId(0);
             if
               (
@@ -513,7 +559,7 @@ public class SlideView extends android.view.View
               {
                 MovingWhat = MovingState.MovingCursor;
               }
-            else if (LastMouse1.y > getHeight() / 2.0f)
+            else if (LastMouse1.y > ViewDimensions.y / 2.0f)
               {
                 MovingWhat = MovingState.MovingLowerScale;
               }
@@ -521,7 +567,7 @@ public class SlideView extends android.view.View
               {
                 MovingWhat = MovingState.MovingBothScales;
               } /*if*/
-            PrecisionMove = Math.abs(LastMouse1.y - getHeight() / 2.0f) > Scales.HalfLayoutHeight;
+            PrecisionMove = Math.abs(LastMouse1.y - ViewDimensions.y / 2.0f) > Scales.HalfLayoutHeight;
             MouseMoved = false;
             Handled = true;
             getHandler().postDelayed(LongClicker, android.view.ViewConfiguration.getLongPressTimeout());
@@ -544,7 +590,7 @@ public class SlideView extends android.view.View
                     >>
                         MotionEvent.ACTION_POINTER_ID_SHIFT;
                 final int MouseID = TheEvent.getPointerId(PointerIndex);
-                final PointF MousePos = new PointF
+                final PointF MousePos = GetPoint
                   (
                     TheEvent.getX(PointerIndex),
                     TheEvent.getY(PointerIndex)
@@ -575,7 +621,7 @@ public class SlideView extends android.view.View
                   {
                     final PointF ThisMouse1 =
                         Mouse1Index >= 0 ?
-                            new PointF
+                            GetPoint
                               (
                                 TheEvent.getX(Mouse1Index),
                                 TheEvent.getY(Mouse1Index)
@@ -584,7 +630,7 @@ public class SlideView extends android.view.View
                             null;
                     final PointF ThisMouse2 =
                         Mouse2Index >= 0 ?
-                            new PointF
+                            GetPoint
                              (
                                TheEvent.getX(Mouse2Index),
                                TheEvent.getY(Mouse2Index)
@@ -599,15 +645,15 @@ public class SlideView extends android.view.View
                             &&
                                 ThisMouse2 != null
                             &&
-                                    ThisMouse1.y < getHeight() / 2.0f
+                                    ThisMouse1.y < ViewDimensions.y / 2.0f
                                 !=
-                                    ThisMouse2.y < getHeight() / 2.0f
+                                    ThisMouse2.y < ViewDimensions.y / 2.0f
                           )
                           {
                           /* simultaneous scrolling of both scales */
                             PointF
                                 ThisMouseUpper, ThisMouseLower, LastMouseUpper, LastMouseLower;
-                            if (ThisMouse1.y < getHeight() / 2.0f)
+                            if (ThisMouse1.y < ViewDimensions.y / 2.0f)
                               {
                                 ThisMouseUpper = ThisMouse1;
                                 LastMouseUpper = LastMouse1;
@@ -721,7 +767,7 @@ public class SlideView extends android.view.View
                                 switch (MovingWhat)
                                   {
                                 case MovingCursor:
-                                    CursorX = Math.max(0.0f, Math.min(CursorX + ThisMouse.x - LastMouse.x, getWidth()));
+                                    CursorX = Math.max(0.0f, Math.min(CursorX + ThisMouse.x - LastMouse.x, ViewDimensions.x));
                                     invalidate();
                                 break;
                                 case MovingBothScales:
@@ -777,9 +823,9 @@ public class SlideView extends android.view.View
                                         &&
                                             ThisMouse2 != null
                                         &&
-                                                ThisMouse1.y < getHeight() / 2.0f
+                                                ThisMouse1.y < ViewDimensions.y / 2.0f
                                             ==
-                                                ThisMouse2.y < getHeight() / 2.0f
+                                                ThisMouse2.y < ViewDimensions.y / 2.0f
                                       )
                                       {
                                       /* pinch to zoom--note no PrecisionMove here */
@@ -806,7 +852,7 @@ public class SlideView extends android.view.View
                                                     (int)(
                                                         ScaleLength * ThisDistance /  LastDistance
                                                     ),
-                                                    getWidth()
+                                                    (int)ViewDimensions.x
                                                   );
                                             invalidate();
                                           } /*if*/
