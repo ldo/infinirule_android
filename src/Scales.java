@@ -261,6 +261,7 @@ public class Scales
                         /*y =*/ TopEdge ? PrimaryMarkerLength : - PrimaryMarkerLength,
                         /*UsePaint =*/ TextHow
                       );
+                  /* fixme: should check label text does not overlap previous/next label */
                   } /*if*/
                 DrawSubGraduations
                   (
@@ -278,7 +279,7 @@ public class Scales
                   );
               } /*if*/
           } /*for*/
-        if (Leftmost != PrimaryGraduations[0])
+        if (Leftmost != PrimaryGraduations[0] || Rightmost != PrimaryGraduations[PrimaryGraduations.length - 1])
           {
           /* draw alternate-colour marker indicating scale does not wraparound */
             LineHow.setColor(AltColor);
@@ -562,6 +563,80 @@ public class Scales
               );
           } /*Draw*/
       } /*LogXScale*/
+
+    public static class LnXScale implements Scale
+      {
+        public final static double Ln10 = Math.log(10.0);
+
+        public String Name()
+          {
+            return
+                "ln \u1e8b";
+          } /*Name*/
+
+        public double Size()
+          {
+            return
+                1.0;
+          } /*Size*/
+
+        public double ExtraOffset()
+          {
+            return
+                0.0;
+          } /*ExtraOffset*/
+
+        public double ValueAt
+          (
+            double Pos
+          )
+          {
+            return
+                Pos * Ln10;
+          } /*ValueAt*/
+
+        public double PosAt
+          (
+            double Value
+          )
+          {
+            return
+                Value / Ln10;
+          } /*PosAt*/
+
+        public void Draw
+          (
+            Canvas g,
+            float ScaleLength,
+            boolean TopEdge
+          )
+          {
+            final int NrGraduations = 25;
+            final double[] Graduations = new double[NrGraduations];
+            for (int i = 0; i < NrGraduations; ++i)
+              {
+                Graduations[i] = i / 10.0;
+              } /*for*/
+            final int[] NrDivisions = new int[NrGraduations - 1];
+            for (int i = 0; i < NrDivisions.length; ++i)
+              {
+                NrDivisions[i] = 10;
+              } /*for*/
+            DrawGraduations
+              (
+                /*g =*/ g,
+                /*ScaleLength =*/ ScaleLength,
+                /*TopEdge =*/ TopEdge,
+                /*TheScale =*/ this,
+                /*PrimaryGraduations =*/ Graduations,
+                /*NrDivisions =*/ NrDivisions,
+                /*Leftmost =*/ Graduations[0],
+                /*Rightmost =*/ ValueAt(1.0),
+                /*NrDecimals =*/ 1,
+                /*Multiplier =*/ 1
+              );
+          } /*Draw*/
+      } /*LnXScale*/
 
     public static class ASinATanXScale implements Scale
       /* 0.57° < asin/atan X in degrees ≤ 5.7° */
@@ -1224,6 +1299,7 @@ public class Scales
                         new XNScale("1/\u1e8b²", -2, 0.0),
                         new XNScale("1/\u1e8b³", -3, 0.0),
                         new LogXScale(),
+                        new LnXScale(),
                         new XNScale("\u03c0\u1e8b", 1, - Math.log10(Math.PI)),
                         new ASinATanXScale(),
                         new ASinACosXScale(false),
