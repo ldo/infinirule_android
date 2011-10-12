@@ -255,8 +255,9 @@ public class SlideView extends android.view.View
       )
       /* returns the cursor position relative to the specified scale. */
       {
+        final double Pos = ViewToScale(CursorX, GetScale(ByScale).Size(), GetScaleOffset(ByScale));
         return
-            ViewToScale(CursorX, GetScale(ByScale).Size(), GetScaleOffset(ByScale));
+            Pos - Math.floor(Pos);
       } /*GetCursorPos*/
 
     public void SetCursorPos
@@ -266,16 +267,10 @@ public class SlideView extends android.view.View
       )
       /* sets a new cursor position relative to the specified scale. */
       {
-        CursorX =
-            Math.max
-              (
-                0,
-                Math.min
-                  (
-                    ScaleToView(NewPos, GetScale(ByScale).Size(), GetScaleOffset(ByScale)),
-                    GetViewDimensions().x
-                  )
-              );
+        final float NewX =
+            (float)ScaleToView(NewPos, GetScale(ByScale).Size(), GetScaleOffset(ByScale));
+        final float ViewWidth = GetViewDimensions().x;
+        CursorX = NewX - (float)Math.floor(NewX / ViewWidth) * ViewWidth;
         invalidate();
       } /*SetCursorPos*/
 
