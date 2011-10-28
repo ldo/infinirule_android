@@ -47,6 +47,7 @@ public class SlideView extends android.view.View
     private double TopScaleOffset, UpperScaleOffset, LowerScaleOffset, BottomScaleOffset; /* (-1.0 .. 0.0] */
     private float CursorX; /* view x-coordinate */
     private int ScaleLength; /* in pixels */
+    private static final float MaxZoom = 1000.0f; /* something reasonable so rendering doesn't get too slow */
 
     private android.os.Vibrator Vibrate;
 
@@ -842,12 +843,16 @@ public class SlideView extends android.view.View
                                           )
                                           {
                                             ScaleLength =
-                                                Math.max
+                                                Math.min
                                                   (
-                                                    (int)(
-                                                        ScaleLength * ThisDistance /  LastDistance
-                                                    ),
-                                                    (int)ViewDimensions.x
+                                                    Math.max
+                                                      (
+                                                        (int)(
+                                                            ScaleLength * ThisDistance /  LastDistance
+                                                        ),
+                                                        (int)ViewDimensions.x
+                                                      ),
+                                                    (int)(ViewDimensions.x * MaxZoom)
                                                   );
                                             invalidate();
                                           } /*if*/
