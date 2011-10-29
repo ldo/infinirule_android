@@ -227,7 +227,7 @@ public class ScalePicker extends android.app.Activity
         PickerList = new SelectedItemAdapter(this, R.layout.scale_picker_item, getLayoutInflater());
         PickerList.clear();
           {
-            final java.util.TreeSet<PickerItem> ResultTemp =
+            final java.util.TreeSet<PickerItem> ResultTemp = /* this is how you sort things in Java */
                 new java.util.TreeSet<PickerItem>
                   (
                     new java.util.Comparator<PickerItem>()
