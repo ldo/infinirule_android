@@ -429,4 +429,24 @@ public class Main
           } /*if*/
       } /*onActivityResult*/
 
+    @Override
+    public void onSaveInstanceState
+      (
+        android.os.Bundle ToSaveInstanceState
+      )
+      {
+        super.onSaveInstanceState(ToSaveInstanceState);
+        ToSaveInstanceState.putAll(Slide.SaveState());
+      } /*onPause*/
+
+    @Override
+    public void onRestoreInstanceState
+      (
+        android.os.Bundle SavedInstanceState
+      )
+      {
+        Slide.RestoreState(SavedInstanceState);
+        super.onRestoreInstanceState(SavedInstanceState);
+      } /*onResume*/
+
   } /*Main*/

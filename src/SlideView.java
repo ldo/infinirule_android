@@ -40,6 +40,7 @@ public class SlideView extends android.view.View
           );
       } /*ContextMenuAction*/
 
+    private boolean LayoutDone = false;
     private Matrix Orient, InverseOrient;
       /* rotate entire display so rule is drawn in landscape orientation,
         but context menus pop up in orientation of activity, which is portrait */
@@ -141,28 +142,6 @@ public class SlideView extends android.view.View
         super(Context, Attributes, DefaultStyle);
         Init(Context);
       } /*SlideView*/
-
-    @Override
-    protected void onLayout
-      (
-        boolean Changed,
-        int Left,
-        int Top,
-        int Right,
-        int Bottom
-      )
-      /* just a place to finish initialization after I know what my layout will be */
-      {
-        super.onLayout(Changed, Left, Top, Right, Bottom);
-        Orient.reset();
-        Orient.postTranslate(0, - getWidth());
-        Orient.postRotate(90f);
-        Orient.invert(InverseOrient);
-        if (ScaleLength < 0)
-          {
-            ScaleLength = (int)GetViewDimensions().x;
-          } /*if*/
-      } /*onLayout*/
 
     public void SetScale
       (
@@ -924,5 +903,101 @@ public class SlideView extends android.view.View
               );
           } /*if*/
       } /*onCreateContextMenu*/
+
+/*
+    Save/restore state
+*/
+
+    public android.os.Bundle SaveState()
+      /* returns a snapshot of the current slide rule state. */
+      {
+        final android.os.Bundle SavedState = new android.os.Bundle();
+        SavedState.putString("topscale", TopScale.Name());
+        SavedState.putString("upperscale", UpperScale.Name());
+        SavedState.putString("lowerscale", LowerScale.Name());
+        SavedState.putString("bottomscale", BottomScale.Name());
+        SavedState.putDouble("topscale_offset", TopScaleOffset);
+        SavedState.putDouble("upperscale_offset", UpperScaleOffset);
+        SavedState.putDouble("lowerscale_offset", LowerScaleOffset);
+        SavedState.putDouble("bottomscale_offset", BottomScaleOffset);
+        SavedState.putFloat("cursor_x", CursorX);
+        SavedState.putFloat("scalezoom", ScaleLength / GetViewDimensions().x);
+        return
+            SavedState;
+      } /*SaveState*/
+
+    private android.os.Bundle PendingRestoreState = null;
+
+    public void RestoreState
+      (
+        android.os.Bundle SavedState
+      )
+      /* restores the slide rule state from a previous snapshot. */
+      {
+        if (LayoutDone)
+          {
+            TopScale = Scales.KnownScales.get(SavedState.getString("topscale"));
+            UpperScale = Scales.KnownScales.get(SavedState.getString("upperscale"));
+            LowerScale = Scales.KnownScales.get(SavedState.getString("lowerscale"));
+            BottomScale = Scales.KnownScales.get(SavedState.getString("bottomscale"));
+            if (TopScale == null)
+              {
+                TopScale = Scales.DefaultScale(Global.ScaleSelector.TopScale);
+              } /*if*/
+            if (UpperScale == null)
+              {
+                UpperScale = Scales.DefaultScale(Global.ScaleSelector.UpperScale);
+              } /*if*/
+            if (LowerScale == null)
+              {
+                LowerScale = Scales.DefaultScale(Global.ScaleSelector.LowerScale);
+              } /*if*/
+            if (BottomScale == null)
+              {
+                BottomScale = Scales.DefaultScale(Global.ScaleSelector.BottomScale);
+              } /*if*/
+            TopScaleOffset = SavedState.getDouble("topscale_offset", 0.0f);
+            UpperScaleOffset = SavedState.getDouble("upperscale_offset", 0.0f);
+            LowerScaleOffset = SavedState.getDouble("lowerscale_offset", 0.0f);
+            BottomScaleOffset = SavedState.getDouble("bottomscale_offset", 0.0f);
+            CursorX = Math.max(0.0f, Math.min(SavedState.getFloat("cursor_x", 0.0f), GetViewDimensions().x));
+            ScaleLength = (int)(SavedState.getFloat("scalezoom", 1.0f) * GetViewDimensions().x);
+            invalidate();
+          }
+        else
+          {
+          /* defer to next onLayout call */
+            PendingRestoreState = SavedState;
+          } /*if*/
+      } /*RestoreState*/
+
+    @Override
+    protected void onLayout
+      (
+        boolean Changed,
+        int Left,
+        int Top,
+        int Right,
+        int Bottom
+      )
+      /* just a place to finish initialization/state restoriation after I
+        know what my layout will be */
+      {
+        super.onLayout(Changed, Left, Top, Right, Bottom);
+        LayoutDone = true;
+        Orient.reset();
+        Orient.postTranslate(0, - getWidth());
+        Orient.postRotate(90f);
+        Orient.invert(InverseOrient);
+        if (PendingRestoreState != null)
+          {
+            RestoreState(PendingRestoreState);
+            PendingRestoreState = null;
+          } /*if*/
+        if (ScaleLength < 0)
+          {
+            ScaleLength = (int)GetViewDimensions().x;
+          } /*if*/
+      } /*onLayout*/
 
   } /*SlideView*/
