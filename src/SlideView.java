@@ -27,10 +27,10 @@ import android.view.MotionEvent;
 public class SlideView extends android.view.View
   {
     public enum ContextMenuTypes
-     {
+      {
         Cursor,
         Scales,
-     } /*ContextMenuTypes*/
+      } /*ContextMenuTypes*/
     public interface ContextMenuAction
       {
         public void CreateContextMenu
@@ -494,7 +494,7 @@ public class SlideView extends android.view.View
     private boolean PrecisionMove = false;
     private final float PrecisionFactor = 10.0f;
 
-    protected final Runnable LongClicker =
+    private final Runnable LongClicker =
       /* do my own long-click handling, because setOnLongClickListener doesn't seem to work */
         new Runnable()
           {
