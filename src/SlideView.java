@@ -82,18 +82,47 @@ public class SlideView extends android.view.View
             new PointF(getHeight(), getWidth());
       } /*GetViewDimensions*/
 
-    public void Reset()
+    public void Reset
+      (
+        boolean Animate
+      )
       {
-        TopScaleOffset = 0.0;
-        UpperScaleOffset = 0.0;
-        LowerScaleOffset = 0.0;
-        BottomScaleOffset = 0.0;
-        CursorX = 0.0f;
-        if (ScaleLength > 0)
+        if (Animate)
           {
-            ScaleLength = (int)GetViewDimensions().x;
+            final double Now = System.currentTimeMillis() / 1000.0;
+            final double SlideDuration = 1.0f; /* maybe make this depend on offset amounts in future */
+            new SlideAnimator
+              (
+                /*AnimFunction =*/ new android.view.animation.AccelerateDecelerateInterpolator(),
+                /*StartTime =*/ Now,
+                /*EndTime =*/ Now + SlideDuration,
+                /*StartTopScaleOffset =*/ TopScaleOffset,
+                /*EndTopScaleOffset =*/ 0.0,
+                /*StartUpperScaleOffset =*/ UpperScaleOffset,
+                /*EndUpperScaleOffset =*/ 0.0,
+                /*StartLowerScaleOffset =*/ LowerScaleOffset,
+                /*EndLowerScaleOffset =*/ 0.0,
+                /*StartBottomScaleOffset =*/ BottomScaleOffset,
+                /*EndBottomScaleOffset =*/ 0.0,
+                /*StartCursorX =*/ CursorX,
+                /*EndCursorX =*/ 0.0f,
+                /*StartScaleLength =*/ ScaleLength,
+                /*EndScaleLength =*/ (int)GetViewDimensions().x
+              );
+          }
+        else
+          {
+            TopScaleOffset = 0.0;
+            UpperScaleOffset = 0.0;
+            LowerScaleOffset = 0.0;
+            BottomScaleOffset = 0.0;
+            CursorX = 0.0f;
+            if (ScaleLength > 0)
+              {
+                ScaleLength = (int)GetViewDimensions().x;
+              } /*if*/
+            invalidate();
           } /*if*/
-        invalidate();
       } /*Reset*/
 
     private void Init
@@ -111,7 +140,7 @@ public class SlideView extends android.view.View
         ScaleLength = -1; /* proper value deferred to onLayout */
         Vibrate =
             (android.os.Vibrator)Context.getSystemService(android.content.Context.VIBRATOR_SERVICE);
-        Reset();
+        Reset(false);
       } /*Init*/
 
     public SlideView
@@ -511,12 +540,110 @@ public class SlideView extends android.view.View
               } /*run*/
           } /*Runnable*/;
 
+    private class SlideAnimator implements Runnable
+      {
+        final android.view.animation.Interpolator AnimFunction;
+        final double StartTime, EndTime;
+        final double
+            StartTopScaleOffset, EndTopScaleOffset,
+            StartUpperScaleOffset, EndUpperScaleOffset,
+            StartLowerScaleOffset, EndLowerScaleOffset,
+            StartBottomScaleOffset, EndBottomScaleOffset;
+        final float
+            StartCursorX, EndCursorX;
+        final int
+            StartScaleLength, EndScaleLength;
+
+        public SlideAnimator
+          (
+            android.view.animation.Interpolator AnimFunction,
+            double StartTime,
+            double EndTime,
+            double StartTopScaleOffset,
+            double EndTopScaleOffset,
+            double StartUpperScaleOffset,
+            double EndUpperScaleOffset,
+            double StartLowerScaleOffset,
+            double EndLowerScaleOffset,
+            double StartBottomScaleOffset,
+            double EndBottomScaleOffset,
+            float StartCursorX,
+            float EndCursorX,
+            int StartScaleLength,
+            int EndScaleLength
+          )
+          {
+            this.AnimFunction = AnimFunction;
+            this.StartTime = StartTime;
+            this.EndTime = EndTime;
+            this.StartTopScaleOffset = StartTopScaleOffset;
+            this.EndTopScaleOffset = EndTopScaleOffset;
+            this.StartUpperScaleOffset = StartUpperScaleOffset;
+            this.EndUpperScaleOffset = EndUpperScaleOffset;
+            this.StartLowerScaleOffset = StartLowerScaleOffset;
+            this.EndLowerScaleOffset = EndLowerScaleOffset;
+            this.StartBottomScaleOffset = StartBottomScaleOffset;
+            this.EndBottomScaleOffset = EndBottomScaleOffset;
+            this.StartCursorX = StartCursorX;
+            this.EndCursorX = EndCursorX;
+            this.StartScaleLength = StartScaleLength;
+            this.EndScaleLength = EndScaleLength;
+            CurrentAnim = this;
+            getHandler().post(this);
+          } /*SlideAnimator*/
+
+        public void run()
+          {
+            if (CurrentAnim == this)
+              {
+                final double CurrentTime = System.currentTimeMillis() / 1000.0;
+                final float AnimAmt =
+                    AnimFunction.getInterpolation
+                      (
+                        (float)((CurrentTime - StartTime) / (EndTime - StartTime))
+                      );
+                TopScaleOffset =
+                        StartTopScaleOffset
+                    +
+                        (EndTopScaleOffset - StartTopScaleOffset) * AnimAmt;
+                UpperScaleOffset =
+                        StartUpperScaleOffset
+                    +
+                        (EndUpperScaleOffset - StartUpperScaleOffset) * AnimAmt;
+                LowerScaleOffset =
+                        StartLowerScaleOffset
+                    +
+                        (EndLowerScaleOffset - StartLowerScaleOffset) * AnimAmt;
+                BottomScaleOffset =
+                        StartBottomScaleOffset
+                    +
+                        (EndBottomScaleOffset - StartBottomScaleOffset) * AnimAmt;
+                CursorX = StartCursorX + (float)((EndCursorX - StartCursorX) * AnimAmt);
+                ScaleLength = StartScaleLength + (int)((EndScaleLength - StartScaleLength) * AnimAmt);
+                invalidate();
+                final android.os.Handler MyHandler = getHandler();
+                  /* can be null if activity is being destroyed */
+                if (MyHandler != null && CurrentTime < EndTime)
+                  {
+                    MyHandler.post(this);
+                  }
+                else
+                  {
+                    CurrentAnim = null;
+                  } /*if*/
+              } /*if*/
+          } /*run*/
+      } /*SlideAnimator*/
+
+    private SlideAnimator CurrentAnim = null;
+
     @Override
     public boolean onTouchEvent
       (
         MotionEvent TheEvent
       )
       {
+        CurrentAnim = null; /* cancel any animation in progress */
         final PointF ViewDimensions = GetViewDimensions();
         boolean Handled = false;
         System.err.printf("SlideView touch event 0x%04x\n", TheEvent.getAction()); /* debug */

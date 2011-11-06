@@ -156,7 +156,7 @@ public class Main
               {
                 public void run()
                   {
-                    Slide.Reset();
+                    Slide.Reset(true);
                   } /*run*/
               } /*Runnable*/
           );
