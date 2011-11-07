@@ -272,15 +272,43 @@ public class SlideView extends android.view.View
     public void SetCursorPos
       (
         Global.ScaleSelector ByScale,
-        double NewPos
+        double NewPos,
+        boolean Animate
       )
       /* sets a new cursor position relative to the specified scale. */
       {
         final float NewX =
             (float)ScaleToView(NewPos, GetScale(ByScale).Size(), GetScaleOffset(ByScale));
         final float ViewWidth = GetViewDimensions().x;
-        CursorX = NewX - (float)Math.floor(NewX / ViewWidth) * ViewWidth;
-        invalidate();
+        final float NewCursorX = NewX - (float)Math.floor(NewX / ViewWidth) * ViewWidth;
+        if (Animate)
+          {
+            final double Now = System.currentTimeMillis() / 1000.0;
+            final double SlideDuration = 1.0f; /* maybe make this depend on offset amounts in future */
+            new SlideAnimator
+              (
+                /*AnimFunction =*/ new android.view.animation.AccelerateDecelerateInterpolator(),
+                /*StartTime =*/ Now,
+                /*EndTime =*/ Now + SlideDuration,
+                /*StartTopScaleOffset =*/ TopScaleOffset,
+                /*EndTopScaleOffset =*/ TopScaleOffset,
+                /*StartUpperScaleOffset =*/ UpperScaleOffset,
+                /*EndUpperScaleOffset =*/ UpperScaleOffset,
+                /*StartLowerScaleOffset =*/ LowerScaleOffset,
+                /*EndLowerScaleOffset =*/ LowerScaleOffset,
+                /*StartBottomScaleOffset =*/ BottomScaleOffset,
+                /*EndBottomScaleOffset =*/ BottomScaleOffset,
+                /*StartCursorX =*/ CursorX,
+                /*EndCursorX =*/ NewCursorX,
+                /*StartScaleLength =*/ ScaleLength,
+                /*EndScaleLength =*/ ScaleLength
+              );
+          }
+        else
+          {
+            CursorX = NewCursorX;
+            invalidate();
+          } /*if*/
       } /*SetCursorPos*/
 
     public void SetContextMenuAction

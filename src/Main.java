@@ -278,7 +278,7 @@ public class Main
                                             final double ScalePos = TheScale.PosAt(Value);
                                             if (ScalePos >= TheScale.ValueAt(0.0) && ScalePos < TheScale.ValueAt(1.0)) /* TBD auto-range-adjust for wrapping scales? */
                                               {
-                                                Slide.SetCursorPos(s.WhichScale, ScalePos);
+                                                Slide.SetCursorPos(s.WhichScale, ScalePos, true);
                                               }
                                             else
                                               {
