@@ -277,10 +277,47 @@ public class SlideView extends android.view.View
       )
       /* sets a new cursor position relative to the specified scale. */
       {
-        final float NewX =
-            (float)ScaleToView(NewPos, GetScale(ByScale).Size(), GetScaleOffset(ByScale));
+        double NewTopScaleOffset = TopScaleOffset;
+        double NewUpperScaleOffset = UpperScaleOffset;
+        double NewLowerScaleOffset = LowerScaleOffset;
+        double NewBottomScaleOffset = BottomScaleOffset;
         final float ViewWidth = GetViewDimensions().x;
-        final float NewCursorX = NewX - (float)Math.floor(NewX / ViewWidth) * ViewWidth;
+        float NewCursorX =
+            (float)ScaleToView(NewPos, GetScale(ByScale).Size(), GetScaleOffset(ByScale));
+        if (NewCursorX < 0.0f || NewCursorX >= ViewWidth)
+          {
+          /* adjust offsets of all scales as necessary to bring cursor position into view */
+            final float NewX = ViewWidth * 0.5f; /* new cursor position will be in middle */
+            NewTopScaleOffset =
+                FindScaleOffset
+                  (
+                    NewX,
+                    TopScale.Size(),
+                    ViewToScale(NewCursorX, TopScale.Size(), TopScaleOffset)
+                  );
+            NewUpperScaleOffset =
+                FindScaleOffset
+                  (
+                    NewX,
+                    UpperScale.Size(),
+                    ViewToScale(NewCursorX, UpperScale.Size(), UpperScaleOffset)
+                  );
+            NewLowerScaleOffset =
+                FindScaleOffset
+                  (
+                    NewX,
+                    LowerScale.Size(),
+                    ViewToScale(NewCursorX, LowerScale.Size(), LowerScaleOffset)
+                  );
+            NewBottomScaleOffset =
+                FindScaleOffset
+                  (
+                    NewX,
+                    BottomScale.Size(),
+                    ViewToScale(NewCursorX, BottomScale.Size(), BottomScaleOffset)
+                  );
+            NewCursorX = NewX;
+          } /*if*/
         if (Animate)
           {
             final double Now = System.currentTimeMillis() / 1000.0;
@@ -291,13 +328,13 @@ public class SlideView extends android.view.View
                 /*StartTime =*/ Now,
                 /*EndTime =*/ Now + SlideDuration,
                 /*StartTopScaleOffset =*/ TopScaleOffset,
-                /*EndTopScaleOffset =*/ TopScaleOffset,
+                /*EndTopScaleOffset =*/ NewTopScaleOffset,
                 /*StartUpperScaleOffset =*/ UpperScaleOffset,
-                /*EndUpperScaleOffset =*/ UpperScaleOffset,
+                /*EndUpperScaleOffset =*/ NewUpperScaleOffset,
                 /*StartLowerScaleOffset =*/ LowerScaleOffset,
-                /*EndLowerScaleOffset =*/ LowerScaleOffset,
+                /*EndLowerScaleOffset =*/ NewLowerScaleOffset,
                 /*StartBottomScaleOffset =*/ BottomScaleOffset,
-                /*EndBottomScaleOffset =*/ BottomScaleOffset,
+                /*EndBottomScaleOffset =*/ NewBottomScaleOffset,
                 /*StartCursorX =*/ CursorX,
                 /*EndCursorX =*/ NewCursorX,
                 /*StartScaleLength =*/ ScaleLength,
@@ -306,6 +343,10 @@ public class SlideView extends android.view.View
           }
         else
           {
+            TopScaleOffset = NewTopScaleOffset;
+            UpperScaleOffset = NewUpperScaleOffset;
+            LowerScaleOffset = NewLowerScaleOffset;
+            BottomScaleOffset = NewBottomScaleOffset;
             CursorX = NewCursorX;
             invalidate();
           } /*if*/

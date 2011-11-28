@@ -275,10 +275,20 @@ public class Main
                                         try
                                           {
                                             final double Value = Double.parseDouble(NumString.toString());
-                                            final double ScalePos = TheScale.PosAt(Value);
-                                            if (ScalePos >= TheScale.ValueAt(0.0) && ScalePos < TheScale.ValueAt(1.0)) /* TBD auto-range-adjust for wrapping scales? */
+                                            double ScalePos = TheScale.PosAt(Value);
+                                            if
+                                              (
+                                                    TheScale.Wrap()
+                                                ||
+                                                    ScalePos >= 0.0 && ScalePos < 1.0
+                                              )
                                               {
-                                                Slide.SetCursorPos(s.WhichScale, ScalePos, true);
+                                                Slide.SetCursorPos
+                                                  (
+                                                    /*ByScale =*/ s.WhichScale,
+                                                    /*NewPos =*/ ScalePos - Math.floor(ScalePos),
+                                                    /*Animate =*/ true
+                                                  );
                                               }
                                             else
                                               {

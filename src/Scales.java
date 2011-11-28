@@ -48,6 +48,9 @@ public class Scales
         public double ExtraOffset();
           /* nonzero for folded versions of scales */
 
+        public boolean Wrap();
+          /* true if scale seamlessly wraps around, so decimal point is somewhat arbitrary. */
+
         public double ValueAt
           (
             double Pos /* [0.0 .. 1.0) */
@@ -461,6 +464,12 @@ public class Scales
                 1.0 / Math.abs(Power);
           } /*Size*/
 
+        public boolean Wrap()
+          {
+            return
+                true;
+          } /*Wrap*/
+
         public double ExtraOffset()
           {
             return
@@ -521,6 +530,12 @@ public class Scales
                 1.0;
           } /*Size*/
 
+        public boolean Wrap()
+          {
+            return
+                false;
+          } /*Wrap*/
+
         public double ExtraOffset()
           {
             return
@@ -579,6 +594,12 @@ public class Scales
             return
                 1.0;
           } /*Size*/
+
+        public boolean Wrap()
+          {
+            return
+                true;
+          } /*Wrap*/
 
         public double ExtraOffset()
           {
@@ -652,6 +673,12 @@ public class Scales
             return
                 1.0;
           } /*Size*/
+
+        public boolean Wrap()
+          {
+            return
+                false;
+          } /*Wrap*/
 
         public double ExtraOffset()
           {
@@ -754,6 +781,12 @@ public class Scales
             return
                 1.0;
           } /*Size*/
+
+        public boolean Wrap()
+          {
+            return
+                false;
+          } /*Wrap*/
 
         public double ExtraOffset()
           {
@@ -869,6 +902,12 @@ public class Scales
                 1.0;
           } /*Size*/
 
+        public boolean Wrap()
+          {
+            return
+                false;
+          } /*Wrap*/
+
         public double ExtraOffset()
           {
             return
@@ -969,6 +1008,12 @@ public class Scales
             return
                 1.0;
           } /*Size*/
+
+        public boolean Wrap()
+          {
+            return
+                false;
+          } /*Wrap*/
 
         public double ExtraOffset()
           {
