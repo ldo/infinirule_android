@@ -637,7 +637,6 @@ public class SlideView extends android.view.View
           {
             public void run()
               {
-                System.err.println("SlideView: LongClicker activated"); /* debug */
                 showContextMenu();
               /* stop handling cursor/scale movements */
                 LastMouse1 = null;
@@ -754,7 +753,6 @@ public class SlideView extends android.view.View
         CurrentAnim = null; /* cancel any animation in progress */
         final PointF ViewDimensions = GetViewDimensions();
         boolean Handled = false;
-        System.err.printf("SlideView touch event 0x%04x\n", TheEvent.getAction()); /* debug */
         switch (TheEvent.getAction() & (1 << MotionEvent.ACTION_POINTER_ID_SHIFT) - 1)
           {
         case MotionEvent.ACTION_DOWN:
@@ -959,11 +957,6 @@ public class SlideView extends android.view.View
                                 if (!MouseMoved)
                                   {
                                     getHandler().removeCallbacks(LongClicker);
-                                    System.err.printf
-                                      (
-                                        "SlideView mouse moved, scaled touch slop = %d\n",
-                                        android.view.ViewConfiguration.get(getContext()).getScaledTouchSlop()
-                                      ); /* debug */
                                     MouseMoved = true;
                                   } /*if*/
                                 if (PrecisionMove)

@@ -244,7 +244,6 @@ public class Main
         SlideView.ContextMenuTypes MenuType
       )
       {
-        System.err.println("Main.CreateContextMenu"); /* debug */
         ContextMenu = new java.util.HashMap<android.view.MenuItem, Runnable>();
         switch (MenuType)
           {
@@ -375,17 +374,6 @@ public class Main
       } /*CreateContextMenu*/
 
     @Override
-    public void onCreateContextMenu
-      (
-        android.view.ContextMenu TheMenu,
-        android.view.View TheView,
-        android.view.ContextMenu.ContextMenuInfo TheMenuInfo
-      )
-      {
-        System.err.println("Main.onCreateContextMenu"); /* debug */
-      } /*onCreateContextMenu*/
-
-    @Override
     public boolean onOptionsItemSelected
       (
         android.view.MenuItem TheItem
@@ -408,7 +396,6 @@ public class Main
         android.view.MenuItem TheItem
       )
       {
-        System.err.println("Main.onContextItemSelected"); /* debug */
         boolean Handled = false;
         final Runnable Action = ContextMenu.get(TheItem);
         if (Action != null)
