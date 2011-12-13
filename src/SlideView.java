@@ -282,8 +282,19 @@ public class SlideView extends android.view.View
         double NewLowerScaleOffset = LowerScaleOffset;
         double NewBottomScaleOffset = BottomScaleOffset;
         final float ViewWidth = GetViewDimensions().x;
-        float NewCursorX =
-            (float)ScaleToView(NewPos, GetScale(ByScale).Size(), GetScaleOffset(ByScale));
+        final Scales.Scale TheScale = GetScale(ByScale);
+        float NewCursorX = ScaleToView(NewPos, TheScale.Size(), GetScaleOffset(ByScale));
+        if (TheScale.Wrap() && (NewCursorX < 0.0f || NewCursorX >= ViewWidth))
+          {
+            final float Left = ScaleToView(0.0, TheScale.Size(), GetScaleOffset(ByScale));
+            final float Right = ScaleToView(1.0, TheScale.Size(), GetScaleOffset(ByScale));
+            final float Length = Right - Left;
+            final float NewX = NewCursorX - (float)Math.floor((NewCursorX - Left) / Length) * Length;
+            if (NewX >= 0 && NewX < ViewWidth)
+              {
+                NewCursorX = NewX;
+              } /*if*/
+          } /*if*/
         if (NewCursorX < 0.0f || NewCursorX >= ViewWidth)
           {
           /* adjust offsets of all scales as necessary to bring cursor position into view */
@@ -366,7 +377,7 @@ public class SlideView extends android.view.View
 
     public float ScaleToView
       (
-        double Pos, /* [0.0 .. 1.0) */
+        double Pos, /* [0.0 .. 1.0] */
         double Size,
         double Offset
       )
