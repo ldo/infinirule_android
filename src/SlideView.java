@@ -392,7 +392,8 @@ public class SlideView extends android.view.View
       (
         float Coord,
         double Size,
-        double Offset
+        double Offset,
+        int ScaleLength
       )
       /* returns a view coordinate converted to the corresponding
         position on a scale offset by the given amount. */
@@ -400,6 +401,34 @@ public class SlideView extends android.view.View
         return
             Coord / Size / ScaleLength - Offset;
       } /*ViewToScale*/
+
+    public double ViewToScale
+      (
+        float Coord,
+        double Size,
+        double Offset
+      )
+      /* returns a view coordinate converted to the corresponding
+        position on a scale offset by the given amount. */
+      {
+        return
+            ViewToScale(Coord, Size, Offset, ScaleLength);
+      } /*ViewToScale*/
+
+    public double FindScaleOffset
+      (
+        float Coord,
+        double Size,
+        double Pos,
+        int ScaleLength
+      )
+      /* finds the offset value such that the specified view coordinate
+        maps to the specified position on a scale. */
+      {
+        final double Offset = Coord / Size / ScaleLength - Pos;
+        return
+            Offset - Math.ceil(Offset);
+      } /*FindScaleOffset*/
 
     public double FindScaleOffset
       (
@@ -410,9 +439,8 @@ public class SlideView extends android.view.View
       /* finds the offset value such that the specified view coordinate
         maps to the specified position on a scale. */
       {
-        final double Offset = Coord / Size / ScaleLength - Pos;
         return
-            Offset - Math.ceil(Offset);
+            FindScaleOffset(Coord, Size, Pos, ScaleLength);
       } /*FindScaleOffset*/
 
 /*
@@ -946,12 +974,74 @@ public class SlideView extends android.view.View
                                         ThisMouse.y
                                       );
                                   } /*if*/
+                                int NewScaleLength = ScaleLength;
+                                if
+                                  (
+                                        MovingWhat != MovingState.MovingCursor
+                                    &&
+                                        ThisMouse1 != null
+                                    &&
+                                        ThisMouse2 != null
+                                    &&
+                                            ThisMouse1.y < ViewDimensions.y / 2.0f
+                                        ==
+                                            ThisMouse2.y < ViewDimensions.y / 2.0f
+                                  )
+                                  {
+                                  /* pinch to zoom--note no PrecisionMove here */
+                                    final float LastDistance = (float)Math.hypot
+                                      (
+                                        LastMouse1.x - LastMouse2.x,
+                                        LastMouse1.y - LastMouse2.y
+                                      );
+                                    final float ThisDistance = (float)Math.hypot
+                                      (
+                                        ThisMouse1.x - ThisMouse2.x,
+                                        ThisMouse1.y - ThisMouse2.y
+                                      );
+                                    if
+                                      (
+                                            LastDistance != 0.0f
+                                        &&
+                                            ThisDistance != 0.0f
+                                      )
+                                      {
+                                        NewScaleLength =
+                                            Math.min
+                                              (
+                                                Math.max
+                                                  (
+                                                    (int)(
+                                                        ScaleLength * ThisDistance /  LastDistance
+                                                    ),
+                                                    (int)ViewDimensions.x
+                                                  ),
+                                                (int)(ViewDimensions.x * MaxZoom)
+                                              );
+                                      } /*if*/
+                                  } /*if*/
                                 switch (MovingWhat)
                                   {
                                 case MovingCursor:
-                                    CursorX = Math.max(0.0f, Math.min(CursorX + ThisMouse.x - LastMouse.x, ViewDimensions.x));
-                                    invalidate();
+                                case MovingBothScales:
+                                    CursorX =
+                                        Math.max
+                                          (
+                                            0.0f,
+                                            Math.min
+                                              (
+                                                        (CursorX - LastMouse.x) / ScaleLength
+                                                    *
+                                                        NewScaleLength
+                                                +
+                                                    ThisMouse.x,
+                                                ViewDimensions.x
+                                              )
+                                          );
                                 break;
+                                  } /*switch*/
+                                switch (MovingWhat)
+                                  {
                                 case MovingBothScales:
                                 case MovingLowerScale:
                                     for (boolean Upper = false;;)
@@ -969,8 +1059,10 @@ public class SlideView extends android.view.View
                                                   (
                                                     LastMouse.x,
                                                     Scale1Size,
-                                                    Upper ? TopScaleOffset : BottomScaleOffset
-                                                  )
+                                                    Upper ? TopScaleOffset : BottomScaleOffset,
+                                                    ScaleLength
+                                                  ),
+                                                NewScaleLength
                                               );
                                         final double NewOffset2 =
                                             FindScaleOffset
@@ -981,8 +1073,10 @@ public class SlideView extends android.view.View
                                                   (
                                                     LastMouse.x,
                                                     Scale2Size,
-                                                    Upper ? UpperScaleOffset : LowerScaleOffset
-                                                  )
+                                                    Upper ? UpperScaleOffset : LowerScaleOffset,
+                                                    ScaleLength
+                                                  ),
+                                                NewScaleLength
                                               );
                                         if (Upper)
                                           {
@@ -998,54 +1092,11 @@ public class SlideView extends android.view.View
                                             break;
                                         Upper = true;
                                       } /*for*/
-                                    invalidate();
-                                    if
-                                      (
-                                            ThisMouse1 != null
-                                        &&
-                                            ThisMouse2 != null
-                                        &&
-                                                ThisMouse1.y < ViewDimensions.y / 2.0f
-                                            ==
-                                                ThisMouse2.y < ViewDimensions.y / 2.0f
-                                      )
-                                      {
-                                      /* pinch to zoom--note no PrecisionMove here */
-                                        final float LastDistance = (float)Math.hypot
-                                          (
-                                            LastMouse1.x - LastMouse2.x,
-                                            LastMouse1.y - LastMouse2.y
-                                          );
-                                        final float ThisDistance = (float)Math.hypot
-                                          (
-                                            ThisMouse1.x - ThisMouse2.x,
-                                            ThisMouse1.y - ThisMouse2.y
-                                          );
-                                        if
-                                          (
-                                                LastDistance != 0.0f
-                                            &&
-                                                ThisDistance != 0.0f
-                                          )
-                                          {
-                                            ScaleLength =
-                                                Math.min
-                                                  (
-                                                    Math.max
-                                                      (
-                                                        (int)(
-                                                            ScaleLength * ThisDistance /  LastDistance
-                                                        ),
-                                                        (int)ViewDimensions.x
-                                                      ),
-                                                    (int)(ViewDimensions.x * MaxZoom)
-                                                  );
-                                            invalidate();
-                                          } /*if*/
-                                      } /*if*/
                                 break;
                                   } /*switch*/
+                                ScaleLength = NewScaleLength;
                               } /*if*/
+                            invalidate();
                             LastMouse1 = ThisMouse1;
                             LastMouse2 = ThisMouse2;
                           } /*if*/
