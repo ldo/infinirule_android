@@ -707,7 +707,12 @@ public class SlideView extends android.view.View
                 final float AnimAmt =
                     AnimFunction.getInterpolation
                       (
-                        (float)((CurrentTime - StartTime) / (EndTime - StartTime))
+                        (float)(
+                                (Math.min(CurrentTime, EndTime) - StartTime)
+                                  /* clamp to avoid random rebounding effects */
+                            /
+                                (EndTime - StartTime)
+                        )
                       );
                 TopScaleOffset =
                         StartTopScaleOffset
