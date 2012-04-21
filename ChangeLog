@@ -1,4 +1,7 @@
 Feature highlights:
 
+15451.1, 2012 April 21:
+    fix reset not always resetting exactly to initial position.
+
 15321.1, 2011 December 14:
     first release on Android Market.
