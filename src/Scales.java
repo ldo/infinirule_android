@@ -2,7 +2,7 @@ package nz.gen.geek_central.infinirule;
 /*
     Individual slide-rule scale definition and rendering for Infinirule.
 
-    Copyright 2011 Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
+    Copyright 2011, 2012 Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
 
     This program is free software: you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -63,6 +63,9 @@ public class Scales
           );
           /* returns position corresponding to specified scale reading. */
 
+        public Marker[] Markers();
+          /* returns positions at which to draw markers, or null if none. */
+
         public void Draw
           (
             Canvas g, /* draw it starting at (0, 0) here */
@@ -70,6 +73,32 @@ public class Scales
             boolean TopEdge /* false for bottom edge */
           );
       } /*Scale*/
+
+    public static class Marker
+      {
+        public final String Name;
+        public final double Value;
+
+        public Marker
+          (
+            String Name,
+            double Value
+          )
+          {
+            this.Name = Name;
+            this.Value = Value;
+          } /*Marker*/
+
+      } /*Marker*/
+
+    public static Marker[] StandardMarkers()
+      {
+        return
+            new Marker[]
+                {
+                    new Marker("π", Math.PI),
+                };
+      } /*StandardMarkers*/
 
 /*
     Common useful stuff
@@ -113,18 +142,22 @@ public class Scales
         Canvas g,
         float ScaleLength, /* total length of scale */
         boolean TopEdge, /* true if markers descend from edge, false if they ascend from edge */
-        Scale TheScale, /* for mapping readings to X positions */
+        Scale TheScale, /* for mapping readings to X positions and showing markers */
         float ParentMarkerLength,
         double LeftArg, /* bounds of this interval, in scale readings */
         double RightArg,
         int NrSteps,
         double Leftmost, /* lower limit of reading of entire scale */
         double Rightmost, /* upper limit of reading of entire scale */
-        Paint LineHow
+        Paint LineHow,
+        Marker[] Markers,
+        Paint TextHow, /* for markers */
+        float TopMarkerLength /* so markers line up with top-level graduation labels */
       )
       /* draws another level of sub-graduations within the specified interval,
         going recursive if zoom is large enough. */
       {
+        final boolean Increasing = LeftArg < RightArg;
         final float MarkerLength = ParentMarkerLength * 0.65f;
         final float MidMarkerLength = ParentMarkerLength * 0.82f;
         float PrevMarkerX = 0.0f;
@@ -135,9 +168,8 @@ public class Scales
             final float MarkerX = (float)(TheScale.PosAt(ThisArg) * ScaleLength);
             if (j != 0)
               {
-                if
-                  (
-                        (LeftArg < RightArg ?
+                final boolean Subdivide =
+                        (Increasing ?
                                 ThisArg >= Leftmost && ThisArg <= Rightmost
                             ||
                                 PrevArg >= Leftmost && PrevArg <= Rightmost
@@ -148,9 +180,9 @@ public class Scales
                         )
                         /* at least some part of interval is within scale */
                     &&
-                        MarkerX - PrevMarkerX >= 30.0f
+                        MarkerX - PrevMarkerX >= 30.0f;
                           /* worth subdividing further */
-                  )
+                if (Subdivide)
                   {
                     DrawSubGraduations
                       (
@@ -164,12 +196,15 @@ public class Scales
                         /*NrSteps =*/ 10,
                         /*Leftmost =*/ Leftmost,
                         /*Rightmost =*/ Rightmost,
-                        /*LineHow =*/ LineHow
+                        /*LineHow =*/ LineHow,
+                        /*Markers =*/ Markers,
+                        /*TextHow =*/ TextHow,
+                        /*TopMarkerLength =*/ TopMarkerLength
                       );
                   } /*if*/
                 if
                   (
-                        (LeftArg < RightArg ?
+                        (Increasing ?
                             ThisArg >= Leftmost && ThisArg <= Rightmost
                         :
                             ThisArg >= Rightmost && ThisArg <= Leftmost
@@ -195,6 +230,31 @@ public class Scales
                             (TopEdge ? +1 : -1),
                         LineHow
                       );
+                    if (!Subdivide && Markers != null)
+                      {
+                      /* markers not done at lower level, do them at this level */
+                        for (Marker ThisMarker : Markers)
+                          {
+                            if
+                              (
+                                Increasing ?
+                                    ThisMarker.Value > PrevArg && ThisArg >= ThisMarker.Value
+                                :
+                                    ThisMarker.Value < PrevArg && ThisArg <= ThisMarker.Value
+                              )
+                              {
+                                DrawCenteredText
+                                  (
+                                    /*Draw =*/ g,
+                                    /*TheText =*/ ThisMarker.Name,
+                                    /*x =*/ (float)(TheScale.PosAt(ThisMarker.Value) * ScaleLength),
+                                    /*y =*/ TopMarkerLength * (TopEdge ? +1 : -1),
+                                    /*UsePaint =*/ TextHow
+                                  );
+                                /* fixme: should check label text does not overlap graduation labels */
+                              } /*if*/
+                          } /*for*/
+                      } /*if*/
                   } /*if*/
               } /*if*/
             PrevArg = ThisArg;
@@ -207,7 +267,7 @@ public class Scales
         Canvas g,
         float ScaleLength, /* total length of scale */
         boolean TopEdge, /* true if markers descend from edge, false if they ascend from edge */
-        Scale TheScale, /* for mapping readings to X positions */
+        Scale TheScale, /* for mapping readings to X positions and showing markers */
         double[] PrimaryGraduations,
           /* scale readings at which to draw graduations at this level, in order of increasing
             X-coordinate, might extend slightly outside scale limits, length must be at least 2 */
@@ -233,6 +293,19 @@ public class Scales
           {
             TextHow.setColor(AltColor);
             TextHow.setTextAlign(Paint.Align.RIGHT);
+          } /*if*/
+        final Marker[] Markers = TheScale.Markers();
+          /* faster to do it here and pass to DrawSubGraduations calls */
+        final Paint MarkerHow = Markers != null ? new Paint() : null;
+        if (MarkerHow != null)
+          {
+            MarkerHow.setAntiAlias(true);
+            MarkerHow.setTextSize(FontSize);
+            MarkerHow.setTextAlign(Paint.Align.CENTER);
+            if (Decreasing)
+              {
+                MarkerHow.setColor(AltColor);
+              } /*if*/
           } /*if*/
         for (int i = 0; i < PrimaryGraduations.length - 1; ++i)
           {
@@ -286,7 +359,10 @@ public class Scales
                     /*NrSteps =*/ NrDivisions[i],
                     /*Leftmost =*/ Leftmost,
                     /*Rightmost =*/ Rightmost,
-                    /*LineHow =*/ LineHow
+                    /*LineHow =*/ LineHow,
+                    /*Markers =*/ Markers,
+                    /*TextHow =*/ MarkerHow,
+                    /*TopMarkerLength =*/ PrimaryMarkerLength
                   );
               } /*if*/
           } /*for*/
@@ -452,6 +528,8 @@ public class Scales
           (
             String ScaleName,
             int Power,
+              /* scale goes from 10 ** (Power - 1) to 10 ** Power for positive Power,
+                10 ** Power to 10 ** (Power + 1) for negative Power */
             double Offset
           )
           {
@@ -504,6 +582,22 @@ public class Scales
                 :
                     1.0 - Math.log10(Value * 10.0);
           } /*PosAt*/
+
+        public Marker[] Markers()
+          {
+            final java.util.ArrayList<Marker> Result = new java.util.ArrayList<Marker>();
+            for (Marker StdMarker : StandardMarkers())
+              {
+              /* assume StdMarker.Value always positive */
+                final int Norm = (int)Math.ceil(Math.log10(StdMarker.Value));
+                Result.add
+                  (
+                    new Marker(StdMarker.Name, StdMarker.Value * Math.pow(10.0, - Norm))
+                  );
+              } /*for*/
+            return
+                Result.toArray(new Marker[Result.size()]);
+          } /*Markers*/
 
         public void Draw
           (
@@ -567,6 +661,12 @@ public class Scales
             return
                 Value;
           } /*PosAt*/
+
+        public Marker[] Markers()
+          {
+            return
+                null;
+          } /*Marker*/
 
         public void Draw
           (
@@ -632,6 +732,12 @@ public class Scales
             return
                 Value / Ln10;
           } /*PosAt*/
+
+        public Marker[] Markers()
+          {
+            return
+                null;
+          } /*Marker*/
 
         public void Draw
           (
@@ -711,6 +817,12 @@ public class Scales
             return
                 Math.log10(Value * Math.PI / 18.0);
           } /*PosAt*/
+
+        public Marker[] Markers()
+          {
+            return
+                null;
+          } /*Marker*/
 
         public void Draw
           (
@@ -836,6 +948,12 @@ public class Scales
                     1.0;
           } /*PosAt*/
 
+        public Marker[] Markers()
+          {
+            return
+                null;
+          } /*Marker*/
+
         public void Draw
           (
             Canvas g,
@@ -942,6 +1060,12 @@ public class Scales
                     1.0;
           } /*PosAt*/
 
+        public Marker[] Markers()
+          {
+            return
+                null;
+          } /*Marker*/
+
         public void Draw
           (
             Canvas g,
@@ -1046,6 +1170,12 @@ public class Scales
             return
                 Math.log10(Math.log(Value) / Factor);
           } /*PosAt*/
+
+        public Marker[] Markers()
+          {
+            return
+                null;
+          } /*Marker*/
 
         public void Draw
           (
