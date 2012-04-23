@@ -111,17 +111,19 @@ public class Scales
     private static void DrawSubGraduations
       (
         Canvas g,
-        float ScaleLength,
-        boolean TopEdge,
-        Scale TheScale,
+        float ScaleLength, /* total length of scale */
+        boolean TopEdge, /* true if markers descend from edge, false if they ascend from edge */
+        Scale TheScale, /* for mapping readings to X positions */
         float ParentMarkerLength,
-        double LeftArg,
+        double LeftArg, /* bounds of this interval, in scale readings */
         double RightArg,
         int NrSteps,
-        double Leftmost,
-        double Rightmost,
+        double Leftmost, /* lower limit of reading of entire scale */
+        double Rightmost, /* upper limit of reading of entire scale */
         Paint LineHow
       )
+      /* draws another level of sub-graduations within the specified interval,
+        going recursive if zoom is large enough. */
       {
         final float MarkerLength = ParentMarkerLength * 0.65f;
         final float MidMarkerLength = ParentMarkerLength * 0.82f;
@@ -203,15 +205,21 @@ public class Scales
     public static void DrawGraduations
       (
         Canvas g,
-        float ScaleLength,
-        boolean TopEdge,
-        Scale TheScale,
-        double[] PrimaryGraduations, /* in order of increasing X-coordinate, length must be at least 2 */
-        int[] NrDivisions, /* length must equal PrimaryGraduations.length - 1 */
-        double Leftmost, /* at or after PrimaryGraduations[0] */
-        double Rightmost, /* at or before PrimaryGraduations[PrimaryGraduations.length - 1] */
-        int NrDecimals,
-        int Multiplier
+        float ScaleLength, /* total length of scale */
+        boolean TopEdge, /* true if markers descend from edge, false if they ascend from edge */
+        Scale TheScale, /* for mapping readings to X positions */
+        double[] PrimaryGraduations,
+          /* scale readings at which to draw graduations at this level, in order of increasing
+            X-coordinate, might extend slightly outside scale limits, length must be at least 2 */
+        int[] NrDivisions,
+          /* divisions between graduations at this level, length must equal
+            PrimaryGraduations.length - 1 */
+        double Leftmost, /* lower limit of scale reading, at or after PrimaryGraduations[0] */
+        double Rightmost,
+          /* upper limit of scale reading, at or before
+            PrimaryGraduations[PrimaryGraduations.length - 1] */
+        int NrDecimals, /* nr decimal points for labels */
+        int Multiplier /* to apply to graduations values before formatting as labels */
       )
       /* common routine for drawing general scale graduations. */
       {
