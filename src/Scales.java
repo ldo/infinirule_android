@@ -1116,17 +1116,21 @@ public class Scales
       {
         public final String ScaleName;
         public final int Level;
-        public final double Factor;
+        public final boolean Base10;
+        public final double Factor, Base;
 
         public ExpXScale
           (
             String ScaleName,
-            int Level
+            int Level,
+            boolean Base10
           )
           {
             this.ScaleName = ScaleName;
             this.Level = Level;
             Factor = Math.pow(10.0, 1 - Math.abs(Level)) * Math.signum(Level);
+            this.Base10 = Base10;
+            Base = Base10 ? Math.log(10.0) : 1.0;
           } /*ExpXScale*/
 
         public String Name()
@@ -1159,7 +1163,7 @@ public class Scales
           )
           {
             return
-                Math.exp(Math.pow(10.0, Pos) * Factor);
+                Math.exp(Math.pow(10.0, Pos) * Factor * Base);
           } /*ValueAt*/
 
         public double PosAt
@@ -1168,7 +1172,7 @@ public class Scales
           )
           {
             return
-                Math.log10(Math.log(Value) / Factor);
+                Math.log10(Math.log(Value) / Factor / Base);
           } /*PosAt*/
 
         public Marker[] Markers()
@@ -1188,268 +1192,568 @@ public class Scales
             double Leftmost, Rightmost;
             int[] NrDivisions;
             int NrDecimals;
-            switch(Level)
+            if (Base10)
               {
-            default: /*sigh*/
-            case 1:
-                Graduations = new double[]
-                    {
-                        2.0,
-                        3.0,
-                        4.0,
-                        5.0,
-                        10.0,
-                        20.0,
-                        30.0,
-                        50.0,
-                        100.0,
-                        300.0,
-                        1000.0,
-                        5000.0,
-                        10000.0,
-                        20000.0,
-                    };
-                NrDivisions = new int[]
-                    {
-                        10,
-                        10,
-                        10,
-                        5,
-                        10,
-                        10,
-                        20,
-                        5,
-                        20,
-                        7,
-                        4,
-                        5,
-                        2,
-                    };
-                Leftmost = Math.exp(1.0);
-                Rightmost = Math.exp(10.0);
-                NrDecimals = 0;
-            break;
-            case 2:
-                Graduations = new double[]
-                    {
-                        1.10,
-                        1.11,
-                        1.15,
-                        1.2,
-                        1.3,
-                        1.4,
-                        1.5,
-                        1.6,
-                        1.7,
-                        1.8,
-                        1.9,
-                        2.0,
-                        3.0,
-                    };
-                NrDivisions = new int[]
-                    {
-                        1,
-                        4,
-                        5,
-                        1,
-                        1,
-                        1,
-                        1,
-                        1,
-                        1,
-                        1,
-                        1,
-                        10,
-                    };
-                Leftmost = Math.exp(0.1);
-                Rightmost = Math.exp(1.0);
-                NrDecimals = 2;
-            break;
-            case 3:
-                Graduations = new double[]
-                    {
-                        1.00,
-                        1.01,
-                        1.02,
-                        1.03,
-                        1.04,
-                        1.05,
-                        1.06,
-                        1.07,
-                        1.08,
-                        1.09,
-                        1.10,
-                        1.11,
-                    };
-                NrDivisions = new int[]
-                    {
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                    };
-                Leftmost = Math.exp(0.01);
-                Rightmost = Math.exp(0.1);
-                NrDecimals = 3;
-            break;
-            case 4:
-                Graduations = new double[]
-                    {
-                        1.000,
-                        1.001,
-                        1.002,
-                        1.003,
-                        1.004,
-                        1.005,
-                        1.006,
-                        1.007,
-                        1.008,
-                        1.009,
-                        1.100,
-                        1.101,
-                    };
-                NrDivisions = new int[]
-                    {
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                    };
-                Leftmost = Math.exp(0.001);
-                Rightmost = Math.exp(0.01);
-                NrDecimals = 4;
-            break;
-            case -1:
-                Graduations = new double[]
-                    {
-                        0.36,
-                        0.3,
-                        0.1,
-                        0.01,
-                        0.001,
-                        0.0001,
-                        0.00001,
-                    };
-                NrDivisions = new int[]
-                    {
-                        6,
-                        2,
-                        9,
-                        9,
-                        9,
-                        9,
-                    };
-                Leftmost = Math.exp(-1.0);
-                Rightmost = Math.exp(-10.0);
-                NrDecimals = 4;
-            break;
-            case -2:
-                Graduations = new double[]
-                    {
-                        0.95,
-                        0.90,
-                        0.85,
-                        0.80,
-                        0.70,
-                        0.60,
-                        0.50,
-                        0.40,
-                        0.30,
-                    };
-                NrDivisions = new int[]
-                    {
-                        5,
-                        5,
-                        5,
-                        1,
-                        1,
-                        1,
-                        1,
-                        1,
-                    };
-                Leftmost = Math.exp(-0.1);
-                Rightmost = Math.exp(-1.0);
-                NrDecimals = 2;
-            break;
-            case -3:
-                Graduations = new double[]
-                    {
-                        1.00,
-                        0.99,
-                        0.98,
-                        0.97,
-                        0.96,
-                        0.95,
-                        0.94,
-                        0.93,
-                        0.92,
-                        0.91,
-                        0.90,
-                    };
-                NrDivisions = new int[]
-                    {
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                    };
-                Leftmost = Math.exp(-0.01);
-                Rightmost = Math.exp(-0.1);
-                NrDecimals = 2;
-            break;
-            case -4:
-                Graduations = new double[]
-                    {
-                        1.00,
-                        0.999,
-                        0.998,
-                        0.997,
-                        0.996,
-                        0.995,
-                        0.994,
-                        0.993,
-                        0.992,
-                        0.991,
-                        0.990,
-                    };
-                NrDivisions = new int[]
-                    {
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                    };
-                Leftmost = Math.exp(-0.001);
-                Rightmost = Math.exp(-0.01);
-                NrDecimals = 3;
-            break;
-              } /*switch*/
+                switch(Level)
+                  {
+                default: /*sigh*/
+                case 1:
+                    Graduations = new double[]
+                        {
+                            10.0,
+                            15.0,
+                            20.0,
+                            50.0,
+                            100.0,
+                            500.0,
+                          /* fixme: should format display of following with exponents instead of lots of zeroes */
+                            Math.pow(10.0, 3),
+                            Math.pow(10.0, 4),
+                            Math.pow(10.0, 5),
+                            Math.pow(10.0, 6),
+                            Math.pow(10.0, 7),
+                            Math.pow(10.0, 8),
+                            Math.pow(10.0, 9),
+                            Math.pow(10.0, 10),
+                        };
+                    NrDivisions = new int[]
+                        {
+                            5,
+                            5,
+                            3,
+                            5,
+                            4,
+                            5,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                        };
+                    Leftmost = 10.0;
+                    Rightmost = Math.pow(10.0, 10.0);
+                    NrDecimals = 0;
+                break;
+                case 2:
+                    Graduations = new double[]
+                        {
+                            1.25,
+                            1.3,
+                            1.35,
+                            1.4,
+                            1.5,
+                            1.6,
+                            1.7,
+                            1.8,
+                            1.9,
+                            2.0,
+                            2.5,
+                            3.0,
+                            4.0,
+                            5.0,
+                            6.0,
+                            7.0,
+                            8.0,
+                            9.0,
+                            10.0,
+                        };
+                    NrDivisions = new int[]
+                        {
+                            5,
+                            5,
+                            5,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            5,
+                            5,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                        };
+                    Leftmost = Math.pow(10.0, 0.1);
+                    Rightmost = 10.0;
+                    NrDecimals = 2;
+                break;
+                case 3:
+                    Graduations = new double[]
+                        {
+                            1.02,
+                            1.03,
+                            1.04,
+                            1.05,
+                            1.06,
+                            1.07,
+                            1.08,
+                            1.09,
+                            1.10,
+                            1.15,
+                            1.20,
+                            1.25,
+                            1.30,
+                        };
+                    NrDivisions = new int[]
+                        {
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            5,
+                            5,
+                            5,
+                            5,
+                        };
+                    Leftmost = Math.pow(10.0, 0.01);
+                    Rightmost = Math.pow(10.0, 0.1);
+                    NrDecimals = 2;
+                break;
+                case 4:
+                    Graduations = new double[]
+                        {
+                            1.002,
+                            1.003,
+                            1.004,
+                            1.005,
+                            1.006,
+                            1.007,
+                            1.008,
+                            1.009,
+                            1.01,
+                            1.015,
+                            1.02,
+                            1.025,
+                        };
+                    NrDivisions = new int[]
+                        {
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            5,
+                            5,
+                            5,
+                        };
+                    Leftmost = Math.pow(10.0, 0.001);
+                    Rightmost = Math.pow(10.0, 0.01);
+                    NrDecimals = 3;
+                break;
+                case -1:
+                    Graduations = new double[]
+                        {
+                            0.1,
+                            0.05,
+                            0.01,
+                            0.005,
+                          /* fixme: should format display of following with exponents instead of lots of zeroes */
+                            Math.pow(10.0, -3),
+                            Math.pow(10.0, -4),
+                            Math.pow(10.0, -5),
+                            Math.pow(10.0, -6),
+                            Math.pow(10.0, -7),
+                            Math.pow(10.0, -8),
+                            Math.pow(10.0, -9),
+                            Math.pow(10.0, -10),
+                        };
+                    NrDivisions = new int[]
+                        {
+                            5,
+                            4,
+                            5,
+                            4,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                        };
+                    Leftmost = Math.pow(10.0, -1);
+                    Rightmost = Math.pow(10.0, -10);
+                    NrDecimals = 9;
+                break;
+                case -2:
+                    Graduations = new double[]
+                        {
+                            0.80,
+                            0.75,
+                            0.70,
+                            0.65,
+                            0.60,
+                            0.55,
+                            0.50,
+                            0.45,
+                            0.40,
+                            0.35,
+                            0.30,
+                            0.25,
+                            0.20,
+                            0.15,
+                            0.10,
+                        };
+                    NrDivisions = new int[]
+                        {
+                            5,
+                            5,
+                            5,
+                            5,
+                            5,
+                            5,
+                            5,
+                            5,
+                            5,
+                            5,
+                            5,
+                            5,
+                            5,
+                            5,
+                        };
+                    Leftmost = Math.pow(10.0, -0.1);
+                    Rightmost = Math.pow(10.0, -1);
+                    NrDecimals = 2;
+                break;
+                case -3:
+                    Graduations = new double[]
+                        {
+                            0.98,
+                            0.97,
+                            0.96,
+                            0.95,
+                            0.94,
+                            0.93,
+                            0.92,
+                            0.91,
+                            0.90,
+                            0.85,
+                            0.80,
+                            0.75,
+                        };
+                    NrDivisions = new int[]
+                        {
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            5,
+                            5,
+                            5,
+                        };
+                    Leftmost = Math.pow(10.0, -0.01);
+                    Rightmost = Math.pow(10.0, -0.1);
+                    NrDecimals = 2;
+                break;
+                case -4:
+                    Graduations = new double[]
+                        {
+                            0.998,
+                            0.997,
+                            0.996,
+                            0.995,
+                            0.990,
+                            0.98,
+                            0.97,
+                        };
+                    NrDivisions = new int[]
+                        {
+                            1,
+                            1,
+                            1,
+                            5,
+                            1,
+                            1,
+                        };
+                    Leftmost = Math.pow(10.0, -0.001);
+                    Rightmost = Math.pow(10.0, -0.01);
+                    NrDecimals = 3;
+                break;
+                  } /*switch*/
+              }
+            else /* base-e */
+              {
+                switch(Level)
+                  {
+                default: /*sigh*/
+                case 1:
+                    Graduations = new double[]
+                        {
+                            2.0,
+                            3.0,
+                            4.0,
+                            5.0,
+                            10.0,
+                            20.0,
+                            30.0,
+                            50.0,
+                            100.0,
+                            300.0,
+                            1000.0,
+                            5000.0,
+                            10000.0,
+                            20000.0,
+                        };
+                    NrDivisions = new int[]
+                        {
+                            10,
+                            10,
+                            10,
+                            5,
+                            10,
+                            10,
+                            20,
+                            5,
+                            20,
+                            7,
+                            4,
+                            5,
+                            2,
+                        };
+                    Leftmost = Math.exp(1.0);
+                    Rightmost = Math.exp(10.0);
+                    NrDecimals = 0;
+                break;
+                case 2:
+                    Graduations = new double[]
+                        {
+                            1.10,
+                            1.11,
+                            1.15,
+                            1.2,
+                            1.3,
+                            1.4,
+                            1.5,
+                            1.6,
+                            1.7,
+                            1.8,
+                            1.9,
+                            2.0,
+                            3.0,
+                        };
+                    NrDivisions = new int[]
+                        {
+                            1,
+                            4,
+                            5,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            10,
+                        };
+                    Leftmost = Math.exp(0.1);
+                    Rightmost = Math.exp(1.0);
+                    NrDecimals = 2;
+                break;
+                case 3:
+                    Graduations = new double[]
+                        {
+                            1.00,
+                            1.01,
+                            1.02,
+                            1.03,
+                            1.04,
+                            1.05,
+                            1.06,
+                            1.07,
+                            1.08,
+                            1.09,
+                            1.10,
+                            1.11,
+                        };
+                    NrDivisions = new int[]
+                        {
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                        };
+                    Leftmost = Math.exp(0.01);
+                    Rightmost = Math.exp(0.1);
+                    NrDecimals = 3;
+                break;
+                case 4:
+                    Graduations = new double[]
+                        {
+                            1.000,
+                            1.001,
+                            1.002,
+                            1.003,
+                            1.004,
+                            1.005,
+                            1.006,
+                            1.007,
+                            1.008,
+                            1.009,
+                            1.100,
+                            1.101,
+                        };
+                    NrDivisions = new int[]
+                        {
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                        };
+                    Leftmost = Math.exp(0.001);
+                    Rightmost = Math.exp(0.01);
+                    NrDecimals = 4;
+                break;
+                case -1:
+                    Graduations = new double[]
+                        {
+                            0.36,
+                            0.3,
+                            0.1,
+                            0.01,
+                            0.001,
+                            0.0001,
+                            0.00001,
+                        };
+                    NrDivisions = new int[]
+                        {
+                            6,
+                            2,
+                            9,
+                            9,
+                            9,
+                            9,
+                        };
+                    Leftmost = Math.exp(-1.0);
+                    Rightmost = Math.exp(-10.0);
+                    NrDecimals = 4;
+                break;
+                case -2:
+                    Graduations = new double[]
+                        {
+                            0.95,
+                            0.90,
+                            0.85,
+                            0.80,
+                            0.70,
+                            0.60,
+                            0.50,
+                            0.40,
+                            0.30,
+                        };
+                    NrDivisions = new int[]
+                        {
+                            5,
+                            5,
+                            5,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                        };
+                    Leftmost = Math.exp(-0.1);
+                    Rightmost = Math.exp(-1.0);
+                    NrDecimals = 2;
+                break;
+                case -3:
+                    Graduations = new double[]
+                        {
+                            1.00,
+                            0.99,
+                            0.98,
+                            0.97,
+                            0.96,
+                            0.95,
+                            0.94,
+                            0.93,
+                            0.92,
+                            0.91,
+                            0.90,
+                        };
+                    NrDivisions = new int[]
+                        {
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                        };
+                    Leftmost = Math.exp(-0.01);
+                    Rightmost = Math.exp(-0.1);
+                    NrDecimals = 2;
+                break;
+                case -4:
+                    Graduations = new double[]
+                        {
+                            1.00,
+                            0.999,
+                            0.998,
+                            0.997,
+                            0.996,
+                            0.995,
+                            0.994,
+                            0.993,
+                            0.992,
+                            0.991,
+                            0.990,
+                        };
+                    NrDivisions = new int[]
+                        {
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                        };
+                    Leftmost = Math.exp(-0.001);
+                    Rightmost = Math.exp(-0.01);
+                    NrDecimals = 3;
+                break;
+                  } /*switch*/
+              } /*if*/
             DrawGraduations
               (
                 /*g =*/ g,
@@ -1488,14 +1792,22 @@ public class Scales
                         new ASinACosXScale(false),
                         new ASinACosXScale(true),
                         new ATanXScale(),
-                        new ExpXScale("exp(\u1e8b)", 1),
-                        new ExpXScale("exp(0.1\u1e8b)", 2),
-                        new ExpXScale("exp(0.01\u1e8b)", 3),
-                        new ExpXScale("exp(0.001\u1e8b)", 4),
-                        new ExpXScale("exp(-\u1e8b)", -1),
-                        new ExpXScale("exp(-0.1\u1e8b)", -2),
-                        new ExpXScale("exp(-0.01\u1e8b)", -3),
-                        new ExpXScale("exp(-0.001\u1e8b)", -4),
+                        new ExpXScale("exp(\u1e8b)", 1, false),
+                        new ExpXScale("exp(0.1\u1e8b)", 2, false),
+                        new ExpXScale("exp(0.01\u1e8b)", 3, false),
+                        new ExpXScale("exp(0.001\u1e8b)", 4, false),
+                        new ExpXScale("exp(-\u1e8b)", -1, false),
+                        new ExpXScale("exp(-0.1\u1e8b)", -2, false),
+                        new ExpXScale("exp(-0.01\u1e8b)", -3, false),
+                        new ExpXScale("exp(-0.001\u1e8b)", -4, false),
+                        new ExpXScale("10**\u1e8b", 1, true),
+                        new ExpXScale("10**(0.1\u1e8b)", 2, true),
+                        new ExpXScale("10**(0.01\u1e8b)", 3, true),
+                        new ExpXScale("10**(0.001\u1e8b)", 4, true),
+                        new ExpXScale("10**(-\u1e8b)", -1, true),
+                        new ExpXScale("10**(-0.1\u1e8b)", -2, true),
+                        new ExpXScale("10**(-0.01\u1e8b)", -3, true),
+                        new ExpXScale("10**(-0.001\u1e8b)", -4, true),
                     }
           )
           {
