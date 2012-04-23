@@ -2,7 +2,7 @@ package nz.gen.geek_central.infinirule;
 /*
     Infinirule--the infinitely stretchable and scrollable slide rule, mainline.
 
-    Copyright 2011 Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
+    Copyright 2011, 2012 Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
 
     This program is free software: you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -43,6 +43,52 @@ public class Main
         return
             Result.toByteArray();
       } /*ReadAll*/
+
+    public void ShowHelp
+      (
+        String Path,
+        String[] FormatArgs
+      )
+      /* launches the Help activity, displaying the page in my resources with
+        the specified Path. */
+      {
+        final android.content.Intent LaunchHelp =
+            new android.content.Intent(android.content.Intent.ACTION_VIEW);
+      /* must always load the page contents, can no longer pass a file:///android_asset/
+        URL with Android 4.0. */
+        byte[] HelpRaw;
+          {
+            java.io.InputStream ReadHelp;
+            try
+              {
+                ReadHelp = getAssets().open(Path);
+                HelpRaw = ReadAll(ReadHelp);
+              }
+            catch (java.io.IOException Failed)
+              {
+                throw new RuntimeException("can't read help page: " + Failed);
+              } /*try*/
+            try
+              {
+                ReadHelp.close();
+              }
+            catch (java.io.IOException WhoCares)
+              {
+              /* I mean, really? */
+              } /*try*/
+          }
+        LaunchHelp.putExtra
+          (
+            nz.gen.geek_central.infinirule.Help.ContentID,
+            FormatArgs != null ?
+                String.format(Global.StdLocale, new String(HelpRaw), FormatArgs)
+                    .getBytes()
+            :
+                HelpRaw
+          );
+        LaunchHelp.setClass(this, Help.class);
+        startActivity(LaunchHelp);
+      } /*ShowHelp*/
 
     private java.util.Map<android.view.MenuItem, Runnable> OptionsMenu;
     private java.util.Map<android.view.MenuItem, Runnable> ContextMenu;
@@ -133,19 +179,7 @@ public class Main
               {
                 public void run()
                   {
-                    startActivity
-                      (
-                        new android.content.Intent
-                          (
-                            android.content.Intent.ACTION_VIEW,
-                            android.net.Uri.fromParts
-                              (
-                                "file",
-                                "/android_asset/help/index.html",
-                                null
-                              )
-                          ).setClass(Main.this, Help.class)
-                      );
+                    ShowHelp("help/index.html", null);
                   } /*run*/
               } /*Runnable*/
           );
@@ -167,29 +201,6 @@ public class Main
               {
                 public void run()
                   {
-                    final android.content.Intent ShowAbout =
-                        new android.content.Intent(android.content.Intent.ACTION_VIEW);
-                    byte[] AboutRaw;
-                      {
-                        java.io.InputStream ReadAbout;
-                        try
-                          {
-                            ReadAbout = getAssets().open("help/about.html");
-                            AboutRaw = ReadAll(ReadAbout);
-                          }
-                        catch (java.io.IOException Failed)
-                          {
-                            throw new RuntimeException("can't read about page: " + Failed);
-                          } /*try*/
-                        try
-                          {
-                            ReadAbout.close();
-                          }
-                        catch (java.io.IOException WhoCares)
-                          {
-                          /* I mean, really? */
-                          } /*try*/
-                      }
                     String VersionName;
                     try
                       {
@@ -200,14 +211,7 @@ public class Main
                       {
                         VersionName = "CANTFINDME"; /*!*/
                       } /*catch*/
-                    ShowAbout.putExtra
-                      (
-                        nz.gen.geek_central.infinirule.Help.ContentID,
-                        String.format(Global.StdLocale, new String(AboutRaw), VersionName)
-                            .getBytes()
-                      );
-                    ShowAbout.setClass(Main.this, Help.class);
-                    startActivity(ShowAbout);
+                    ShowHelp("help/about.html", new String[] {VersionName});
                   } /*run*/
               } /*Runnable*/
           );
