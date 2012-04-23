@@ -1,7 +1,8 @@
 Feature highlights:
 
-15451.1, 2012 April 21:
+15451.1, 2012 April 23:
     fix reset not always resetting exactly to initial position.
+    add display of π.
 
 15321.1, 2011 December 14:
     first release on Android Market.
