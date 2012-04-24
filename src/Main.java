@@ -144,6 +144,7 @@ public class Main
       )
       {
         super.onCreate(SavedInstanceState);
+        getWindow().requestFeature(android.view.Window.FEATURE_CUSTOM_TITLE);
         Clipboard = (android.text.ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
         BuildActivityResultActions();
         Global.MainMetrics = new android.util.DisplayMetrics();
@@ -164,6 +165,33 @@ public class Main
         Slide = (SlideView)findViewById(R.id.slide_view);
         Slide.SetContextMenuAction(this);
       } /*onCreate*/
+
+    @Override
+    public void onPostCreate
+      (
+        android.os.Bundle SavedInstanceState
+      )
+      {
+        super.onPostCreate(SavedInstanceState);
+        getWindow().setFeatureInt
+          (
+            android.view.Window.FEATURE_CUSTOM_TITLE,
+            R.layout.title_bar
+          );
+        ((android.widget.Button)findViewById(R.id.action_help)).setOnClickListener
+          (
+            new android.view.View.OnClickListener()
+              {
+                public void onClick
+                  (
+                    android.view.View ButtonView
+                  )
+                  {
+                    ShowHelp("help/index.html", null);
+                  } /*onClick*/
+              } /*OnClickListener*/
+          );
+      } /*onPostCreate*/
 
     @Override
     public boolean onCreateOptionsMenu
