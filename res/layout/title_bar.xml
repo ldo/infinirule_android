@@ -5,7 +5,7 @@
     android:layout_height="fill_parent"
 >
     <TextView
-        android:text="Infinirule"
+        android:text="@string/app_name"
         style="@android:style/TextAppearance"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
