@@ -1,5 +1,8 @@
 Feature highlights:
 
+15459.0, 2012 April 29:
+    add display of e to appropriate 10**x scale.
+
 15454.0, 2012 April 24:
     add help icon to title bar.
     add description of menu items to help page.

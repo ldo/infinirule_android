@@ -91,15 +91,6 @@ public class Scales
 
       } /*Marker*/
 
-    public static Marker[] StandardMarkers()
-      {
-        return
-            new Marker[]
-                {
-                    new Marker("π", Math.PI),
-                };
-      } /*StandardMarkers*/
-
 /*
     Common useful stuff
 */
@@ -585,18 +576,13 @@ public class Scales
 
         public Marker[] Markers()
           {
-            final java.util.ArrayList<Marker> Result = new java.util.ArrayList<Marker>();
-            for (Marker StdMarker : StandardMarkers())
-              {
-              /* assume StdMarker.Value always positive */
-                final int Norm = (int)Math.ceil(Math.log10(StdMarker.Value));
-                Result.add
-                  (
-                    new Marker(StdMarker.Name, StdMarker.Value * Math.pow(10.0, - Norm))
-                  );
-              } /*for*/
+            final Marker StdMarker = new Marker("π", Math.PI);
+            final int Norm = (int)Math.ceil(Math.log10(StdMarker.Value));
             return
-                Result.toArray(new Marker[Result.size()]);
+                new Marker[]
+                    {
+                        new Marker(StdMarker.Name, StdMarker.Value * Math.pow(10.0, - Norm)),
+                    };
           } /*Markers*/
 
         public void Draw
@@ -1177,8 +1163,16 @@ public class Scales
 
         public Marker[] Markers()
           {
+            Marker[] Result = null;
+            if (Base10 && Level == 2)
+              {
+                Result = new Marker[]
+                    {
+                        new Marker("e", Math.E),
+                    };
+              } /*if*/
             return
-                null;
+                Result;
           } /*Marker*/
 
         public void Draw
