@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="nz.gen.geek_central.infinirule"
     android:versionCode="3"
-    android:versionName="15459.0"
+    android:versionName="15467.9"
 >
     <uses-sdk
         android:minSdkVersion="7"

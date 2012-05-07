@@ -1,5 +1,8 @@
 Feature highlights:
 
+15467.9, 2012 May 8:
+    add lines and use different colour for π and e markers.
+
 15459.0, 2012 April 29:
     add display of e to appropriate 10**x scale.
 

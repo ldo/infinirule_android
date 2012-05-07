@@ -30,7 +30,8 @@ public class Scales
     public static final String UpperVarName = "x";
     public static final String LowerVarName = "y";
 
-    public static int BackgroundColor, MainColor, AltColor, CursorFillColor, CursorEdgeColor;
+    public static int
+        BackgroundColor, MainColor, AltColor, MarkerColor, CursorFillColor, CursorEdgeColor;
     public static float FontSize, PrimaryMarkerLength, HalfLayoutHeight, HalfCursorWidth;
     public static final Typeface NormalStyle = Typeface.defaultFromStyle(Typeface.NORMAL);
     public static final Typeface ItalicStyle = Typeface.defaultFromStyle(Typeface.ITALIC);
@@ -142,7 +143,8 @@ public class Scales
         double Rightmost, /* upper limit of reading of entire scale */
         Paint LineHow,
         Marker[] Markers,
-        Paint TextHow, /* for markers */
+        Paint MarkerTextHow, /* for markers */
+        Paint MarkerLineHow, /* for markers */
         float TopMarkerLength /* so markers line up with top-level graduation labels */
       )
       /* draws another level of sub-graduations within the specified interval,
@@ -151,12 +153,12 @@ public class Scales
         final boolean Increasing = LeftArg < RightArg;
         final float MarkerLength = ParentMarkerLength * 0.65f;
         final float MidMarkerLength = ParentMarkerLength * 0.82f;
-        float PrevMarkerX = 0.0f;
+        float PrevGradX = 0.0f;
         double PrevArg = 0.0;
         for (int j = 0; j <= NrSteps; ++j)
           {
             final double ThisArg = LeftArg + (double)j / NrSteps * (RightArg - LeftArg);
-            final float MarkerX = (float)(TheScale.PosAt(ThisArg) * ScaleLength);
+            final float GradX = (float)(TheScale.PosAt(ThisArg) * ScaleLength);
             if (j != 0)
               {
                 final boolean Subdivide =
@@ -171,7 +173,7 @@ public class Scales
                         )
                         /* at least some part of interval is within scale */
                     &&
-                        MarkerX - PrevMarkerX >= 30.0f;
+                        GradX - PrevGradX >= 30.0f;
                           /* worth subdividing further */
                 if (Subdivide)
                   {
@@ -189,7 +191,8 @@ public class Scales
                         /*Rightmost =*/ Rightmost,
                         /*LineHow =*/ LineHow,
                         /*Markers =*/ Markers,
-                        /*TextHow =*/ TextHow,
+                        /*MarkerTextHow =*/ MarkerTextHow,
+                        /*MarkerLineHow =*/ MarkerLineHow,
                         /*TopMarkerLength =*/ TopMarkerLength
                       );
                   } /*if*/
@@ -207,9 +210,9 @@ public class Scales
                   {
                     g.drawLine
                       (
-                        MarkerX,
+                        GradX,
                         0.0f,
-                        MarkerX,
+                        GradX,
                             (j % 10 == 0 ?
                                 ParentMarkerLength
                             : j % 10 == 5 ?
@@ -234,13 +237,22 @@ public class Scales
                                     ThisMarker.Value < PrevArg && ThisArg <= ThisMarker.Value
                               )
                               {
+                                final float MarkerX = (float)(TheScale.PosAt(ThisMarker.Value) * ScaleLength);
+                                g.drawLine
+                                  (
+                                    MarkerX,
+                                    0.0f,
+                                    MarkerX,
+                                    MidMarkerLength * (TopEdge ? +1 : -1),
+                                    MarkerLineHow
+                                  );
                                 DrawCenteredText
                                   (
                                     /*Draw =*/ g,
                                     /*TheText =*/ ThisMarker.Name,
-                                    /*x =*/ (float)(TheScale.PosAt(ThisMarker.Value) * ScaleLength),
+                                    /*x =*/ MarkerX,
                                     /*y =*/ TopMarkerLength * (TopEdge ? +1 : -1),
-                                    /*UsePaint =*/ TextHow
+                                    /*UsePaint =*/ MarkerTextHow
                                   );
                                 /* fixme: should check label text does not overlap graduation labels */
                               } /*if*/
@@ -249,7 +261,7 @@ public class Scales
                   } /*if*/
               } /*if*/
             PrevArg = ThisArg;
-            PrevMarkerX = MarkerX;
+            PrevGradX = GradX;
           } /*for*/
       } /*DrawSubGraduations*/
 
@@ -277,6 +289,7 @@ public class Scales
         final boolean Decreasing = PrimaryGraduations[1] < PrimaryGraduations[0];
         final Paint LineHow = new Paint();
         final Paint TextHow = new Paint();
+        LineHow.setColor(MainColor);
       /* No anti-aliasing for LineHow, looks best without */
         TextHow.setAntiAlias(true);
         TextHow.setTextSize(FontSize);
@@ -284,19 +297,22 @@ public class Scales
           {
             TextHow.setColor(AltColor);
             TextHow.setTextAlign(Paint.Align.RIGHT);
+          }
+        else
+          {
+            TextHow.setColor(MainColor);
           } /*if*/
         final Marker[] Markers = TheScale.Markers();
           /* faster to do it here and pass to DrawSubGraduations calls */
-        final Paint MarkerHow = Markers != null ? new Paint() : null;
-        if (MarkerHow != null)
+        final Paint MarkerTextHow = Markers != null ? new Paint() : null;
+        final Paint MarkerLineHow = Markers != null ? new Paint() : null;
+        if (Markers != null)
           {
-            MarkerHow.setAntiAlias(true);
-            MarkerHow.setTextSize(FontSize);
-            MarkerHow.setTextAlign(Paint.Align.CENTER);
-            if (Decreasing)
-              {
-                MarkerHow.setColor(AltColor);
-              } /*if*/
+            MarkerTextHow.setAntiAlias(true);
+            MarkerTextHow.setTextSize(FontSize);
+            MarkerTextHow.setTextAlign(Paint.Align.CENTER);
+            MarkerTextHow.setColor(MarkerColor);
+            MarkerLineHow.setColor(MarkerColor);
           } /*if*/
         for (int i = 0; i < PrimaryGraduations.length - 1; ++i)
           {
@@ -352,7 +368,8 @@ public class Scales
                     /*Rightmost =*/ Rightmost,
                     /*LineHow =*/ LineHow,
                     /*Markers =*/ Markers,
-                    /*TextHow =*/ MarkerHow,
+                    /*MarkerTextHow =*/ MarkerTextHow,
+                    /*MarkerLineHow =*/ MarkerLineHow,
                     /*TopMarkerLength =*/ PrimaryMarkerLength
                   );
               } /*if*/
