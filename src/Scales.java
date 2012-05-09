@@ -244,7 +244,7 @@ public class Scales
             final android.graphics.Rect BaseTextBounds = new android.graphics.Rect();
             UsePaint.getTextBounds(Base, 0, Base.length(), BaseTextBounds);
             final float BaseY = y - (BaseTextBounds.bottom + BaseTextBounds.top) / 2.0f;
-            final float ExpY = BaseY + (BaseTextBounds.bottom + BaseTextBounds.top) * 0.5f;
+            final float ExpY = BaseY + (BaseTextBounds.bottom + BaseTextBounds.top) * 0.7f;
             switch (UsePaint.getTextAlign())
               {
             case LEFT:
