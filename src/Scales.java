@@ -102,12 +102,18 @@ public class Scales
         String TheText,
         float x,
         float y,
-        Paint UsePaint
+        Paint UsePaint,
+        float MaxWidth
       )
       /* draws text at position x, vertically centred around y. */
       {
         final android.graphics.Rect TextBounds = new android.graphics.Rect();
         UsePaint.getTextBounds(TheText, 0, TheText.length(), TextBounds);
+        final float PrevScaleX = UsePaint.getTextScaleX();
+        if (MaxWidth > 0.0f && TextBounds.right - TextBounds.left > MaxWidth)
+          {
+            UsePaint.setTextScaleX(MaxWidth / (TextBounds.right - TextBounds.left));
+          } /*if*/
         Draw.drawText
           (
             TheText,
@@ -115,6 +121,10 @@ public class Scales
             y - (TextBounds.bottom + TextBounds.top) / 2.0f,
             UsePaint
           );
+        if (MaxWidth > 0.0f)
+          {
+            UsePaint.setTextScaleX(PrevScaleX);
+          } /*if*/
       } /*DrawCenteredText*/
 
     public static android.graphics.Rect GetCharacterCellBounds()
@@ -252,7 +262,8 @@ public class Scales
                                     /*TheText =*/ ThisMarker.Name,
                                     /*x =*/ MarkerX,
                                     /*y =*/ TopMarkerLength * (TopEdge ? +1 : -1),
-                                    /*UsePaint =*/ MarkerTextHow
+                                    /*UsePaint =*/ MarkerTextHow,
+                                    /*MaxWidth =*/ -1.0f
                                   );
                                 /* fixme: should check label text does not overlap graduation labels */
                               } /*if*/
@@ -282,6 +293,7 @@ public class Scales
           /* upper limit of scale reading, at or before
             PrimaryGraduations[PrimaryGraduations.length - 1] */
         int NrDecimals, /* nr decimal points for labels */
+        int MinDecimals, /* min nr decimal points for labels */
         int Multiplier /* to apply to graduations values before formatting as labels */
       )
       /* common routine for drawing general scale graduations. */
@@ -290,7 +302,7 @@ public class Scales
         final Paint LineHow = new Paint();
         final Paint TextHow = new Paint();
         LineHow.setColor(MainColor);
-      /* No anti-aliasing for LineHow, looks best without */
+      /* No anti-aliasing for LineHow or MarkerLineHow, looks best without */
         TextHow.setAntiAlias(true);
         TextHow.setTextSize(FontSize);
         if (Decreasing)
@@ -338,21 +350,44 @@ public class Scales
                         LeftPos, TopEdge ? PrimaryMarkerLength : - PrimaryMarkerLength,
                         LineHow
                       );
+                    String Label = String.format
+                      (
+                        Global.StdLocale,
+                        String.format(Global.StdLocale, "%%.%df", NrDecimals),
+                        PrimaryGraduations[i] * Multiplier
+                      );
+                    if (NrDecimals > 0 && MinDecimals < NrDecimals)
+                      {
+                        final int DecPos = Label.indexOf('.');
+                        if (DecPos >= 0)
+                          {
+                            int EndPos = Label.length();
+                            for (;;)
+                              {
+                                if (EndPos  - DecPos <= MinDecimals)
+                                    break;
+                                --EndPos;
+                                if (Label.charAt(EndPos) != '0')
+                                  {
+                                    ++EndPos;
+                                    break;
+                                  } /*if*/
+                              } /*for*/
+                            if (EndPos < Label.length())
+                              {
+                                Label = Label.substring(0, EndPos);
+                              } /*if*/
+                          } /*if*/
+                      } /*if*/
                     DrawCenteredText
                       (
                         /*Draw =*/ g,
-                        /*TheText =*/
-                            String.format
-                              (
-                                Global.StdLocale,
-                                String.format(Global.StdLocale, "%%.%df", NrDecimals),
-                                PrimaryGraduations[i] * Multiplier
-                              ),
+                        /*TheText =*/ Label,
                         /*x =*/ LeftPos,
                         /*y =*/ TopEdge ? PrimaryMarkerLength : - PrimaryMarkerLength,
-                        /*UsePaint =*/ TextHow
+                        /*UsePaint =*/ TextHow,
+                        /*MaxWidth =*/ Math.abs(RightPos - LeftPos)
                       );
-                  /* fixme: should check label text does not overlap previous/next label */
                   } /*if*/
                 DrawSubGraduations
                   (
@@ -374,7 +409,7 @@ public class Scales
                   );
               } /*if*/
           } /*for*/
-        if (Leftmost != PrimaryGraduations[0] || Rightmost != PrimaryGraduations[PrimaryGraduations.length - 1])
+        if (!TheScale.Wrap())
           {
           /* draw alternate-colour marker indicating scale does not wraparound */
             LineHow.setColor(AltColor);
@@ -421,6 +456,7 @@ public class Scales
             /*Leftmost =*/ Graduations[0],
             /*Rightmost =*/ Graduations[Graduations.length - 1],
             /*NrDecimals =*/ 0,
+            /*MinDecimals =*/ 0,
             /*Multiplier =*/ 10
           );
       } /*DrawSimpleGraduations*/
@@ -771,6 +807,7 @@ public class Scales
                 /*Leftmost =*/ Graduations[0],
                 /*Rightmost =*/ ValueAt(1.0),
                 /*NrDecimals =*/ 1,
+                /*MinDecimals =*/ 1,
                 /*Multiplier =*/ 1
               );
           } /*Draw*/
@@ -868,6 +905,7 @@ public class Scales
                 /*Leftmost =*/ 1.8 / Math.PI,
                 /*Rightmost =*/ 18.0 / Math.PI,
                 /*NrDecimals =*/ 1,
+                /*MinDecimals =*/ 1,
                 /*Multiplier =*/ 1
               );
           } /*Draw*/
@@ -1011,6 +1049,7 @@ public class Scales
                 /*Leftmost =*/ Leftmost,
                 /*Rightmost =*/ Rightmost,
                 /*NrDecimals =*/ 1,
+                /*MinDecimals =*/ 1,
                 /*Multiplier =*/ 1
               );
           } /*Draw*/
@@ -1110,6 +1149,7 @@ public class Scales
                 /*Leftmost =*/ 18.0 / Math.PI,
                 /*Rightmost =*/ 45.0,
                 /*NrDecimals =*/ 1,
+                /*MinDecimals =*/ 1,
                 /*Multiplier =*/ 1
               );
           } /*Draw*/
@@ -1202,7 +1242,7 @@ public class Scales
             double[] Graduations;
             double Leftmost, Rightmost;
             int[] NrDivisions;
-            int NrDecimals;
+            int NrDecimals, MinDecimals = 99;
             if (Base10)
               {
                 switch(Level)
@@ -1399,6 +1439,7 @@ public class Scales
                     Leftmost = Math.pow(10.0, -1);
                     Rightmost = Math.pow(10.0, -10);
                     NrDecimals = 9;
+                    MinDecimals = 1;
                 break;
                 case -2:
                     Graduations = new double[]
@@ -1670,6 +1711,7 @@ public class Scales
                     Leftmost = Math.exp(-1.0);
                     Rightmost = Math.exp(-10.0);
                     NrDecimals = 4;
+                    MinDecimals = 1;
                 break;
                 case -2:
                     Graduations = new double[]
@@ -1776,6 +1818,7 @@ public class Scales
                 /*Leftmost =*/ Leftmost,
                 /*Rightmost =*/ Rightmost,
                 /*NrDecimals =*/ NrDecimals,
+                /*MinDecimals =*/ MinDecimals,
                 /*Multiplier =*/ 1
               );
           } /*Draw*/
