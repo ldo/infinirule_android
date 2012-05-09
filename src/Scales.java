@@ -139,6 +139,200 @@ public class Scales
             TextBounds;
       } /*GetCharacterCellBounds*/
 
+    public static class Graduation
+      {
+        public final double Value;
+        public final int NrDecimals, MinDecimals, Multiplier;
+
+        public Graduation
+          (
+            double Value,
+            int NrDecimals,
+            int MinDecimals,
+            int Multiplier /* to apply to Value before formatting as label */
+          )
+          {
+            this.Value = Value;
+            this.NrDecimals = NrDecimals;
+            this.MinDecimals = MinDecimals;
+            this.Multiplier = Multiplier;
+          } /*Graduation*/
+
+        public String toString()
+          {
+            String Label = String.format
+              (
+                Global.StdLocale,
+                String.format(Global.StdLocale, "%%.%df", NrDecimals),
+                Value * Multiplier
+              );
+            if (NrDecimals > 0 && MinDecimals < NrDecimals)
+              {
+                final int DecPos = Label.indexOf('.');
+                if (DecPos >= 0)
+                  {
+                    int EndPos = Label.length();
+                    for (;;)
+                      {
+                        if (EndPos  - DecPos <= MinDecimals)
+                            break;
+                        --EndPos;
+                        if (Label.charAt(EndPos) != '0')
+                          {
+                            ++EndPos;
+                            break;
+                          } /*if*/
+                      } /*for*/
+                    if (EndPos < Label.length())
+                      {
+                        Label = Label.substring(0, EndPos);
+                      } /*if*/
+                  } /*if*/
+              } /*if*/
+            return
+                Label;
+          } /*toString*/
+
+        public void DrawCentered
+          (
+            Canvas Draw,
+            float x,
+            float y,
+            Paint UsePaint,
+            float MaxWidth
+          )
+          {
+            DrawCenteredText
+              (
+                /*Draw =*/ Draw,
+                /*TheText =*/ toString(),
+                /*x =*/ x,
+                /*y =*/ y,
+                /*UsePaint =*/ UsePaint,
+                /*MaxWidth =*/ MaxWidth
+              );
+          } /*DrawCentered*/
+
+      } /*Graduation*/
+
+    public static class Exp10Graduation extends Graduation
+      {
+        public final int Exponent;
+
+        public Exp10Graduation
+          (
+            int Exponent
+          )
+          {
+            super(Math.pow(10.0, Exponent), 0, 0, 1); /* superclass formatting fields are ignored */
+            this.Exponent = Exponent;
+          } /*Exp10Graduation*/
+
+        public void DrawCentered
+          (
+            Canvas Draw,
+            float x,
+            float y,
+            Paint UsePaint,
+            float MaxWidth /* ignored */
+          )
+          {
+            final String Base = "10";
+            final String Exponent = String.format(Global.StdLocale, "%d", this.Exponent);
+            final float BaseTextSize = UsePaint.getTextSize();
+            final float ExpTextSize = BaseTextSize * 0.5f;
+            final android.graphics.Rect BaseTextBounds = new android.graphics.Rect();
+            UsePaint.getTextBounds(Base, 0, Base.length(), BaseTextBounds);
+            final float BaseY = y - (BaseTextBounds.bottom + BaseTextBounds.top) / 2.0f;
+            final float ExpY = BaseY + (BaseTextBounds.bottom + BaseTextBounds.top) * 0.5f;
+            switch (UsePaint.getTextAlign())
+              {
+            case LEFT:
+                Draw.drawText(Base, x, BaseY, UsePaint);
+                UsePaint.setTextSize(ExpTextSize);
+                Draw.drawText(Exponent, x + BaseTextBounds.right - BaseTextBounds.left, ExpY, UsePaint);
+            break;
+            case CENTER: /* not actually used for graduations */
+                {
+                    Draw.drawText(Base, x, BaseY, UsePaint);
+                    UsePaint.setTextSize(ExpTextSize);
+                    final android.graphics.Rect ExpTextBounds = new android.graphics.Rect();
+                    UsePaint.getTextBounds(Exponent, 0, Exponent.length(), ExpTextBounds);
+                    Draw.drawText
+                      (
+                        Exponent,
+                            x
+                        +
+                            (BaseTextBounds.right - BaseTextBounds.left) / 2.0f
+                        +
+                            (ExpTextBounds.right - ExpTextBounds.left) / 2.0f,
+                        ExpY,
+                        UsePaint
+                      );
+                }
+            break;
+            case RIGHT:
+                {
+                    UsePaint.setTextSize(ExpTextSize);
+                    final android.graphics.Rect ExpTextBounds = new android.graphics.Rect();
+                    UsePaint.getTextBounds(Exponent, 0, Exponent.length(), ExpTextBounds);
+                    Draw.drawText
+                      (
+                        Exponent,
+                        x,
+                        ExpY,
+                        UsePaint
+                      );
+                    UsePaint.setTextSize(BaseTextSize);
+                    Draw.drawText
+                      (
+                        Base,
+                        x - (ExpTextBounds.right - ExpTextBounds.left),
+                        BaseY,
+                        UsePaint
+                      );
+                }
+            break;
+              } /*switch*/
+            UsePaint.setTextSize(BaseTextSize);
+          } /*DrawCentered*/
+
+      } /*Exp10Graduation*/
+
+    private static Graduation[] MakeGraduations
+      (
+        double[] Values,
+        int NrDecimals,
+        int MinDecimals,
+        int Multiplier,
+        boolean PlusExponents,
+        int FromExponent,
+        int ToExponent
+      )
+      {
+        final Graduation[] Result = new Graduation[Values.length + (PlusExponents ? Math.abs(ToExponent - FromExponent) + 1 : 0)];
+        for (int i = 0; i < Values.length; ++i)
+          {
+            Result[i] = new Graduation(Values[i], NrDecimals, MinDecimals, Multiplier);
+          } /*for*/
+        if (PlusExponents)
+          {
+            final int Step = ToExponent >= FromExponent ? +1 : -1;
+            int e = FromExponent;
+            int i = Values.length;
+            for (;;)
+              {
+                Result[i] = new Exp10Graduation(e);
+                if (e == ToExponent)
+                    break;
+                e += Step;
+                i += 1;
+              } /*for*/
+          } /*if*/
+        return
+            Result;
+      } /*MakeGraduations*/
+
     private static void DrawSubGraduations
       (
         Canvas g,
@@ -282,23 +476,20 @@ public class Scales
         float ScaleLength, /* total length of scale */
         boolean TopEdge, /* true if markers descend from edge, false if they ascend from edge */
         Scale TheScale, /* for mapping readings to X positions and showing markers */
-        double[] PrimaryGraduations,
+        Graduation[] PrimaryGraduations,
           /* scale readings at which to draw graduations at this level, in order of increasing
             X-coordinate, might extend slightly outside scale limits, length must be at least 2 */
         int[] NrDivisions,
           /* divisions between graduations at this level, length must equal
             PrimaryGraduations.length - 1 */
         double Leftmost, /* lower limit of scale reading, at or after PrimaryGraduations[0] */
-        double Rightmost,
+        double Rightmost
           /* upper limit of scale reading, at or before
             PrimaryGraduations[PrimaryGraduations.length - 1] */
-        int NrDecimals, /* nr decimal points for labels */
-        int MinDecimals, /* min nr decimal points for labels */
-        int Multiplier /* to apply to graduations values before formatting as labels */
       )
       /* common routine for drawing general scale graduations. */
       {
-        final boolean Decreasing = PrimaryGraduations[1] < PrimaryGraduations[0];
+        final boolean Decreasing = PrimaryGraduations[1].Value < PrimaryGraduations[0].Value;
         final Paint LineHow = new Paint();
         final Paint TextHow = new Paint();
         LineHow.setColor(MainColor);
@@ -328,8 +519,8 @@ public class Scales
           } /*if*/
         for (int i = 0; i < PrimaryGraduations.length - 1; ++i)
           {
-            final float LeftPos = (float)(TheScale.PosAt(PrimaryGraduations[i]) * ScaleLength);
-            final float RightPos = (float)(TheScale.PosAt(PrimaryGraduations[i + 1]) * ScaleLength);
+            final float LeftPos = (float)(TheScale.PosAt(PrimaryGraduations[i].Value) * ScaleLength);
+            final float RightPos = (float)(TheScale.PosAt(PrimaryGraduations[i + 1].Value) * ScaleLength);
             if
               (
                 !g.quickReject
@@ -342,7 +533,7 @@ public class Scales
                   )
               )
               {
-                if (i != 0 || Leftmost == PrimaryGraduations[0])
+                if (i != 0 || Leftmost == PrimaryGraduations[0].Value)
                   {
                     g.drawLine
                       (
@@ -350,39 +541,9 @@ public class Scales
                         LeftPos, TopEdge ? PrimaryMarkerLength : - PrimaryMarkerLength,
                         LineHow
                       );
-                    String Label = String.format
-                      (
-                        Global.StdLocale,
-                        String.format(Global.StdLocale, "%%.%df", NrDecimals),
-                        PrimaryGraduations[i] * Multiplier
-                      );
-                    if (NrDecimals > 0 && MinDecimals < NrDecimals)
-                      {
-                        final int DecPos = Label.indexOf('.');
-                        if (DecPos >= 0)
-                          {
-                            int EndPos = Label.length();
-                            for (;;)
-                              {
-                                if (EndPos  - DecPos <= MinDecimals)
-                                    break;
-                                --EndPos;
-                                if (Label.charAt(EndPos) != '0')
-                                  {
-                                    ++EndPos;
-                                    break;
-                                  } /*if*/
-                              } /*for*/
-                            if (EndPos < Label.length())
-                              {
-                                Label = Label.substring(0, EndPos);
-                              } /*if*/
-                          } /*if*/
-                      } /*if*/
-                    DrawCenteredText
+                    PrimaryGraduations[i].DrawCentered
                       (
                         /*Draw =*/ g,
-                        /*TheText =*/ Label,
                         /*x =*/ LeftPos,
                         /*y =*/ TopEdge ? PrimaryMarkerLength : - PrimaryMarkerLength,
                         /*UsePaint =*/ TextHow,
@@ -396,8 +557,8 @@ public class Scales
                     /*TopEdge =*/ TopEdge,
                     /*TheScale =*/ TheScale,
                     /*ParentMarkerLength =*/ PrimaryMarkerLength,
-                    /*LeftArg =*/ PrimaryGraduations[i],
-                    /*RightArg =*/ PrimaryGraduations[i + 1],
+                    /*LeftArg =*/ PrimaryGraduations[i].Value,
+                    /*RightArg =*/ PrimaryGraduations[i + 1].Value,
                     /*NrSteps =*/ NrDivisions[i],
                     /*Leftmost =*/ Leftmost,
                     /*Rightmost =*/ Rightmost,
@@ -451,13 +612,20 @@ public class Scales
             /*ScaleLength =*/ ScaleLength,
             /*TopEdge =*/ TopEdge,
             /*TheScale =*/ TheScale,
-            /*PrimaryGraduations =*/ Graduations,
+            /*PrimaryGraduations =*/
+                MakeGraduations
+                  (
+                    /*Values =*/ Graduations,
+                    /*NrDecimals =*/ 0,
+                    /*MinDecimals =*/ 0,
+                    /*Multiplier =*/ 10,
+                    /*PlusExponents =*/ false,
+                    /*FromExponent =*/ 0,
+                    /*ToExponent =*/ 0
+                  ),
             /*NrDivisions =*/ NrDivisions,
             /*Leftmost =*/ Graduations[0],
-            /*Rightmost =*/ Graduations[Graduations.length - 1],
-            /*NrDecimals =*/ 0,
-            /*MinDecimals =*/ 0,
-            /*Multiplier =*/ 10
+            /*Rightmost =*/ Graduations[Graduations.length - 1]
           );
       } /*DrawSimpleGraduations*/
 
@@ -802,13 +970,20 @@ public class Scales
                 /*ScaleLength =*/ ScaleLength,
                 /*TopEdge =*/ TopEdge,
                 /*TheScale =*/ this,
-                /*PrimaryGraduations =*/ Graduations,
+                /*PrimaryGraduations =*/
+                    MakeGraduations
+                      (
+                        /*Values =*/ Graduations,
+                        /*NrDecimals =*/ 1,
+                        /*MinDecimals =*/ 1,
+                        /*Multiplier =*/ 1,
+                        /*PlusExponents =*/ false,
+                        /*FromExponent =*/ 0,
+                        /*ToExponent =*/ 0
+                      ),
                 /*NrDivisions =*/ NrDivisions,
                 /*Leftmost =*/ Graduations[0],
-                /*Rightmost =*/ ValueAt(1.0),
-                /*NrDecimals =*/ 1,
-                /*MinDecimals =*/ 1,
-                /*Multiplier =*/ 1
+                /*Rightmost =*/ ValueAt(1.0)
               );
           } /*Draw*/
       } /*LnXScale*/
@@ -900,13 +1075,20 @@ public class Scales
                 /*ScaleLength =*/ ScaleLength,
                 /*TopEdge =*/ TopEdge,
                 /*TheScale =*/ this,
-                /*PrimaryGraduations =*/ Graduations,
+                /*PrimaryGraduations =*/
+                    MakeGraduations
+                      (
+                        /*Values =*/ Graduations,
+                        /*NrDecimals =*/ 1,
+                        /*MinDecimals =*/ 1,
+                        /*Multiplier =*/ 1,
+                        /*PlusExponents =*/ false,
+                        /*FromExponent =*/ 0,
+                        /*ToExponent =*/ 0
+                      ),
                 /*NrDivisions =*/ NrDivisions,
                 /*Leftmost =*/ 1.8 / Math.PI,
-                /*Rightmost =*/ 18.0 / Math.PI,
-                /*NrDecimals =*/ 1,
-                /*MinDecimals =*/ 1,
-                /*Multiplier =*/ 1
+                /*Rightmost =*/ 18.0 / Math.PI
               );
           } /*Draw*/
       } /*ASinATanXScale*/
@@ -1044,13 +1226,20 @@ public class Scales
                 /*ScaleLength =*/ ScaleLength,
                 /*TopEdge =*/ TopEdge,
                 /*TheScale =*/ this,
-                /*PrimaryGraduations =*/ Graduations,
+                /*PrimaryGraduations =*/
+                    MakeGraduations
+                      (
+                        /*Values =*/ Graduations,
+                        /*NrDecimals =*/ 1,
+                        /*MinDecimals =*/ 1,
+                        /*Multiplier =*/ 1,
+                        /*PlusExponents =*/ false,
+                        /*FromExponent =*/ 0,
+                        /*ToExponent =*/ 0
+                      ),
                 /*NrDivisions =*/ NrDivisions,
                 /*Leftmost =*/ Leftmost,
-                /*Rightmost =*/ Rightmost,
-                /*NrDecimals =*/ 1,
-                /*MinDecimals =*/ 1,
-                /*Multiplier =*/ 1
+                /*Rightmost =*/ Rightmost
               );
           } /*Draw*/
       } /*ASinACosXScale*/
@@ -1144,13 +1333,20 @@ public class Scales
                 /*ScaleLength =*/ ScaleLength,
                 /*TopEdge =*/ TopEdge,
                 /*TheScale =*/ this,
-                /*PrimaryGraduations =*/ Graduations,
+                /*PrimaryGraduations =*/
+                    MakeGraduations
+                      (
+                        /*Values =*/ Graduations,
+                        /*NrDecimals =*/ 1,
+                        /*MinDecimals =*/ 1,
+                        /*Multiplier =*/ 1,
+                        /*PlusExponents =*/ false,
+                        /*FromExponent =*/ 0,
+                        /*ToExponent =*/ 0
+                      ),
                 /*NrDivisions =*/ NrDivisions,
                 /*Leftmost =*/ 18.0 / Math.PI,
-                /*Rightmost =*/ 45.0,
-                /*NrDecimals =*/ 1,
-                /*MinDecimals =*/ 1,
-                /*Multiplier =*/ 1
+                /*Rightmost =*/ 45.0
               );
           } /*Draw*/
       } /*ATanXScale*/
@@ -1243,6 +1439,8 @@ public class Scales
             double Leftmost, Rightmost;
             int[] NrDivisions;
             int NrDecimals, MinDecimals = 99;
+            boolean PlusExponents = false; /* to begin with */
+            int FromExponent = 0, ToExponent = 0;
             if (Base10)
               {
                 switch(Level)
@@ -1257,16 +1455,10 @@ public class Scales
                             50.0,
                             100.0,
                             500.0,
-                          /* fixme: should format display of following with exponents instead of lots of zeroes */
-                            Math.pow(10.0, 3),
-                            Math.pow(10.0, 4),
-                            Math.pow(10.0, 5),
-                            Math.pow(10.0, 6),
-                            Math.pow(10.0, 7),
-                            Math.pow(10.0, 8),
-                            Math.pow(10.0, 9),
-                            Math.pow(10.0, 10),
                         };
+                    PlusExponents = true;
+                    FromExponent = 3;
+                    ToExponent = 10;
                     NrDivisions = new int[]
                         {
                             5,
@@ -1412,16 +1604,10 @@ public class Scales
                             0.05,
                             0.01,
                             0.005,
-                          /* fixme: should format display of following with exponents instead of lots of zeroes */
-                            Math.pow(10.0, -3),
-                            Math.pow(10.0, -4),
-                            Math.pow(10.0, -5),
-                            Math.pow(10.0, -6),
-                            Math.pow(10.0, -7),
-                            Math.pow(10.0, -8),
-                            Math.pow(10.0, -9),
-                            Math.pow(10.0, -10),
                         };
+                    PlusExponents = true;
+                    FromExponent = -3;
+                    ToExponent = -10;
                     NrDivisions = new int[]
                         {
                             5,
@@ -1813,13 +1999,20 @@ public class Scales
                 /*ScaleLength =*/ ScaleLength,
                 /*TopEdge =*/ TopEdge,
                 /*TheScale =*/ this,
-                /*PrimaryGraduations =*/ Graduations,
+                /*PrimaryGraduations =*/
+                    MakeGraduations
+                      (
+                        /*Values =*/ Graduations,
+                        /*NrDecimals =*/ NrDecimals,
+                        /*MinDecimals =*/ MinDecimals,
+                        /*Multiplier =*/ 1,
+                        /*PlusExponents =*/ PlusExponents,
+                        /*FromExponent =*/ FromExponent,
+                        /*ToExponent =*/ ToExponent
+                      ),
                 /*NrDivisions =*/ NrDivisions,
                 /*Leftmost =*/ Leftmost,
-                /*Rightmost =*/ Rightmost,
-                /*NrDecimals =*/ NrDecimals,
-                /*MinDecimals =*/ MinDecimals,
-                /*Multiplier =*/ 1
+                /*Rightmost =*/ Rightmost
               );
           } /*Draw*/
       } /*ExpXScale*/
