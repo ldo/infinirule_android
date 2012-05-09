@@ -1,5 +1,8 @@
 Feature highlights:
 
+15469.1, 2012 May 9:
+    graduation labels now use exponential format where appropriate.
+
 15467.9, 2012 May 8:
     add lines and use different colour for π and e markers.
 
