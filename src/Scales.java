@@ -363,21 +363,18 @@ public class Scales
           {
             final double ThisArg = LeftArg + (double)j / NrSteps * (RightArg - LeftArg);
             final float GradX = (float)(TheScale.PosAt(ThisArg) * ScaleLength);
-            if
-              (
-                    j != 0
-                &&
-                    !g.quickReject
-                      (
-                        /*left =*/ Increasing ? PrevGradX : GradX,
-                        /*top =*/ TopEdge ? 0.0f : - PrimaryMarkerLength,
-                        /*right =*/ Increasing ? GradX : PrevGradX,
-                        /*bottom =*/ TopEdge ? PrimaryMarkerLength : 0.0f,
-                        /*type =*/ Canvas.EdgeType.AA
-                      )
-              )
+            if (j != 0)
               {
                 final boolean Subdivide =
+                        !g.quickReject
+                          (
+                            /*left =*/ PrevGradX,
+                            /*top =*/ TopEdge ? 0.0f : - PrimaryMarkerLength,
+                            /*right =*/ GradX,
+                            /*bottom =*/ TopEdge ? PrimaryMarkerLength : 0.0f,
+                            /*type =*/ Canvas.EdgeType.AA
+                          )
+                    &&
                         (Increasing ?
                                 ThisArg >= Leftmost && ThisArg <= Rightmost
                             ||
