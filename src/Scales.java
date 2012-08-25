@@ -161,6 +161,7 @@ public class Scales
 
         @Override
         public String toString()
+          /* does fixed-point formatting with the specified minimum number of decimal places. */
           {
             String Label = String.format
               (
@@ -231,6 +232,7 @@ public class Scales
             this.Exponent = Exponent;
           } /*Exp10Graduation*/
 
+        @Override
         public void DrawCentered
           (
             Canvas Draw,
@@ -305,6 +307,8 @@ public class Scales
     private static Graduation[] MakeGraduations
       (
         double[] Values,
+          /* might be in monotonically-increasing or monotonically-decreasing order,
+            but placement on scale is always left-to-right */
         int NrDecimals,
         int MinDecimals,
         int Multiplier,
@@ -315,7 +319,10 @@ public class Scales
       /* generates a set of Graduation objects covering the specified values,
         and optionally also the specified range of exponents. */
       {
-        final Graduation[] Result = new Graduation[Values.length + (PlusExponents ? Math.abs(ToExponent - FromExponent) + 1 : 0)];
+        final Graduation[] Result = new Graduation
+            [
+                Values.length + (PlusExponents ? Math.abs(ToExponent - FromExponent) + 1 : 0)
+            ];
         for (int i = 0; i < Values.length; ++i)
           {
             Result[i] = new Graduation(Values[i], NrDecimals, MinDecimals, Multiplier);
@@ -338,151 +345,173 @@ public class Scales
             Result;
       } /*MakeGraduations*/
 
-    private static void DrawSubGraduations
-      (
-        Canvas g,
-        float ScaleLength, /* total length of scale */
-        boolean TopEdge, /* true if markers descend from edge, false if they ascend from edge */
-        Scale TheScale, /* for mapping readings to X positions and showing markers */
-        float ParentMarkerLength,
-        double LeftArg, /* bounds of this interval, in scale readings */
-        double RightArg,
-        int NrSteps,
-        double Leftmost, /* lower limit of reading of entire scale */
-        double Rightmost, /* upper limit of reading of entire scale */
-        Paint LineHow,
-        Marker[] Markers,
-        Paint MarkerTextHow, /* for markers */
-        Paint MarkerLineHow, /* for markers */
-        float TopMarkerLength /* so markers line up with top-level graduation labels */
-      )
-      /* draws another level of sub-graduations within the specified interval,
-        going recursive if zoom is large enough. */
+    private static class SubGraduations
       {
-        final boolean Increasing = LeftArg < RightArg;
-        final float MarkerLength = ParentMarkerLength * 0.65f;
-        final float MidMarkerLength = ParentMarkerLength * 0.82f;
-        float PrevGradX = 0.0f;
-        double PrevArg = 0.0;
-        for (int j = 0; j <= NrSteps; ++j)
+        final Canvas g;
+        final float ScaleLength;
+        final boolean TopEdge;
+        final Scale TheScale;
+        double Leftmost; /* lower limit of reading of entire scale */
+        double Rightmost; /* upper limit of reading of entire scale */
+        Paint LineHow;
+        Marker[] Markers;
+        Paint MarkerTextHow; /* for markers */
+        Paint MarkerLineHow; /* for markers */
+        float TopMarkerLength; /* so markers line up with top-level graduation labels */
+
+        public SubGraduations
+          (
+            Canvas g,
+            float ScaleLength,
+            boolean TopEdge,
+            Scale TheScale,
+            double Leftmost,
+            double Rightmost,
+            Paint LineHow,
+            Marker[] Markers,
+            Paint MarkerTextHow,
+            Paint MarkerLineHow,
+            float TopMarkerLength
+          )
           {
-            final double ThisArg = LeftArg + (double)j / NrSteps * (RightArg - LeftArg);
-            final float GradX = (float)(TheScale.PosAt(ThisArg) * ScaleLength);
-            if (j != 0)
+            this.g = g;
+            this.ScaleLength = ScaleLength;
+            this.TopEdge = TopEdge;
+            this.TheScale = TheScale;
+            this.Leftmost = Leftmost;
+            this.Rightmost = Rightmost;
+            this.LineHow = LineHow;
+            this.Markers = Markers;
+            this.MarkerTextHow = MarkerTextHow;
+            this.MarkerLineHow = MarkerLineHow;
+            this.TopMarkerLength = TopMarkerLength;
+          } /*SubGraduations*/
+
+        public void Draw
+          (
+            float ParentMarkerLength,
+            double LeftArg,
+            double RightArg,
+            int NrSteps
+          )
+          /* draws another level of sub-graduations within the specified interval,
+            going recursive if zoom is large enough. */
+          {
+            final boolean Increasing = LeftArg < RightArg;
+            final float MarkerLength = ParentMarkerLength * 0.65f;
+            final float MidMarkerLength = ParentMarkerLength * 0.82f;
+            float PrevGradX = 0.0f;
+            double PrevArg = 0.0;
+            for (int j = 0; j <= NrSteps; ++j)
               {
-                final boolean Subdivide =
-                        !g.quickReject
-                          (
-                            /*left =*/ PrevGradX,
-                            /*top =*/ TopEdge ? 0.0f : - PrimaryMarkerLength,
-                            /*right =*/ GradX,
-                            /*bottom =*/ TopEdge ? PrimaryMarkerLength : 0.0f,
-                            /*type =*/ Canvas.EdgeType.AA
-                          )
-                    &&
-                        (Increasing ?
-                                ThisArg >= Leftmost && ThisArg <= Rightmost
-                            ||
-                                PrevArg >= Leftmost && PrevArg <= Rightmost
-                        :
-                                ThisArg >= Rightmost && ThisArg <= Leftmost
-                            ||
-                                PrevArg >= Rightmost && PrevArg <= Leftmost
-                        )
-                        /* at least some part of interval is within scale */
-                    &&
-                        GradX - PrevGradX >= 30.0f;
-                          /* worth subdividing further */
-                if (Subdivide)
+                final double ThisArg = LeftArg + (double)j / NrSteps * (RightArg - LeftArg);
+                final float GradX = (float)(TheScale.PosAt(ThisArg) * ScaleLength);
+                if (j != 0)
                   {
-                    DrawSubGraduations
-                      (
-                        /*g =*/ g,
-                        /*ScaleLength =*/ ScaleLength,
-                        /*TopEdge =*/ TopEdge,
-                        /*TheScale =*/ TheScale,
-                        /*ParentMarkerLength =*/ MarkerLength,
-                        /*LeftArg =*/ PrevArg,
-                        /*RightArg =*/ ThisArg,
-                        /*NrSteps =*/ 10,
-                        /*Leftmost =*/ Leftmost,
-                        /*Rightmost =*/ Rightmost,
-                        /*LineHow =*/ LineHow,
-                        /*Markers =*/ Markers,
-                        /*MarkerTextHow =*/ MarkerTextHow,
-                        /*MarkerLineHow =*/ MarkerLineHow,
-                        /*TopMarkerLength =*/ TopMarkerLength
-                      );
-                  } /*if*/
-                if
-                  (
-                        (Increasing ?
-                            ThisArg >= Leftmost && ThisArg <= Rightmost
-                        :
-                            ThisArg >= Rightmost && ThisArg <= Leftmost
-                        )
-                        /* marker is within scale */
-                    &&
-                        j != NrSteps
-                  )
-                  {
-                    g.drawLine
-                      (
-                        GradX,
-                        0.0f,
-                        GradX,
-                            (j % 10 == 0 ?
-                                ParentMarkerLength
-                            : j % 10 == 5 ?
-                                MidMarkerLength
-                            :
-                                MarkerLength
-                            )
-                        *
-                            (TopEdge ? +1 : -1),
-                        LineHow
-                      );
-                    if (!Subdivide && Markers != null)
-                      {
-                      /* markers not done at lower level, do them at this level */
-                        for (Marker ThisMarker : Markers)
-                          {
-                            if
+                    final boolean Subdivide =
+                            !g.quickReject
                               (
-                                Increasing ?
-                                    ThisMarker.Value > PrevArg && ThisArg >= ThisMarker.Value
-                                :
-                                    ThisMarker.Value < PrevArg && ThisArg <= ThisMarker.Value
+                                /*left =*/ PrevGradX,
+                                /*top =*/ TopEdge ? 0.0f : - PrimaryMarkerLength,
+                                /*right =*/ GradX,
+                                /*bottom =*/ TopEdge ? PrimaryMarkerLength : 0.0f,
+                                /*type =*/ Canvas.EdgeType.AA
                               )
+                        &&
+                            (Increasing ?
+                                    ThisArg >= Leftmost && ThisArg <= Rightmost
+                                ||
+                                    PrevArg >= Leftmost && PrevArg <= Rightmost
+                            :
+                                    ThisArg >= Rightmost && ThisArg <= Leftmost
+                                ||
+                                    PrevArg >= Rightmost && PrevArg <= Leftmost
+                            )
+                            /* at least some part of interval is within scale */
+                        &&
+                            GradX - PrevGradX >= 30.0f;
+                              /* worth subdividing further */
+                    if (Subdivide)
+                      {
+                        Draw
+                          (
+                            /*ParentMarkerLength =*/ MarkerLength,
+                            /*LeftArg =*/ PrevArg,
+                            /*RightArg =*/ ThisArg,
+                            /*NrSteps =*/ 10
+                          );
+                      } /*if*/
+                    if
+                      (
+                            (Increasing ?
+                                ThisArg >= Leftmost && ThisArg <= Rightmost
+                            :
+                                ThisArg >= Rightmost && ThisArg <= Leftmost
+                            )
+                            /* marker is within scale */
+                        &&
+                            j != NrSteps
+                      )
+                      {
+                        g.drawLine
+                          (
+                            GradX,
+                            0.0f,
+                            GradX,
+                                (j % 10 == 0 ?
+                                    ParentMarkerLength
+                                : j % 10 == 5 ?
+                                    MidMarkerLength
+                                :
+                                    MarkerLength
+                                )
+                            *
+                                (TopEdge ? +1 : -1),
+                            LineHow
+                          );
+                        if (!Subdivide && Markers != null)
+                          {
+                          /* markers not done at lower level, do them at this level */
+                            for (Marker ThisMarker : Markers)
                               {
-                                final float MarkerX = (float)(TheScale.PosAt(ThisMarker.Value) * ScaleLength);
-                                g.drawLine
+                                if
                                   (
-                                    MarkerX,
-                                    0.0f,
-                                    MarkerX,
-                                    MidMarkerLength * (TopEdge ? +1 : -1),
-                                    MarkerLineHow
-                                  );
-                                DrawCenteredText
-                                  (
-                                    /*Draw =*/ g,
-                                    /*TheText =*/ ThisMarker.Name,
-                                    /*x =*/ MarkerX,
-                                    /*y =*/ TopMarkerLength * (TopEdge ? +1 : -1),
-                                    /*UsePaint =*/ MarkerTextHow,
-                                    /*MaxWidth =*/ -1.0f
-                                  );
-                                /* fixme: should check label text does not overlap graduation labels */
-                              } /*if*/
-                          } /*for*/
+                                    Increasing ?
+                                        ThisMarker.Value > PrevArg && ThisArg >= ThisMarker.Value
+                                    :
+                                        ThisMarker.Value < PrevArg && ThisArg <= ThisMarker.Value
+                                  )
+                                  {
+                                    final float MarkerX = (float)(TheScale.PosAt(ThisMarker.Value) * ScaleLength);
+                                    g.drawLine
+                                      (
+                                        MarkerX,
+                                        0.0f,
+                                        MarkerX,
+                                        MidMarkerLength * (TopEdge ? +1 : -1),
+                                        MarkerLineHow
+                                      );
+                                    DrawCenteredText
+                                      (
+                                        /*Draw =*/ g,
+                                        /*TheText =*/ ThisMarker.Name,
+                                        /*x =*/ MarkerX,
+                                        /*y =*/ TopMarkerLength * (TopEdge ? +1 : -1),
+                                        /*UsePaint =*/ MarkerTextHow,
+                                        /*MaxWidth =*/ -1.0f
+                                      );
+                                    /* fixme: should check label text does not overlap graduation labels */
+                                  } /*if*/
+                              } /*for*/
+                          } /*if*/
                       } /*if*/
                   } /*if*/
-              } /*if*/
-            PrevArg = ThisArg;
-            PrevGradX = GradX;
-          } /*for*/
-      } /*DrawSubGraduations*/
+                PrevArg = ThisArg;
+                PrevGradX = GradX;
+              } /*for*/
+          } /*Draw*/
+
+      } /*SubGraduations*/;
 
     public static void DrawGraduations
       (
@@ -520,7 +549,7 @@ public class Scales
             TextHow.setColor(MainColor);
           } /*if*/
         final Marker[] Markers = TheScale.Markers();
-          /* faster to do it here and pass to DrawSubGraduations calls */
+          /* faster to do it here and pass to SubGraduations.Draw calls */
         final Paint MarkerTextHow = Markers != null ? new Paint() : null;
         final Paint MarkerLineHow = Markers != null ? new Paint() : null;
         if (Markers != null)
@@ -564,16 +593,12 @@ public class Scales
                         /*MaxWidth =*/ Math.abs(RightPos - LeftPos)
                       );
                   } /*if*/
-                DrawSubGraduations
+                new SubGraduations
                   (
                     /*g =*/ g,
                     /*ScaleLength =*/ ScaleLength,
                     /*TopEdge =*/ TopEdge,
                     /*TheScale =*/ TheScale,
-                    /*ParentMarkerLength =*/ PrimaryMarkerLength,
-                    /*LeftArg =*/ PrimaryGraduations[i].Value,
-                    /*RightArg =*/ PrimaryGraduations[i + 1].Value,
-                    /*NrSteps =*/ NrDivisions[i],
                     /*Leftmost =*/ Leftmost,
                     /*Rightmost =*/ Rightmost,
                     /*LineHow =*/ LineHow,
@@ -581,6 +606,13 @@ public class Scales
                     /*MarkerTextHow =*/ MarkerTextHow,
                     /*MarkerLineHow =*/ MarkerLineHow,
                     /*TopMarkerLength =*/ PrimaryMarkerLength
+                  )
+                .Draw
+                  (
+                    /*ParentMarkerLength =*/ PrimaryMarkerLength,
+                    /*LeftArg =*/ PrimaryGraduations[i].Value,
+                    /*RightArg =*/ PrimaryGraduations[i + 1].Value,
+                    /*NrSteps =*/ NrDivisions[i]
                   );
               } /*if*/
           } /*for*/
