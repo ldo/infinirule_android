@@ -140,6 +140,7 @@ public class Scales
       } /*GetCharacterCellBounds*/
 
     public static class Graduation
+      /* represents a text label for a scale graduation. */
       {
         public final double Value;
         public final int NrDecimals, MinDecimals, Multiplier;
@@ -158,6 +159,7 @@ public class Scales
             this.Multiplier = Multiplier;
           } /*Graduation*/
 
+        @Override
         public String toString()
           {
             String Label = String.format
@@ -174,7 +176,7 @@ public class Scales
                     int EndPos = Label.length();
                     for (;;)
                       {
-                        if (EndPos  - DecPos <= MinDecimals)
+                        if (EndPos - DecPos <= MinDecimals)
                             break;
                         --EndPos;
                         if (Label.charAt(EndPos) != '0')
@@ -216,6 +218,7 @@ public class Scales
       } /*Graduation*/
 
     public static class Exp10Graduation extends Graduation
+      /* a graduation label which is an integral power of 10, to be shown in exponential form. */
       {
         public final int Exponent;
 
@@ -305,10 +308,12 @@ public class Scales
         int NrDecimals,
         int MinDecimals,
         int Multiplier,
-        boolean PlusExponents,
+        boolean PlusExponents, /* false => following args ignored */
         int FromExponent,
         int ToExponent
       )
+      /* generates a set of Graduation objects covering the specified values,
+        and optionally also the specified range of exponents. */
       {
         final Graduation[] Result = new Graduation[Values.length + (PlusExponents ? Math.abs(ToExponent - FromExponent) + 1 : 0)];
         for (int i = 0; i < Values.length; ++i)
