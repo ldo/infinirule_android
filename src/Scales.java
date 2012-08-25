@@ -250,56 +250,52 @@ public class Scales
             UsePaint.getTextBounds(Base, 0, Base.length(), BaseTextBounds);
             final float BaseY = y - (BaseTextBounds.bottom + BaseTextBounds.top) / 2.0f;
             final float ExpY = BaseY + (BaseTextBounds.bottom + BaseTextBounds.top) * 0.7f;
-            switch (UsePaint.getTextAlign())
-              {
-            case LEFT:
-                Draw.drawText(Base, x, BaseY, UsePaint);
-                UsePaint.setTextSize(ExpTextSize);
-                Draw.drawText(Exponent, x + BaseTextBounds.right - BaseTextBounds.left, ExpY, UsePaint);
-            break;
-            case CENTER: /* not actually used for graduations */
-                {
-                    Draw.drawText(Base, x, BaseY, UsePaint);
-                    UsePaint.setTextSize(ExpTextSize);
-                    final android.graphics.Rect ExpTextBounds = new android.graphics.Rect();
-                    UsePaint.getTextBounds(Exponent, 0, Exponent.length(), ExpTextBounds);
-                    Draw.drawText
-                      (
-                        Exponent,
-                            x
-                        +
-                            (BaseTextBounds.right - BaseTextBounds.left) / 2.0f
-                        +
-                            (ExpTextBounds.right - ExpTextBounds.left) / 2.0f,
-                        ExpY,
-                        UsePaint
-                      );
-                }
-            break;
-            case RIGHT:
-                {
-                    UsePaint.setTextSize(ExpTextSize);
-                    final android.graphics.Rect ExpTextBounds = new android.graphics.Rect();
-                    UsePaint.getTextBounds(Exponent, 0, Exponent.length(), ExpTextBounds);
-                    Draw.drawText
-                      (
-                        Exponent,
-                        x,
-                        ExpY,
-                        UsePaint
-                      );
-                    UsePaint.setTextSize(BaseTextSize);
-                    Draw.drawText
-                      (
-                        Base,
-                        x - (ExpTextBounds.right - ExpTextBounds.left),
-                        BaseY,
-                        UsePaint
-                      );
-                }
-            break;
-              } /*switch*/
+            UsePaint.setTextSize(ExpTextSize);
+            final android.graphics.Rect ExpTextBounds = new android.graphics.Rect();
+            UsePaint.getTextBounds(Exponent, 0, Exponent.length(), ExpTextBounds);
+            final Paint.Align TextAlign = UsePaint.getTextAlign();
+            Draw.drawText
+              (
+                Exponent,
+                    x
+                +
+                        (BaseTextBounds.right - BaseTextBounds.left)
+                    *
+                        (TextAlign == Paint.Align.LEFT ?
+                            1.0f
+                        : TextAlign == Paint.Align.CENTER ?
+                            0.5f
+                        : /*TextAlign == Paint.Align.RIGHT ?*/
+                            0.0f
+                        )
+                +
+                        (ExpTextBounds.right - ExpTextBounds.left)
+                     *
+                        (TextAlign == Paint.Align.CENTER ?
+                            0.5f
+                        :
+                            0.0f
+                        ),
+                ExpY,
+                UsePaint
+              );
             UsePaint.setTextSize(BaseTextSize);
+            Draw.drawText
+              (
+                Base,
+                    x
+                +
+                        (ExpTextBounds.right - ExpTextBounds.left)
+                     *
+                        (TextAlign == Paint.Align.RIGHT ?
+                            - 1.0f
+                        :
+                            0.0f
+                        ),
+                BaseY,
+                UsePaint
+              );
+          /* UsePaint.setTextSize(BaseTextSize); */ /* already restored */
           } /*DrawCentered*/
 
       } /*Exp10Graduation*/
