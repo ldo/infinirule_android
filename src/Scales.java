@@ -142,8 +142,27 @@ public class Scales
     public static class Graduation
       /* represents a text label for a scale graduation. */
       {
-        public final double Value;
-        public final int NrDecimals, MinDecimals, Multiplier;
+        public final double Mantissa;
+        public final int NrDecimals, MinDecimals, Multiplier, Exponent;
+        public final boolean Exponential;
+
+        public Graduation
+          (
+            double Mantissa,
+            int NrDecimals,
+            int MinDecimals,
+            int Multiplier, /* to apply to Mantissa before formatting as label */
+            int Exponent,
+            boolean Exponential
+          )
+          {
+            this.Mantissa = Mantissa;
+            this.NrDecimals = NrDecimals;
+            this.MinDecimals = MinDecimals;
+            this.Multiplier = Multiplier;
+            this.Exponent = Exponent;
+            this.Exponential = Exponential;
+          } /*Graduation*/
 
         public Graduation
           (
@@ -153,48 +172,38 @@ public class Scales
             int Multiplier /* to apply to Value before formatting as label */
           )
           {
-            this.Value = Value;
-            this.NrDecimals = NrDecimals;
-            this.MinDecimals = MinDecimals;
-            this.Multiplier = Multiplier;
+            this
+              (
+                Value,
+                NrDecimals,
+                MinDecimals,
+                Multiplier,
+                0,
+                false
+              );
           } /*Graduation*/
 
-        @Override
-        public String toString()
-          /* does fixed-point formatting with the specified minimum number of decimal places. */
+        public Graduation
+          (
+            int Exponent
+          )
           {
-            String Label = String.format
+            this
               (
-                Global.StdLocale,
-                String.format(Global.StdLocale, "%%.%df", NrDecimals),
-                Value * Multiplier
+                1.0,
+                0,
+                0,
+                1,
+                Exponent,
+                true
               );
-            if (NrDecimals > 0 && MinDecimals < NrDecimals)
-              {
-                final int DecPos = Label.indexOf('.');
-                if (DecPos >= 0)
-                  {
-                    int EndPos = Label.length();
-                    for (;;)
-                      {
-                        if (EndPos - DecPos <= MinDecimals)
-                            break;
-                        --EndPos;
-                        if (Label.charAt(EndPos) != '0')
-                          {
-                            ++EndPos;
-                            break;
-                          } /*if*/
-                      } /*for*/
-                    if (EndPos < Label.length())
-                      {
-                        Label = Label.substring(0, EndPos);
-                      } /*if*/
-                  } /*if*/
-              } /*if*/
+          } /*Graduation*/
+
+        public double GetValue()
+          {
             return
-                Label;
-          } /*toString*/
+                Mantissa * Math.pow(10.0, Exponent);
+          } /*GetValue*/
 
         public void DrawCentered
           (
@@ -205,84 +214,109 @@ public class Scales
             float MaxWidth
           )
           {
-            DrawCenteredText
-              (
-                /*Draw =*/ Draw,
-                /*TheText =*/ toString(),
-                /*x =*/ x,
-                /*y =*/ y,
-                /*UsePaint =*/ UsePaint,
-                /*MaxWidth =*/ MaxWidth
-              );
-          } /*DrawCentered*/
-
-      } /*Graduation*/
-
-    public static class Exp10Graduation extends Graduation
-      /* a graduation label which is an integral power of 10, to be shown in exponential form. */
-      {
-        public final int Exponent;
-
-        public Exp10Graduation
-          (
-            int Exponent
-          )
-          {
-            super(Math.pow(10.0, Exponent), 0, 0, 1); /* superclass formatting fields are ignored */
-            this.Exponent = Exponent;
-          } /*Exp10Graduation*/
-
-        @Override
-        public void DrawCentered
-          (
-            Canvas Draw,
-            float x,
-            float y,
-            Paint UsePaint,
-            float MaxWidth /* ignored */
-          )
-          {
-            final String Base = "10";
-            final String Exponent = String.format(Global.StdLocale, "%d", this.Exponent);
             final float BaseTextSize = UsePaint.getTextSize();
             final float ExpTextSize = BaseTextSize * 0.5f;
-            final android.graphics.Rect BaseTextBounds = new android.graphics.Rect();
-            UsePaint.getTextBounds(Base, 0, Base.length(), BaseTextBounds);
-            final float BaseY = y - (BaseTextBounds.bottom + BaseTextBounds.top) / 2.0f;
-            final float ExpY = BaseY + (BaseTextBounds.bottom + BaseTextBounds.top) * 0.7f;
-            UsePaint.setTextSize(ExpTextSize);
+            final float PrevScaleX = UsePaint.getTextScaleX();
+            String Mantissa = "";
+            if (!Exponential || this.Mantissa != 1.0)
+              {
+                Mantissa = String.format
+                  (
+                    Global.StdLocale,
+                    String.format(Global.StdLocale, "%%.%df", NrDecimals),
+                    this.Mantissa * Multiplier
+                  );
+                if (NrDecimals > 0 && MinDecimals < NrDecimals)
+                  {
+                    final int DecPos = Mantissa.indexOf('.');
+                    if (DecPos >= 0)
+                      {
+                        int EndPos = Mantissa.length();
+                        for (;;)
+                          {
+                            if (EndPos - DecPos <= MinDecimals)
+                                break;
+                            --EndPos;
+                            if (Mantissa.charAt(EndPos) != '0')
+                              {
+                                ++EndPos;
+                                break;
+                              } /*if*/
+                          } /*for*/
+                        if (EndPos < Mantissa.length())
+                          {
+                            Mantissa = Mantissa.substring(0, EndPos);
+                          } /*if*/
+                      } /*if*/
+                  } /*if*/
+                if (Exponential)
+                  {
+                    Mantissa += "×";
+                  } /*if*/
+              } /*if*/
+            if (Exponential)
+              {
+                Mantissa += "10";
+              } /*if*/
+            final android.graphics.Rect MantissaTextBounds = new android.graphics.Rect();
+            UsePaint.getTextBounds(Mantissa, 0, Mantissa.length(), MantissaTextBounds);
+            final String Exponent =
+                Exponential ?
+                    String.format(Global.StdLocale, "%d", this.Exponent)
+                :
+                    "";
+            if (Exponential)
+              {
+                UsePaint.setTextSize(ExpTextSize);
+              } /*if*/
             final android.graphics.Rect ExpTextBounds = new android.graphics.Rect();
             UsePaint.getTextBounds(Exponent, 0, Exponent.length(), ExpTextBounds);
+            if (MaxWidth > 0.0f)
+              {
+                final float TotalWidth =
+                        MantissaTextBounds.right - MantissaTextBounds.left
+                    +
+                        ExpTextBounds.right - ExpTextBounds.left;
+                if (TotalWidth > MaxWidth)
+                  {
+                    UsePaint.setTextScaleX(MaxWidth / TotalWidth);
+                  } /*if*/
+              } /*if*/
+            final float BaseY = y - (MantissaTextBounds.bottom + MantissaTextBounds.top) / 2.0f;
             final Paint.Align TextAlign = UsePaint.getTextAlign();
+            if (Exponential)
+              {
+                final float ExpY = BaseY + (MantissaTextBounds.bottom + MantissaTextBounds.top) * 0.7f;
+                Draw.drawText
+                  (
+                    Exponent,
+                        x
+                    +
+                            (MantissaTextBounds.right - MantissaTextBounds.left)
+                        *
+                            (TextAlign == Paint.Align.LEFT ?
+                                1.0f
+                            : TextAlign == Paint.Align.CENTER ?
+                                0.5f
+                            : /*TextAlign == Paint.Align.RIGHT ?*/
+                                0.0f
+                            )
+                    +
+                            (ExpTextBounds.right - ExpTextBounds.left)
+                         *
+                            (TextAlign == Paint.Align.CENTER ?
+                                0.5f
+                            :
+                                0.0f
+                            ),
+                    ExpY,
+                    UsePaint
+                  );
+                UsePaint.setTextSize(BaseTextSize);
+              } /*if*/
             Draw.drawText
               (
-                Exponent,
-                    x
-                +
-                        (BaseTextBounds.right - BaseTextBounds.left)
-                    *
-                        (TextAlign == Paint.Align.LEFT ?
-                            1.0f
-                        : TextAlign == Paint.Align.CENTER ?
-                            0.5f
-                        : /*TextAlign == Paint.Align.RIGHT ?*/
-                            0.0f
-                        )
-                +
-                        (ExpTextBounds.right - ExpTextBounds.left)
-                     *
-                        (TextAlign == Paint.Align.CENTER ?
-                            0.5f
-                        :
-                            0.0f
-                        ),
-                ExpY,
-                UsePaint
-              );
-            UsePaint.setTextSize(BaseTextSize);
-            Draw.drawText
-              (
-                Base,
+                Mantissa,
                     x
                 +
                         (ExpTextBounds.right - ExpTextBounds.left)
@@ -295,10 +329,14 @@ public class Scales
                 BaseY,
                 UsePaint
               );
+            if (MaxWidth > 0.0f)
+              {
+                UsePaint.setTextScaleX(PrevScaleX);
+              } /*if*/
           /* UsePaint.setTextSize(BaseTextSize); */ /* already restored */
           } /*DrawCentered*/
 
-      } /*Exp10Graduation*/
+      } /*Graduation*/
 
     private static Graduation[] MakeGraduations
       (
@@ -330,7 +368,7 @@ public class Scales
             int i = Values.length;
             for (;;)
               {
-                Result[i] = new Exp10Graduation(e);
+                Result[i] = new Graduation(e);
                 if (e == ToExponent)
                     break;
                 e += Step;
@@ -347,13 +385,13 @@ public class Scales
         final float ScaleLength;
         final boolean TopEdge;
         final Scale TheScale;
-        double Leftmost; /* lower limit of reading of entire scale */
-        double Rightmost; /* upper limit of reading of entire scale */
-        Paint LineHow;
-        Marker[] Markers;
-        Paint MarkerTextHow; /* for markers */
-        Paint MarkerLineHow; /* for markers */
-        float TopMarkerLength; /* so markers line up with top-level graduation labels */
+        final double Leftmost; /* lower limit of reading of entire scale */
+        final double Rightmost; /* upper limit of reading of entire scale */
+        final Paint LineHow;
+        final Marker[] Markers;
+        final Paint MarkerTextHow; /* for markers */
+        final Paint MarkerLineHow; /* for markers */
+        final float TopMarkerLength; /* so markers line up with top-level graduation labels */
 
         public SubGraduations
           (
@@ -528,7 +566,8 @@ public class Scales
       )
       /* common routine for drawing general scale graduations. */
       {
-        final boolean Decreasing = PrimaryGraduations[1].Value < PrimaryGraduations[0].Value;
+        final boolean Decreasing =
+            PrimaryGraduations[1].GetValue() < PrimaryGraduations[0].GetValue();
         final Paint LineHow = new Paint();
         final Paint TextHow = new Paint();
         LineHow.setColor(MainColor);
@@ -558,8 +597,8 @@ public class Scales
           } /*if*/
         for (int i = 0; i < PrimaryGraduations.length - 1; ++i)
           {
-            final float LeftPos = (float)(TheScale.PosAt(PrimaryGraduations[i].Value) * ScaleLength);
-            final float RightPos = (float)(TheScale.PosAt(PrimaryGraduations[i + 1].Value) * ScaleLength);
+            final float LeftPos = (float)(TheScale.PosAt(PrimaryGraduations[i].GetValue()) * ScaleLength);
+            final float RightPos = (float)(TheScale.PosAt(PrimaryGraduations[i + 1].GetValue()) * ScaleLength);
             if
               (
                 !g.quickReject
@@ -572,7 +611,7 @@ public class Scales
                   )
               )
               {
-                if (i != 0 || Leftmost == PrimaryGraduations[0].Value)
+                if (i != 0 || Leftmost == PrimaryGraduations[0].GetValue())
                   {
                     g.drawLine
                       (
@@ -606,8 +645,8 @@ public class Scales
                 .Draw
                   (
                     /*ParentMarkerLength =*/ PrimaryMarkerLength,
-                    /*LeftArg =*/ PrimaryGraduations[i].Value,
-                    /*RightArg =*/ PrimaryGraduations[i + 1].Value,
+                    /*LeftArg =*/ PrimaryGraduations[i].GetValue(),
+                    /*RightArg =*/ PrimaryGraduations[i + 1].GetValue(),
                     /*NrSteps =*/ NrDivisions[i]
                   );
               } /*if*/
