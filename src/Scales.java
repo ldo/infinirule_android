@@ -142,31 +142,34 @@ public class Scales
     public static class Graduation
       /* represents a text label for a scale graduation. */
       {
-        public final double Mantissa;
+        public final double Mantissa, NextMantissa;
         public final int NrDecimals, MinDecimals, Multiplier, Exponent;
-        public final boolean Exponential;
+        public final boolean ExponentialStep;
 
         public Graduation
           (
             double Mantissa,
+            double NextMantissa, /* might be more or less than Mantissa */
             int NrDecimals,
             int MinDecimals,
             int Multiplier, /* to apply to Mantissa before formatting as label */
             int Exponent,
-            boolean Exponential
+            boolean ExponentialStep
           )
           {
             this.Mantissa = Mantissa;
+            this.NextMantissa = NextMantissa;
             this.NrDecimals = NrDecimals;
             this.MinDecimals = MinDecimals;
             this.Multiplier = Multiplier;
             this.Exponent = Exponent;
-            this.Exponential = Exponential;
+            this.ExponentialStep = ExponentialStep;
           } /*Graduation*/
 
         public Graduation
           (
             double Value,
+            double NextValue,
             int NrDecimals,
             int MinDecimals,
             int Multiplier /* to apply to Value before formatting as label */
@@ -175,6 +178,7 @@ public class Scales
             this
               (
                 Value,
+                NextValue,
                 NrDecimals,
                 MinDecimals,
                 Multiplier,
@@ -185,12 +189,14 @@ public class Scales
 
         public Graduation
           (
-            int Exponent
+            int Exponent,
+            boolean Increasing
           )
           {
             this
               (
                 1.0,
+                Increasing ? 10.0 : 0.1,
                 0,
                 0,
                 1,
@@ -218,7 +224,7 @@ public class Scales
             final float ExpTextSize = BaseTextSize * 0.5f;
             final float PrevScaleX = UsePaint.getTextScaleX();
             String Mantissa = "";
-            if (!Exponential || this.Mantissa != 1.0)
+            if (Exponent == 0 || this.Mantissa != 1.0)
               {
                 Mantissa = String.format
                   (
@@ -249,28 +255,28 @@ public class Scales
                           } /*if*/
                       } /*if*/
                   } /*if*/
-                if (Exponential)
+                if (Exponent != 0)
                   {
                     Mantissa += "×";
                   } /*if*/
               } /*if*/
-            if (Exponential)
+            if (Exponent != 0)
               {
                 Mantissa += "10";
               } /*if*/
             final android.graphics.Rect MantissaTextBounds = new android.graphics.Rect();
             UsePaint.getTextBounds(Mantissa, 0, Mantissa.length(), MantissaTextBounds);
-            final String Exponent =
-                Exponential ?
-                    String.format(Global.StdLocale, "%d", this.Exponent)
+            final String ExponentStr =
+                Exponent != 0 ?
+                    String.format(Global.StdLocale, "%d", Exponent)
                 :
                     "";
-            if (Exponential)
+            if (Exponent != 0)
               {
                 UsePaint.setTextSize(ExpTextSize);
               } /*if*/
             final android.graphics.Rect ExpTextBounds = new android.graphics.Rect();
-            UsePaint.getTextBounds(Exponent, 0, Exponent.length(), ExpTextBounds);
+            UsePaint.getTextBounds(ExponentStr, 0, ExponentStr.length(), ExpTextBounds);
             if (MaxWidth > 0.0f)
               {
                 final float TotalWidth =
@@ -284,12 +290,12 @@ public class Scales
               } /*if*/
             final float BaseY = y - (MantissaTextBounds.bottom + MantissaTextBounds.top) / 2.0f;
             final Paint.Align TextAlign = UsePaint.getTextAlign();
-            if (Exponential)
+            if (Exponent != 0)
               {
                 final float ExpY = BaseY + (MantissaTextBounds.bottom + MantissaTextBounds.top) * 0.7f;
                 Draw.drawText
                   (
-                    Exponent,
+                    ExponentStr,
                         x
                     +
                             (MantissaTextBounds.right - MantissaTextBounds.left)
@@ -336,6 +342,46 @@ public class Scales
           /* UsePaint.setTextSize(BaseTextSize); */ /* already restored */
           } /*DrawCentered*/
 
+        public Graduation[] Subdivide
+          (
+            int NrSteps
+          )
+          /* returns a series of subdivided graduations. */
+          {
+            final Graduation[] Result = new Graduation[NrSteps];
+            final double UseMantissa;
+            double MantissaStep;
+            final int UseExponent;
+            if (ExponentialStep && Math.abs(NextMantissa) < Math.abs(Mantissa))
+              {
+                UseMantissa = Mantissa * 10.0;
+                MantissaStep = NextMantissa * 10.0;
+                UseExponent = Exponent - 1;
+              }
+            else
+              {
+                UseMantissa = Mantissa;
+                MantissaStep = NextMantissa;
+                UseExponent = Exponent;
+              } /*if*/
+            MantissaStep = (MantissaStep - UseMantissa) / NrSteps;
+            for (int i = 0; i < NrSteps; ++i)
+              {
+                Result[i] = new Graduation
+                  (
+                    /*Mantissa =*/ UseMantissa + i * MantissaStep,
+                    /*NextMantissa =*/ UseMantissa + (i + 1) * MantissaStep,
+                    /*NrDecimals =*/ NrDecimals + 1, /* assumes NrSteps is around 10 */
+                    /*MinDecimals =*/ MinDecimals,
+                    /*Multiplier =*/ Multiplier,
+                    /*Exponent =*/ UseExponent,
+                    /*ExponentialStep =*/ false
+                  );
+              } /*for*/
+            return
+                Result;
+          } /*Subdivide*/
+
       } /*Graduation*/
 
     private static Graduation[] MakeGraduations
@@ -359,7 +405,19 @@ public class Scales
             ];
         for (int i = 0; i < Values.length; ++i)
           {
-            Result[i] = new Graduation(Values[i], NrDecimals, MinDecimals, Multiplier);
+            Result[i] = new Graduation
+              (
+                Values[i],
+                i < Values.length - 1 ?
+                    Values[i + 1]
+                : PlusExponents ?
+                    Math.pow(10.0, FromExponent) / Multiplier
+                :
+                    Values[i],
+                NrDecimals,
+                MinDecimals,
+                Multiplier
+              );
           } /*for*/
         if (PlusExponents)
           {
@@ -368,7 +426,7 @@ public class Scales
             int i = Values.length;
             for (;;)
               {
-                Result[i] = new Graduation(e);
+                Result[i] = new Graduation(e, Step > 0);
                 if (e == ToExponent)
                     break;
                 e += Step;
@@ -387,6 +445,7 @@ public class Scales
         final Scale TheScale;
         final double Leftmost; /* lower limit of reading of entire scale */
         final double Rightmost; /* upper limit of reading of entire scale */
+        final Paint TextHow;
         final Paint LineHow;
         final Marker[] Markers;
         final Paint MarkerTextHow; /* for markers */
@@ -401,6 +460,7 @@ public class Scales
             Scale TheScale,
             double Leftmost,
             double Rightmost,
+            Paint TextHow,
             Paint LineHow,
             Marker[] Markers,
             Paint MarkerTextHow,
@@ -414,6 +474,7 @@ public class Scales
             this.TheScale = TheScale;
             this.Leftmost = Leftmost;
             this.Rightmost = Rightmost;
+            this.TextHow = TextHow;
             this.LineHow = LineHow;
             this.Markers = Markers;
             this.MarkerTextHow = MarkerTextHow;
@@ -426,12 +487,39 @@ public class Scales
             float ParentMarkerLength,
             double LeftArg,
             double RightArg,
-            int NrSteps
+            int NrSteps,
+            Graduation ToSubdivide /* if non-null, graduation corresponding to LeftArg */
           )
           /* draws another level of sub-graduations within the specified interval,
             going recursive if zoom is large enough. */
           {
             final boolean Increasing = LeftArg < RightArg;
+            final boolean DoGraduations;
+              {
+                final float Leftmost = (float)(TheScale.PosAt(LeftArg) * ScaleLength);
+                final float Rightmost = (float)(TheScale.PosAt(RightArg) * ScaleLength);
+                DoGraduations =
+                        ToSubdivide != null
+                    &&
+                        g.quickReject
+                          (
+                            /*left =*/ Leftmost - 1.0f,
+                            /*top =*/ TopEdge ? 0.0f : - PrimaryMarkerLength,
+                            /*right =*/ Leftmost + 1.0f,
+                            /*bottom =*/ TopEdge ? PrimaryMarkerLength : 0.0f,
+                            /*type =*/ Canvas.EdgeType.AA
+                          )
+                    &&
+                        g.quickReject
+                          (
+                            /*left =*/ Rightmost - 1.0f,
+                            /*top =*/ TopEdge ? 0.0f : - PrimaryMarkerLength,
+                            /*right =*/ Rightmost + 1.0f,
+                            /*bottom =*/ TopEdge ? PrimaryMarkerLength : 0.0f,
+                            /*type =*/ Canvas.EdgeType.AA
+                          );
+              }
+            final Graduation[] Subdivisions = DoGraduations ? ToSubdivide.Subdivide(NrSteps) : null;
             final float MarkerLength = ParentMarkerLength * 0.65f;
             final float MidMarkerLength = ParentMarkerLength * 0.82f;
             float PrevGradX = 0.0f;
@@ -472,7 +560,12 @@ public class Scales
                             /*ParentMarkerLength =*/ MarkerLength,
                             /*LeftArg =*/ PrevArg,
                             /*RightArg =*/ ThisArg,
-                            /*NrSteps =*/ 10
+                            /*NrSteps =*/
+                                NrSteps == 1 && ToSubdivide != null && ToSubdivide.ExponentialStep ?
+                                    9
+                                :
+                                    10,
+                            /*ToSubdivide =*/ Subdivisions != null ? Subdivisions[j - 1] : null
                           );
                       } /*if*/
                     if
@@ -487,22 +580,32 @@ public class Scales
                             j != NrSteps
                       )
                       {
+                        final float UseMarkerLength =
+                            j % NrSteps == 0 ?
+                                ParentMarkerLength
+                            : (NrSteps == 9 || NrSteps == 10) && j % NrSteps == (Increasing ? NrSteps - 5 : 5) ?
+                                MidMarkerLength
+                            :
+                                MarkerLength;
                         g.drawLine
                           (
                             GradX,
                             0.0f,
                             GradX,
-                                (j % 10 == 0 ?
-                                    ParentMarkerLength
-                                : j % 10 == 5 ?
-                                    MidMarkerLength
-                                :
-                                    MarkerLength
-                                )
-                            *
-                                (TopEdge ? +1 : -1),
+                            TopEdge ? UseMarkerLength : - UseMarkerLength,
                             LineHow
                           );
+                        if (Subdivisions != null && j < NrSteps)
+                          {
+                            Subdivisions[j].DrawCentered
+                              (
+                                /*Draw =*/ g,
+                                /*x =*/ GradX,
+                                /*y =*/ TopEdge ? PrimaryMarkerLength : - PrimaryMarkerLength,
+                                /*UsePaint =*/ TextHow,
+                                /*MaxWidth =*/ 0.0f /* fixme: can get cramped */
+                              );
+                          } /*if*/
                         if (!Subdivide && Markers != null)
                           {
                           /* markers not done at lower level, do them at this level */
@@ -636,6 +739,7 @@ public class Scales
                     /*TheScale =*/ TheScale,
                     /*Leftmost =*/ Leftmost,
                     /*Rightmost =*/ Rightmost,
+                    /*TextHow =*/ TextHow,
                     /*LineHow =*/ LineHow,
                     /*Markers =*/ Markers,
                     /*MarkerTextHow =*/ MarkerTextHow,
@@ -647,7 +751,8 @@ public class Scales
                     /*ParentMarkerLength =*/ PrimaryMarkerLength,
                     /*LeftArg =*/ PrimaryGraduations[i].GetValue(),
                     /*RightArg =*/ PrimaryGraduations[i + 1].GetValue(),
-                    /*NrSteps =*/ NrDivisions[i]
+                    /*NrSteps =*/ NrDivisions[i],
+                    /*ToSubdivide =*/ PrimaryGraduations[i]
                   );
               } /*if*/
           } /*for*/

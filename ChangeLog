@@ -1,5 +1,10 @@
 Feature highlights:
 
+15577.4, 2012 August 25:
+    correct numbers of divisions on exponential parts of scales.
+    dynamically interpolate additional labels as scale is magnified
+    beyond visibility of existing labels.
+
 15478.3, 2012 May 18:
     speed up drawing at high magnifications.
 
