@@ -606,7 +606,7 @@ public class Scales
                                 /*x =*/ GradX,
                                 /*y =*/ TopEdge ? PrimaryMarkerLength : - PrimaryMarkerLength,
                                 /*UsePaint =*/ TextHow,
-                                /*MaxWidth =*/ 0.0f /* fixme: can get cramped */
+                                /*MaxWidth =*/ 0.9f * Math.abs(GradX - PrevGradX) /* roughly */
                               );
                           } /*if*/
                         if (!Subdivide && Markers != null)
@@ -731,7 +731,7 @@ public class Scales
                         /*x =*/ LeftPos,
                         /*y =*/ TopEdge ? PrimaryMarkerLength : - PrimaryMarkerLength,
                         /*UsePaint =*/ TextHow,
-                        /*MaxWidth =*/ Math.abs(RightPos - LeftPos)
+                        /*MaxWidth =*/ 0.9f * Math.abs(RightPos - LeftPos)
                       );
                   } /*if*/
                 new SubGraduations
