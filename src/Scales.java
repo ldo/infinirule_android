@@ -245,7 +245,10 @@ public class Scales
                             --EndPos;
                             if (Mantissa.charAt(EndPos) != '0')
                               {
-                                ++EndPos;
+                                if (Mantissa.charAt(EndPos) != '.')
+                                  {
+                                    ++EndPos;
+                                  } /*if*/
                                 break;
                               } /*if*/
                           } /*for*/
