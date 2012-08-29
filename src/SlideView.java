@@ -470,7 +470,7 @@ public class SlideView extends android.view.View
               );
           }
         final android.graphics.Rect TextBounds = Scales.GetCharacterCellBounds();
-        Scales.DrawLabel
+        Scales.DrawScaleName
           (
             /*g =*/ g,
             /*TheScale =*/ TopScale,
@@ -484,7 +484,7 @@ public class SlideView extends android.view.View
             /*Alignment =*/ Paint.Align.LEFT,
             /*Color =*/ Scales.MainColor
           );
-        Scales.DrawLabel
+        Scales.DrawScaleName
           (
             /*g =*/ g,
             /*TheScale =*/ UpperScale,
@@ -498,7 +498,7 @@ public class SlideView extends android.view.View
             /*Alignment =*/ Paint.Align.LEFT,
             /*Color =*/ Scales.MainColor
           );
-        Scales.DrawLabel
+        Scales.DrawScaleName
           (
             /*g =*/ g,
             /*TheScale =*/ LowerScale,
@@ -512,7 +512,7 @@ public class SlideView extends android.view.View
             /*Alignment =*/ Paint.Align.LEFT,
             /*Color =*/ Scales.MainColor
           );
-        Scales.DrawLabel
+        Scales.DrawScaleName
           (
             /*g =*/ g,
             /*TheScale =*/ BottomScale,

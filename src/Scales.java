@@ -818,7 +818,7 @@ public class Scales
           );
       } /*DrawSimpleGraduations*/
 
-    public static float DrawLabel
+    public static float DrawScaleName
       (
         Canvas g, /* null to only determine string width */
         Scale TheScale,
@@ -912,7 +912,7 @@ public class Scales
           } /*for*/
         return
             TotalLength;
-      } /*DrawLabel*/
+      } /*DrawScaleName*/
 
 /*
     The actual scales

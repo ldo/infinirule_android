@@ -132,7 +132,7 @@ public class ScalePicker extends android.app.Activity
                         Math.max
                           (
                             (int)(
-                                Scales.DrawLabel
+                                Scales.DrawScaleName
                                   (
                                     /*g =*/ null,
                                     /*Scale =*/ Scales.KnownScales.get(ThisItem.Name),
@@ -168,7 +168,7 @@ public class ScalePicker extends android.app.Activity
               /* ItemBits.setDensity(Global.MainMetrics.densityDpi); */ /* no need? */
                 final android.graphics.Canvas ItemDraw = new android.graphics.Canvas(ItemBits);
                 ItemDraw.drawColor(0xff000000);
-                Scales.DrawLabel
+                Scales.DrawScaleName
                   (
                     /*g =*/ ItemDraw,
                     /*Scale =*/ Scales.KnownScales.get(ThisItem.Name),
