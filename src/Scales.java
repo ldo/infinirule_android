@@ -139,14 +139,14 @@ public class Scales
             TextBounds;
       } /*GetCharacterCellBounds*/
 
-    public static class Graduation
+    public static class GradLabel
       /* represents a text label for a scale graduation. */
       {
         public final double Mantissa, NextMantissa;
         public final int NrDecimals, MinDecimals, Multiplier, Exponent;
         public final boolean ExponentialStep;
 
-        public Graduation
+        public GradLabel
           (
             double Mantissa,
             double NextMantissa, /* might be more or less than Mantissa */
@@ -164,9 +164,9 @@ public class Scales
             this.Multiplier = Multiplier;
             this.Exponent = Exponent;
             this.ExponentialStep = ExponentialStep;
-          } /*Graduation*/
+          } /*GradLabel*/
 
-        public Graduation
+        public GradLabel
           (
             double Value,
             double NextValue,
@@ -185,9 +185,9 @@ public class Scales
                 0,
                 false
               );
-          } /*Graduation*/
+          } /*GradLabel*/
 
-        public Graduation
+        public GradLabel
           (
             int Exponent,
             boolean Increasing
@@ -203,7 +203,7 @@ public class Scales
                 Exponent,
                 true
               );
-          } /*Graduation*/
+          } /*GradLabel*/
 
         public double GetValue()
           {
@@ -345,13 +345,13 @@ public class Scales
           /* UsePaint.setTextSize(BaseTextSize); */ /* already restored */
           } /*DrawCentered*/
 
-        public Graduation[] Subdivide
+        public GradLabel[] Subdivide
           (
             int NrSteps
           )
-          /* returns a series of subdivided graduations. */
+          /* returns a series of subdivided graduation labels. */
           {
-            final Graduation[] Result = new Graduation[NrSteps];
+            final GradLabel[] Result = new GradLabel[NrSteps];
             final double UseMantissa;
             double MantissaStep;
             final int UseExponent;
@@ -370,7 +370,7 @@ public class Scales
             MantissaStep = (MantissaStep - UseMantissa) / NrSteps;
             for (int i = 0; i < NrSteps; ++i)
               {
-                Result[i] = new Graduation
+                Result[i] = new GradLabel
                   (
                     /*Mantissa =*/ UseMantissa + i * MantissaStep,
                     /*NextMantissa =*/ UseMantissa + (i + 1) * MantissaStep,
@@ -385,9 +385,9 @@ public class Scales
                 Result;
           } /*Subdivide*/
 
-      } /*Graduation*/
+      } /*GradLabel*/
 
-    private static Graduation[] MakeGraduations
+    private static GradLabel[] MakeGradLabels
       (
         double[] Values,
           /* might be in monotonically-increasing or monotonically-decreasing order,
@@ -399,16 +399,16 @@ public class Scales
         int FromExponent,
         int ToExponent
       )
-      /* generates a set of Graduation objects covering the specified values,
+      /* generates a set of GradLabel objects covering the specified values,
         and optionally also the specified range of exponents. */
       {
-        final Graduation[] Result = new Graduation
+        final GradLabel[] Result = new GradLabel
             [
                 Values.length + (PlusExponents ? Math.abs(ToExponent - FromExponent) + 1 : 0)
             ];
         for (int i = 0; i < Values.length; ++i)
           {
-            Result[i] = new Graduation
+            Result[i] = new GradLabel
               (
                 Values[i],
                 i < Values.length - 1 ?
@@ -429,7 +429,7 @@ public class Scales
             int i = Values.length;
             for (;;)
               {
-                Result[i] = new Graduation(e, Step > 0);
+                Result[i] = new GradLabel(e, Step > 0);
                 if (e == ToExponent)
                     break;
                 e += Step;
@@ -438,9 +438,10 @@ public class Scales
           } /*if*/
         return
             Result;
-      } /*MakeGraduations*/
+      } /*MakeGradLabels*/
 
     private static class SubGraduations
+      /* recursive subdivision of scale graduations. */
       {
         final Canvas g;
         final float ScaleLength;
@@ -491,18 +492,18 @@ public class Scales
             double LeftArg,
             double RightArg,
             int NrSteps,
-            Graduation ToSubdivide /* if non-null, graduation corresponding to LeftArg */
+            GradLabel ToSublabel /* if non-null, graduation label corresponding to LeftArg */
           )
           /* draws another level of sub-graduations within the specified interval,
             going recursive if zoom is large enough. */
           {
             final boolean Increasing = LeftArg < RightArg;
-            final boolean DoGraduations;
+            final boolean DoSubGradLabels;
               {
                 final float Leftmost = (float)(TheScale.PosAt(LeftArg) * ScaleLength);
                 final float Rightmost = (float)(TheScale.PosAt(RightArg) * ScaleLength);
-                DoGraduations =
-                        ToSubdivide != null
+                DoSubGradLabels =
+                        ToSublabel != null
                     &&
                         g.quickReject
                           (
@@ -522,7 +523,7 @@ public class Scales
                             /*type =*/ Canvas.EdgeType.AA
                           );
               }
-            final Graduation[] Subdivisions = DoGraduations ? ToSubdivide.Subdivide(NrSteps) : null;
+            final GradLabel[] Sublabels = DoSubGradLabels ? ToSublabel.Subdivide(NrSteps) : null;
             final float MarkerLength = ParentMarkerLength * 0.65f;
             final float MidMarkerLength = ParentMarkerLength * 0.82f;
             float PrevGradX = 0.0f;
@@ -564,11 +565,11 @@ public class Scales
                             /*LeftArg =*/ PrevArg,
                             /*RightArg =*/ ThisArg,
                             /*NrSteps =*/
-                                NrSteps == 1 && ToSubdivide != null && ToSubdivide.ExponentialStep ?
+                                NrSteps == 1 && ToSublabel != null && ToSublabel.ExponentialStep ?
                                     9
                                 :
                                     10,
-                            /*ToSubdivide =*/ Subdivisions != null ? Subdivisions[j - 1] : null
+                            /*ToSublabel =*/ Sublabels != null ? Sublabels[j - 1] : null
                           );
                       } /*if*/
                     if
@@ -598,9 +599,9 @@ public class Scales
                             TopEdge ? UseMarkerLength : - UseMarkerLength,
                             LineHow
                           );
-                        if (Subdivisions != null && j < NrSteps)
+                        if (Sublabels != null && j < NrSteps)
                           {
-                            Subdivisions[j].DrawCentered
+                            Sublabels[j].DrawCentered
                               (
                                 /*Draw =*/ g,
                                 /*x =*/ GradX,
@@ -659,8 +660,8 @@ public class Scales
         float ScaleLength, /* total length of scale */
         boolean TopEdge, /* true if markers descend from edge, false if they ascend from edge */
         Scale TheScale, /* for mapping readings to X positions and showing markers */
-        Graduation[] PrimaryGraduations,
-          /* scale readings at which to draw graduations at this level, in order of increasing
+        GradLabel[] PrimaryGraduations,
+          /* scale readings at which to draw graduations with labels, in order of increasing
             X-coordinate, might extend slightly outside scale limits, length must be at least 2 */
         int[] NrDivisions,
           /* divisions between graduations at this level, length must equal
@@ -670,7 +671,7 @@ public class Scales
           /* upper limit of scale reading, at or before
             PrimaryGraduations[PrimaryGraduations.length - 1] */
       )
-      /* common routine for drawing general scale graduations. */
+      /* common routine for drawing general scale graduations with labels. */
       {
         final boolean Decreasing =
             PrimaryGraduations[1].GetValue() < PrimaryGraduations[0].GetValue();
@@ -755,7 +756,7 @@ public class Scales
                     /*LeftArg =*/ PrimaryGraduations[i].GetValue(),
                     /*RightArg =*/ PrimaryGraduations[i + 1].GetValue(),
                     /*NrSteps =*/ NrDivisions[i],
-                    /*ToSubdivide =*/ PrimaryGraduations[i]
+                    /*ToSublabel =*/ PrimaryGraduations[i]
                   );
               } /*if*/
           } /*for*/
@@ -772,7 +773,7 @@ public class Scales
           } /*if*/
       } /*DrawGraduations*/
 
-    public static void DrawSimpleGraduations
+    public static void DrawSimpleGradLabels
       (
         Canvas g,
         float ScaleLength,
@@ -783,14 +784,14 @@ public class Scales
       )
       /* common routine for drawing wrappable scale graduations. */
       {
-        final int NrGraduations = Math.abs(NrPrimarySteps) + (IncludeZero ? 1 : 0);
-        final double[] Graduations = new double[NrGraduations];
-        for (int i = 0; i < NrGraduations; ++i)
+        final int NrGradLabels = Math.abs(NrPrimarySteps) + (IncludeZero ? 1 : 0);
+        final double[] GradLabels = new double[NrGradLabels];
+        for (int i = 0; i < NrGradLabels; ++i)
           {
-            Graduations[NrPrimarySteps > 0 ? i : NrGraduations - 1 - i] =
+            GradLabels[NrPrimarySteps > 0 ? i : NrGradLabels - 1 - i] =
                 (i + (IncludeZero ? 0 : 1)) / Math.abs((double)NrPrimarySteps);
           } /*for*/
-        final int[] NrDivisions = new int[NrGraduations - 1];
+        final int[] NrDivisions = new int[NrGradLabels - 1];
         for (int i = 0; i < NrDivisions.length; ++i)
           {
             NrDivisions[i] = 10;
@@ -802,9 +803,9 @@ public class Scales
             /*TopEdge =*/ TopEdge,
             /*TheScale =*/ TheScale,
             /*PrimaryGraduations =*/
-                MakeGraduations
+                MakeGradLabels
                   (
-                    /*Values =*/ Graduations,
+                    /*Values =*/ GradLabels,
                     /*NrDecimals =*/ 0,
                     /*MinDecimals =*/ 0,
                     /*Multiplier =*/ 10,
@@ -813,10 +814,10 @@ public class Scales
                     /*ToExponent =*/ 0
                   ),
             /*NrDivisions =*/ NrDivisions,
-            /*Leftmost =*/ Graduations[0],
-            /*Rightmost =*/ Graduations[Graduations.length - 1]
+            /*Leftmost =*/ GradLabels[0],
+            /*Rightmost =*/ GradLabels[GradLabels.length - 1]
           );
-      } /*DrawSimpleGraduations*/
+      } /*DrawSimpleGradLabels*/
 
     public static float DrawScaleName
       (
@@ -827,7 +828,7 @@ public class Scales
         Paint.Align Alignment, /* alignment for rendering, ignored if g is null */
         int Color
       )
-      /* draws/measures the label for the specified scale, doing appropriate variable
+      /* draws/measures the name text for the specified scale, doing appropriate variable
         substitution depending on Upper. */
       {
         final Paint LabelHow = new Paint();
@@ -1002,7 +1003,7 @@ public class Scales
             boolean TopEdge
           )
           {
-            DrawSimpleGraduations
+            DrawSimpleGradLabels
               (
                 /*g =*/ g,
                 /*ScaleLength =*/ ScaleLength,
@@ -1071,7 +1072,7 @@ public class Scales
             boolean TopEdge
           )
           {
-            DrawSimpleGraduations
+            DrawSimpleGradLabels
               (
                 /*g =*/ g,
                 /*ScaleLength =*/ ScaleLength,
@@ -1142,13 +1143,13 @@ public class Scales
             boolean TopEdge
           )
           {
-            final int NrGraduations = 25;
-            final double[] Graduations = new double[NrGraduations];
-            for (int i = 0; i < NrGraduations; ++i)
+            final int NrGradLabels = 25;
+            final double[] GradLabels = new double[NrGradLabels];
+            for (int i = 0; i < NrGradLabels; ++i)
               {
-                Graduations[i] = i / 10.0;
+                GradLabels[i] = i / 10.0;
               } /*for*/
-            final int[] NrDivisions = new int[NrGraduations - 1];
+            final int[] NrDivisions = new int[NrGradLabels - 1];
             for (int i = 0; i < NrDivisions.length; ++i)
               {
                 NrDivisions[i] = 10;
@@ -1160,9 +1161,9 @@ public class Scales
                 /*TopEdge =*/ TopEdge,
                 /*TheScale =*/ this,
                 /*PrimaryGraduations =*/
-                    MakeGraduations
+                    MakeGradLabels
                       (
-                        /*Values =*/ Graduations,
+                        /*Values =*/ GradLabels,
                         /*NrDecimals =*/ 1,
                         /*MinDecimals =*/ 1,
                         /*Multiplier =*/ 1,
@@ -1171,7 +1172,7 @@ public class Scales
                         /*ToExponent =*/ 0
                       ),
                 /*NrDivisions =*/ NrDivisions,
-                /*Leftmost =*/ Graduations[0],
+                /*Leftmost =*/ GradLabels[0],
                 /*Rightmost =*/ ValueAt(1.0)
               );
           } /*Draw*/
@@ -1235,7 +1236,7 @@ public class Scales
             boolean TopEdge
           )
           {
-            final double[] Graduations = new double[]
+            final double[] GradLabels = new double[]
                 {
                     0.0,
                     1.0,
@@ -1265,9 +1266,9 @@ public class Scales
                 /*TopEdge =*/ TopEdge,
                 /*TheScale =*/ this,
                 /*PrimaryGraduations =*/
-                    MakeGraduations
+                    MakeGradLabels
                       (
-                        /*Values =*/ Graduations,
+                        /*Values =*/ GradLabels,
                         /*NrDecimals =*/ 1,
                         /*MinDecimals =*/ 1,
                         /*Multiplier =*/ 1,
@@ -1373,7 +1374,7 @@ public class Scales
             boolean TopEdge
           )
           {
-            final double[] Graduations = new double[]
+            final double[] GradLabels = new double[]
                 {
                     4.0,
                     6.0,
@@ -1402,9 +1403,9 @@ public class Scales
             double Rightmost = 90.0;
             if (CosScale)
               {
-                for (int i = 0; i < Graduations.length; ++i)
+                for (int i = 0; i < GradLabels.length; ++i)
                   {
-                    Graduations[i] = 90.0 - Graduations[i];
+                    GradLabels[i] = 90.0 - GradLabels[i];
                   } /*for*/
                 Leftmost = 90.0 - Leftmost;
                 Rightmost = 90.0 - Rightmost;
@@ -1416,9 +1417,9 @@ public class Scales
                 /*TopEdge =*/ TopEdge,
                 /*TheScale =*/ this,
                 /*PrimaryGraduations =*/
-                    MakeGraduations
+                    MakeGradLabels
                       (
-                        /*Values =*/ Graduations,
+                        /*Values =*/ GradLabels,
                         /*NrDecimals =*/ 1,
                         /*MinDecimals =*/ 1,
                         /*Multiplier =*/ 1,
@@ -1493,7 +1494,7 @@ public class Scales
             boolean TopEdge
           )
           {
-            final double[] Graduations = new double[]
+            final double[] GradLabels = new double[]
                 {
                     4.0,
                     6.0,
@@ -1523,9 +1524,9 @@ public class Scales
                 /*TopEdge =*/ TopEdge,
                 /*TheScale =*/ this,
                 /*PrimaryGraduations =*/
-                    MakeGraduations
+                    MakeGradLabels
                       (
-                        /*Values =*/ Graduations,
+                        /*Values =*/ GradLabels,
                         /*NrDecimals =*/ 1,
                         /*MinDecimals =*/ 1,
                         /*Multiplier =*/ 1,
@@ -1624,7 +1625,7 @@ public class Scales
             boolean TopEdge
           )
           {
-            double[] Graduations;
+            double[] GradLabels;
             double Leftmost, Rightmost;
             int[] NrDivisions;
             int NrDecimals, MinDecimals = 99;
@@ -1636,7 +1637,7 @@ public class Scales
                   {
                 default: /*sigh*/
                 case 1:
-                    Graduations = new double[]
+                    GradLabels = new double[]
                         {
                             10.0,
                             15.0,
@@ -1669,7 +1670,7 @@ public class Scales
                     NrDecimals = 0;
                 break;
                 case 2:
-                    Graduations = new double[]
+                    GradLabels = new double[]
                         {
                             1.25,
                             1.3,
@@ -1717,7 +1718,7 @@ public class Scales
                     NrDecimals = 2;
                 break;
                 case 3:
-                    Graduations = new double[]
+                    GradLabels = new double[]
                         {
                             1.02,
                             1.03,
@@ -1753,7 +1754,7 @@ public class Scales
                     NrDecimals = 2;
                 break;
                 case 4:
-                    Graduations = new double[]
+                    GradLabels = new double[]
                         {
                             1.002,
                             1.003,
@@ -1787,7 +1788,7 @@ public class Scales
                     NrDecimals = 3;
                 break;
                 case -1:
-                    Graduations = new double[]
+                    GradLabels = new double[]
                         {
                             0.1,
                             0.05,
@@ -1817,7 +1818,7 @@ public class Scales
                     MinDecimals = 1;
                 break;
                 case -2:
-                    Graduations = new double[]
+                    GradLabels = new double[]
                         {
                             0.80,
                             0.75,
@@ -1857,7 +1858,7 @@ public class Scales
                     NrDecimals = 2;
                 break;
                 case -3:
-                    Graduations = new double[]
+                    GradLabels = new double[]
                         {
                             0.98,
                             0.97,
@@ -1891,7 +1892,7 @@ public class Scales
                     NrDecimals = 2;
                 break;
                 case -4:
-                    Graduations = new double[]
+                    GradLabels = new double[]
                         {
                             0.998,
                             0.997,
@@ -1922,7 +1923,7 @@ public class Scales
                   {
                 default: /*sigh*/
                 case 1:
-                    Graduations = new double[]
+                    GradLabels = new double[]
                         {
                             2.0,
                             3.0,
@@ -1960,7 +1961,7 @@ public class Scales
                     NrDecimals = 0;
                 break;
                 case 2:
-                    Graduations = new double[]
+                    GradLabels = new double[]
                         {
                             1.10,
                             1.11,
@@ -1996,7 +1997,7 @@ public class Scales
                     NrDecimals = 2;
                 break;
                 case 3:
-                    Graduations = new double[]
+                    GradLabels = new double[]
                         {
                             1.00,
                             1.01,
@@ -2030,7 +2031,7 @@ public class Scales
                     NrDecimals = 3;
                 break;
                 case 4:
-                    Graduations = new double[]
+                    GradLabels = new double[]
                         {
                             1.000,
                             1.001,
@@ -2064,7 +2065,7 @@ public class Scales
                     NrDecimals = 4;
                 break;
                 case -1:
-                    Graduations = new double[]
+                    GradLabels = new double[]
                         {
                             0.36,
                             0.3,
@@ -2089,7 +2090,7 @@ public class Scales
                     MinDecimals = 1;
                 break;
                 case -2:
-                    Graduations = new double[]
+                    GradLabels = new double[]
                         {
                             0.95,
                             0.90,
@@ -2117,7 +2118,7 @@ public class Scales
                     NrDecimals = 2;
                 break;
                 case -3:
-                    Graduations = new double[]
+                    GradLabels = new double[]
                         {
                             1.00,
                             0.99,
@@ -2149,7 +2150,7 @@ public class Scales
                     NrDecimals = 2;
                 break;
                 case -4:
-                    Graduations = new double[]
+                    GradLabels = new double[]
                         {
                             1.00,
                             0.999,
@@ -2189,9 +2190,9 @@ public class Scales
                 /*TopEdge =*/ TopEdge,
                 /*TheScale =*/ this,
                 /*PrimaryGraduations =*/
-                    MakeGraduations
+                    MakeGradLabels
                       (
-                        /*Values =*/ Graduations,
+                        /*Values =*/ GradLabels,
                         /*NrDecimals =*/ NrDecimals,
                         /*MinDecimals =*/ MinDecimals,
                         /*Multiplier =*/ 1,
