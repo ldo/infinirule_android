@@ -154,7 +154,7 @@ public class Main
             Scales.BackgroundColor = Resources.getColor(R.color.background);
             Scales.MainColor = Resources.getColor(R.color.main);
             Scales.AltColor = Resources.getColor(R.color.alt);
-            Scales.MarkerColor = Resources.getColor(R.color.marker);
+            Scales.SpecialMarkerColor = Resources.getColor(R.color.special_marker);
             Scales.CursorFillColor = Resources.getColor(R.color.cursor_fill);
             Scales.CursorEdgeColor = Resources.getColor(R.color.cursor_edge);
             Scales.PrimaryMarkerLength = Resources.getDimension(R.dimen.primary_marker_length);

@@ -31,7 +31,7 @@ public class Scales
     public static final String LowerVarName = "y";
 
     public static int
-        BackgroundColor, MainColor, AltColor, MarkerColor, CursorFillColor, CursorEdgeColor;
+        BackgroundColor, MainColor, AltColor, SpecialMarkerColor, CursorFillColor, CursorEdgeColor;
     public static float FontSize, PrimaryMarkerLength, HalfLayoutHeight, HalfCursorWidth;
     public static final Typeface NormalStyle = Typeface.defaultFromStyle(Typeface.NORMAL);
     public static final Typeface ItalicStyle = Typeface.defaultFromStyle(Typeface.ITALIC);
@@ -64,8 +64,8 @@ public class Scales
           );
           /* returns position corresponding to specified scale reading. */
 
-        public Marker[] Markers();
-          /* returns positions at which to draw markers, or null if none. */
+        public SpecialMarker[] SpecialMarkers();
+          /* returns positions at which to draw special markers, or null if none. */
 
         public void Draw
           (
@@ -75,12 +75,12 @@ public class Scales
           );
       } /*Scale*/
 
-    public static class Marker
+    public static class SpecialMarker
       {
         public final String Name;
         public final double Value;
 
-        public Marker
+        public SpecialMarker
           (
             String Name,
             double Value
@@ -88,9 +88,9 @@ public class Scales
           {
             this.Name = Name;
             this.Value = Value;
-          } /*Marker*/
+          } /*SpecialMarker*/
 
-      } /*Marker*/
+      } /*SpecialMarker*/
 
 /*
     Common useful stuff
@@ -450,10 +450,10 @@ public class Scales
         final double Rightmost; /* upper limit of reading of entire scale */
         final Paint TextHow;
         final Paint LineHow;
-        final Marker[] Markers;
-        final Paint MarkerTextHow; /* for markers */
-        final Paint MarkerLineHow; /* for markers */
-        final float TopMarkerLength; /* so markers line up with top-level graduation labels */
+        final SpecialMarker[] SpecialMarkers;
+        final Paint SpecialMarkerTextHow; /* for special markers */
+        final Paint SpecialMarkerLineHow; /* for special markers */
+        final float TopMarkerLength; /* so special markers line up with top-level graduation labels */
 
         public SubGraduations
           (
@@ -465,9 +465,9 @@ public class Scales
             double Rightmost,
             Paint TextHow,
             Paint LineHow,
-            Marker[] Markers,
-            Paint MarkerTextHow,
-            Paint MarkerLineHow,
+            SpecialMarker[] SpecialMarkers,
+            Paint SpecialMarkerTextHow,
+            Paint SpecialMarkerLineHow,
             float TopMarkerLength
           )
           {
@@ -479,9 +479,9 @@ public class Scales
             this.Rightmost = Rightmost;
             this.TextHow = TextHow;
             this.LineHow = LineHow;
-            this.Markers = Markers;
-            this.MarkerTextHow = MarkerTextHow;
-            this.MarkerLineHow = MarkerLineHow;
+            this.SpecialMarkers = SpecialMarkers;
+            this.SpecialMarkerTextHow = SpecialMarkerTextHow;
+            this.SpecialMarkerLineHow = SpecialMarkerLineHow;
             this.TopMarkerLength = TopMarkerLength;
           } /*SubGraduations*/
 
@@ -609,10 +609,10 @@ public class Scales
                                 /*MaxWidth =*/ 0.9f * Math.abs(GradX - PrevGradX) /* roughly */
                               );
                           } /*if*/
-                        if (!Subdivide && Markers != null)
+                        if (!Subdivide && SpecialMarkers != null)
                           {
-                          /* markers not done at lower level, do them at this level */
-                            for (Marker ThisMarker : Markers)
+                          /* special markers not done at lower level, do them at this level */
+                            for (SpecialMarker ThisMarker : SpecialMarkers)
                               {
                                 if
                                   (
@@ -629,7 +629,7 @@ public class Scales
                                         0.0f,
                                         MarkerX,
                                         MidMarkerLength * (TopEdge ? +1 : -1),
-                                        MarkerLineHow
+                                        SpecialMarkerLineHow
                                       );
                                     DrawCenteredText
                                       (
@@ -637,7 +637,7 @@ public class Scales
                                         /*TheText =*/ ThisMarker.Name,
                                         /*x =*/ MarkerX,
                                         /*y =*/ TopMarkerLength * (TopEdge ? +1 : -1),
-                                        /*UsePaint =*/ MarkerTextHow,
+                                        /*UsePaint =*/ SpecialMarkerTextHow,
                                         /*MaxWidth =*/ -1.0f
                                       );
                                     /* fixme: should check label text does not overlap graduation labels */
@@ -677,7 +677,7 @@ public class Scales
         final Paint LineHow = new Paint();
         final Paint TextHow = new Paint();
         LineHow.setColor(MainColor);
-      /* No anti-aliasing for LineHow or MarkerLineHow, looks best without */
+      /* No anti-aliasing for LineHow or SpecialMarkerLineHow, looks best without */
         TextHow.setAntiAlias(true);
         TextHow.setTextSize(FontSize);
         if (Decreasing)
@@ -689,17 +689,17 @@ public class Scales
           {
             TextHow.setColor(MainColor);
           } /*if*/
-        final Marker[] Markers = TheScale.Markers();
+        final SpecialMarker[] SpecialMarkers = TheScale.SpecialMarkers();
           /* faster to do it here and pass to SubGraduations.Draw calls */
-        final Paint MarkerTextHow = Markers != null ? new Paint() : null;
-        final Paint MarkerLineHow = Markers != null ? new Paint() : null;
-        if (Markers != null)
+        final Paint SpecialMarkerTextHow = SpecialMarkers != null ? new Paint() : null;
+        final Paint SpecialMarkerLineHow = SpecialMarkers != null ? new Paint() : null;
+        if (SpecialMarkers != null)
           {
-            MarkerTextHow.setAntiAlias(true);
-            MarkerTextHow.setTextSize(FontSize);
-            MarkerTextHow.setTextAlign(Paint.Align.CENTER);
-            MarkerTextHow.setColor(MarkerColor);
-            MarkerLineHow.setColor(MarkerColor);
+            SpecialMarkerTextHow.setAntiAlias(true);
+            SpecialMarkerTextHow.setTextSize(FontSize);
+            SpecialMarkerTextHow.setTextAlign(Paint.Align.CENTER);
+            SpecialMarkerTextHow.setColor(SpecialMarkerColor);
+            SpecialMarkerLineHow.setColor(SpecialMarkerColor);
           } /*if*/
         for (int i = 0; i < PrimaryGraduations.length - 1; ++i)
           {
@@ -744,9 +744,9 @@ public class Scales
                     /*Rightmost =*/ Rightmost,
                     /*TextHow =*/ TextHow,
                     /*LineHow =*/ LineHow,
-                    /*Markers =*/ Markers,
-                    /*MarkerTextHow =*/ MarkerTextHow,
-                    /*MarkerLineHow =*/ MarkerLineHow,
+                    /*SpecialMarkers =*/ SpecialMarkers,
+                    /*SpecialMarkerTextHow =*/ SpecialMarkerTextHow,
+                    /*SpecialMarkerLineHow =*/ SpecialMarkerLineHow,
                     /*TopMarkerLength =*/ PrimaryMarkerLength
                   )
                 .Draw
@@ -984,16 +984,16 @@ public class Scales
                     1.0 - Math.log10(Value * 10.0);
           } /*PosAt*/
 
-        public Marker[] Markers()
+        public SpecialMarker[] SpecialMarkers()
           {
-            final Marker StdMarker = new Marker("π", Math.PI);
+            final SpecialMarker StdMarker = new SpecialMarker("π", Math.PI);
             final int Norm = (int)Math.ceil(Math.log10(StdMarker.Value));
             return
-                new Marker[]
+                new SpecialMarker[]
                     {
-                        new Marker(StdMarker.Name, StdMarker.Value * Math.pow(10.0, - Norm)),
+                        new SpecialMarker(StdMarker.Name, StdMarker.Value * Math.pow(10.0, - Norm)),
                     };
-          } /*Markers*/
+          } /*SpecialMarkers*/
 
         public void Draw
           (
@@ -1058,11 +1058,11 @@ public class Scales
                 Value;
           } /*PosAt*/
 
-        public Marker[] Markers()
+        public SpecialMarker[] SpecialMarkers()
           {
             return
                 null;
-          } /*Marker*/
+          } /*SpecialMarker*/
 
         public void Draw
           (
@@ -1129,11 +1129,11 @@ public class Scales
                 Value / Ln10;
           } /*PosAt*/
 
-        public Marker[] Markers()
+        public SpecialMarker[] SpecialMarkers()
           {
             return
                 null;
-          } /*Marker*/
+          } /*SpecialMarker*/
 
         public void Draw
           (
@@ -1222,11 +1222,11 @@ public class Scales
                 Math.log10(Value * Math.PI / 18.0);
           } /*PosAt*/
 
-        public Marker[] Markers()
+        public SpecialMarker[] SpecialMarkers()
           {
             return
                 null;
-          } /*Marker*/
+          } /*SpecialMarker*/
 
         public void Draw
           (
@@ -1360,11 +1360,11 @@ public class Scales
                     1.0;
           } /*PosAt*/
 
-        public Marker[] Markers()
+        public SpecialMarker[] SpecialMarkers()
           {
             return
                 null;
-          } /*Marker*/
+          } /*SpecialMarker*/
 
         public void Draw
           (
@@ -1480,11 +1480,11 @@ public class Scales
                     1.0;
           } /*PosAt*/
 
-        public Marker[] Markers()
+        public SpecialMarker[] SpecialMarkers()
           {
             return
                 null;
-          } /*Marker*/
+          } /*SpecialMarker*/
 
         public void Draw
           (
@@ -1603,19 +1603,19 @@ public class Scales
                 Math.log10(Math.log(Value) / Factor / Base);
           } /*PosAt*/
 
-        public Marker[] Markers()
+        public SpecialMarker[] SpecialMarkers()
           {
-            Marker[] Result = null;
+            SpecialMarker[] Result = null;
             if (Base10 && Level == 2)
               {
-                Result = new Marker[]
+                Result = new SpecialMarker[]
                     {
-                        new Marker("e", Math.E),
+                        new SpecialMarker("e", Math.E),
                     };
               } /*if*/
             return
                 Result;
-          } /*Marker*/
+          } /*SpecialMarker*/
 
         public void Draw
           (

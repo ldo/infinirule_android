@@ -3,7 +3,7 @@
     <color name="background">#fffffada</color>
     <color name="main">#ff000000</color>
     <color name="alt">#fff20001</color>
-    <color name="marker">#ffa0a0a0</color>
+    <color name="special_marker">#ffa0a0a0</color>
     <color name="cursor_fill">#20202020</color>
     <color name="cursor_edge">#80808080</color>
 </resources>
