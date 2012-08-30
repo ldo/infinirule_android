@@ -70,8 +70,14 @@ public class Scales
 
         public void Draw
           (
-            Canvas g, /* draw it starting at (0, 0) here */
-            float ScaleLength, /* total width */
+            Canvas g, /* draw it starting at (Offset, 0) here */
+            double Offset,
+              /* offset position of scale, explicitly passed rather than depending on
+                g's Matrix to avoid integer overflow problems at very high magnification */
+            int ScaleLength, /* total width */
+            int ViewWidth,
+              /* visible X coords are in [0.0 .. ViewWidth), need to do my own
+                clipping checks with explicit Offset */
             boolean TopEdge /* false for bottom edge */
           );
 
@@ -136,6 +142,21 @@ public class Scales
         return
             Offset - Math.ceil(Offset);
       } /*FindScaleOffset*/
+
+    public static boolean WithinView
+      (
+        double Pos,
+        double Size,
+        double Offset,
+        int ScaleLength,
+        int ViewWidth
+      )
+      /* is Pos on the scale visible within the view. */
+      {
+        final float ViewPos = ScaleToView(Pos, Size, Offset, ScaleLength);
+        return
+            ViewPos >= 0 && ViewPos < ViewWidth;
+      } /*WithinView*/
 
 /*
     Common useful stuff
@@ -490,7 +511,9 @@ public class Scales
       /* recursive subdivision of scale graduations. */
       {
         final Canvas g;
-        final float ScaleLength;
+        final double Offset;
+        final int ScaleLength;
+        final int ViewWidth;
         final boolean TopEdge;
         final Scale TheScale;
         final double Leftmost; /* lower limit of reading of entire scale */
@@ -505,7 +528,9 @@ public class Scales
         public SubGraduations
           (
             Canvas g,
-            float ScaleLength,
+            double Offset,
+            int ScaleLength,
+            int ViewWidth,
             boolean TopEdge,
             Scale TheScale,
             double Leftmost,
@@ -519,7 +544,9 @@ public class Scales
           )
           {
             this.g = g;
+            this.Offset = Offset;
             this.ScaleLength = ScaleLength;
+            this.ViewWidth = ViewWidth;
             this.TopEdge = TopEdge;
             this.TheScale = TheScale;
             this.Leftmost = Leftmost;
@@ -547,28 +574,28 @@ public class Scales
             final boolean Increasing = LeftArg < RightArg;
             final boolean DoSubGradLabels;
               {
-                final float Leftmost = (float)(TheScale.PosAt(LeftArg) * ScaleLength);
-                final float Rightmost = (float)(TheScale.PosAt(RightArg) * ScaleLength);
+                final float Leftmost =
+                    ScaleToView
+                      (
+                        /*Pos =*/ TheScale.PosAt(LeftArg),
+                        /*Size =*/ TheScale.Size(),
+                        /*Offset =*/ Offset,
+                        /*ScaleLength =*/ ScaleLength
+                      );
+                final float Rightmost =
+                    ScaleToView
+                      (
+                        /*Pos =*/ TheScale.PosAt(RightArg),
+                        /*Size =*/ TheScale.Size(),
+                        /*Offset =*/ Offset,
+                        /*ScaleLength =*/ ScaleLength
+                      );
                 DoSubGradLabels =
                         ToSublabel != null
                     &&
-                        g.quickReject
-                          (
-                            /*left =*/ Leftmost - 1.0f,
-                            /*top =*/ TopEdge ? 0.0f : - PrimaryMarkerLength,
-                            /*right =*/ Leftmost + 1.0f,
-                            /*bottom =*/ TopEdge ? PrimaryMarkerLength : 0.0f,
-                            /*type =*/ Canvas.EdgeType.AA
-                          )
+                        (Leftmost < 0 || Leftmost >= ViewWidth)
                     &&
-                        g.quickReject
-                          (
-                            /*left =*/ Rightmost - 1.0f,
-                            /*top =*/ TopEdge ? 0.0f : - PrimaryMarkerLength,
-                            /*right =*/ Rightmost + 1.0f,
-                            /*bottom =*/ TopEdge ? PrimaryMarkerLength : 0.0f,
-                            /*type =*/ Canvas.EdgeType.AA
-                          );
+                        (Rightmost < 0 || Rightmost >= ViewWidth);
               }
             final GradLabel[] Sublabels = DoSubGradLabels ? ToSublabel.Subdivide(NrSteps) : null;
             final float MarkerLength = ParentMarkerLength * 0.65f;
@@ -578,18 +605,24 @@ public class Scales
             for (int j = 0; j <= NrSteps; ++j)
               {
                 final double ThisArg = LeftArg + (double)j / NrSteps * (RightArg - LeftArg);
-                final float GradX = (float)(TheScale.PosAt(ThisArg) * ScaleLength);
+                final float GradX =
+                    ScaleToView
+                      (
+                        /*Pos =*/ TheScale.PosAt(ThisArg),
+                        /*Size =*/ TheScale.Size(),
+                        /*Offset =*/ Offset,
+                        /*ScaleLength =*/ ScaleLength
+                      );
                 if (j != 0)
                   {
                     final boolean Subdivide =
-                            !g.quickReject
-                              (
-                                /*left =*/ PrevGradX,
-                                /*top =*/ TopEdge ? 0.0f : - PrimaryMarkerLength,
-                                /*right =*/ GradX,
-                                /*bottom =*/ TopEdge ? PrimaryMarkerLength : 0.0f,
-                                /*type =*/ Canvas.EdgeType.AA
-                              )
+                            (
+                                PrevGradX >= 0 && PrevGradX < ViewWidth
+                            ||
+                                GradX >= 0 && GradX < ViewWidth
+                            ||
+                                PrevGradX < 0 && GradX >= ViewWidth
+                            )
                         &&
                             (Increasing ?
                                     ThisArg >= Leftmost && ThisArg <= Rightmost
@@ -638,24 +671,27 @@ public class Scales
                                 MidMarkerLength
                             :
                                 MarkerLength;
-                        g.drawLine
-                          (
-                            GradX,
-                            0.0f,
-                            GradX,
-                            TopEdge ? UseMarkerLength : - UseMarkerLength,
-                            LineHow
-                          );
-                        if (Sublabels != null && j < NrSteps)
+                        if (GradX >= 0 && GradX < ViewWidth)
                           {
-                            Sublabels[j].DrawCentered
+                            g.drawLine
                               (
-                                /*Draw =*/ g,
-                                /*x =*/ GradX,
-                                /*y =*/ TopEdge ? PrimaryMarkerLength : - PrimaryMarkerLength,
-                                /*UsePaint =*/ TextHow,
-                                /*MaxWidth =*/ 0.9f * Math.abs(GradX - PrevGradX) /* roughly */
+                                GradX,
+                                0.0f,
+                                GradX,
+                                TopEdge ? UseMarkerLength : - UseMarkerLength,
+                                LineHow
                               );
+                            if (Sublabels != null && j < NrSteps)
+                              {
+                                Sublabels[j].DrawCentered
+                                  (
+                                    /*Draw =*/ g,
+                                    /*x =*/ GradX,
+                                    /*y =*/ TopEdge ? PrimaryMarkerLength : - PrimaryMarkerLength,
+                                    /*UsePaint =*/ TextHow,
+                                    /*MaxWidth =*/ 0.9f * Math.abs(GradX - PrevGradX) /* roughly */
+                                  );
+                              } /*if*/
                           } /*if*/
                         if (!Subdivide && SpecialMarkers != null)
                           {
@@ -670,25 +706,35 @@ public class Scales
                                         ThisMarker.Value < PrevArg && ThisArg <= ThisMarker.Value
                                   )
                                   {
-                                    final float MarkerX = (float)(TheScale.PosAt(ThisMarker.Value) * ScaleLength);
-                                    g.drawLine
-                                      (
-                                        MarkerX,
-                                        0.0f,
-                                        MarkerX,
-                                        MidMarkerLength * (TopEdge ? +1 : -1),
-                                        SpecialMarkerLineHow
-                                      );
-                                    DrawCenteredText
-                                      (
-                                        /*Draw =*/ g,
-                                        /*TheText =*/ ThisMarker.Name,
-                                        /*x =*/ MarkerX,
-                                        /*y =*/ TopMarkerLength * (TopEdge ? +1 : -1),
-                                        /*UsePaint =*/ SpecialMarkerTextHow,
-                                        /*MaxWidth =*/ -1.0f
-                                      );
-                                    /* fixme: should check label text does not overlap graduation labels */
+                                    final float MarkerX =
+                                        ScaleToView
+                                          (
+                                            /*Pos =*/ TheScale.PosAt(ThisMarker.Value),
+                                            /*Size =*/ TheScale.Size(),
+                                            /*Offset =*/ Offset,
+                                            /*ScaleLength =*/ ScaleLength
+                                          );
+                                    if (MarkerX >= 0 && MarkerX < ViewWidth)
+                                      {
+                                        g.drawLine
+                                          (
+                                            MarkerX,
+                                            0.0f,
+                                            MarkerX,
+                                            MidMarkerLength * (TopEdge ? +1 : -1),
+                                            SpecialMarkerLineHow
+                                          );
+                                        DrawCenteredText
+                                          (
+                                            /*Draw =*/ g,
+                                            /*TheText =*/ ThisMarker.Name,
+                                            /*x =*/ MarkerX,
+                                            /*y =*/ TopMarkerLength * (TopEdge ? +1 : -1),
+                                            /*UsePaint =*/ SpecialMarkerTextHow,
+                                            /*MaxWidth =*/ -1.0f
+                                          );
+                                        /* fixme: should check label text does not overlap graduation labels */
+                                      } /*if*/
                                   } /*if*/
                               } /*for*/
                           } /*if*/
@@ -704,7 +750,9 @@ public class Scales
     public static void DrawGraduations
       (
         Canvas g,
-        float ScaleLength, /* total length of scale */
+        double Offset,
+        int ScaleLength, /* total length of scale */
+        int ViewWidth, /* visible X coords are in [0.0 .. ViewWidth) */
         boolean TopEdge, /* true if markers descend from edge, false if they ascend from edge */
         Scale TheScale, /* for mapping readings to X positions and showing markers */
         GradLabel[] PrimaryGraduations,
@@ -751,21 +799,32 @@ public class Scales
           } /*if*/
         for (int i = 0; i < PrimaryGraduations.length - 1; ++i)
           {
-            final float LeftPos = (float)(TheScale.PosAt(PrimaryGraduations[i].GetValue()) * ScaleLength);
-            final float RightPos = (float)(TheScale.PosAt(PrimaryGraduations[i + 1].GetValue()) * ScaleLength);
+            final float LeftPos =
+                ScaleToView
+                  (
+                    /*Pos =*/ TheScale.PosAt(PrimaryGraduations[i].GetValue()),
+                    /*Size =*/ TheScale.Size(),
+                    /*Offset =*/ Offset,
+                    /*ScaleLength =*/ ScaleLength
+                  );
+            final float RightPos =
+                ScaleToView
+                  (
+                    /*Pos =*/ TheScale.PosAt(PrimaryGraduations[i + 1].GetValue()),
+                    /*Size =*/ TheScale.Size(),
+                    /*Offset =*/ Offset,
+                    /*ScaleLength =*/ ScaleLength
+                  );
             if
               (
-                !g.quickReject
-                  (
-                    /*left =*/ LeftPos,
-                    /*top =*/ TopEdge ? 0.0f : - PrimaryMarkerLength,
-                    /*right =*/ RightPos,
-                    /*bottom =*/ TopEdge ? PrimaryMarkerLength : 0.0f,
-                    /*type =*/ Canvas.EdgeType.AA
-                  )
+                    LeftPos >= 0 && LeftPos < ViewWidth
+                ||
+                    RightPos >= 0 && RightPos < ViewWidth
+                ||
+                    LeftPos < 0 && RightPos >= ViewWidth
               )
               {
-                if (i != 0 || Leftmost == PrimaryGraduations[0].GetValue())
+                if (LeftPos >= 0 && LeftPos < ViewWidth && (i != 0 || Leftmost == PrimaryGraduations[0].GetValue()))
                   {
                     g.drawLine
                       (
@@ -785,7 +844,9 @@ public class Scales
                 new SubGraduations
                   (
                     /*g =*/ g,
+                    /*Offset =*/ Offset,
                     /*ScaleLength =*/ ScaleLength,
+                    /*ViewWidth =*/ ViewWidth,
                     /*TopEdge =*/ TopEdge,
                     /*TheScale =*/ TheScale,
                     /*Leftmost =*/ Leftmost,
@@ -809,21 +870,27 @@ public class Scales
           } /*for*/
         if (!TheScale.Wrap())
           {
-          /* draw alternate-colour marker indicating scale does not wraparound */
-            LineHow.setColor(AltColor);
-            g.drawLine
-              (
-                0.0f, 0.0f,
-                0.0f, TopEdge ? PrimaryMarkerLength : - PrimaryMarkerLength,
-                LineHow
-              );
+            final float BreakPos = ScaleToView(0.0, TheScale.Size(), Offset, ScaleLength);
+            if (BreakPos >= 0 && BreakPos < ViewWidth)
+              {
+              /* draw alternate-colour marker indicating scale does not wraparound */
+                LineHow.setColor(AltColor);
+                g.drawLine
+                  (
+                    BreakPos, 0.0f,
+                    BreakPos, TopEdge ? PrimaryMarkerLength : - PrimaryMarkerLength,
+                    LineHow
+                  );
+              } /*if*/
           } /*if*/
       } /*DrawGraduations*/
 
     public static void DrawSimpleGradLabels
       (
         Canvas g,
-        float ScaleLength,
+        double Offset,
+        int ScaleLength,
+        int ViewWidth,
         boolean TopEdge,
         Scale TheScale,
         int NrPrimarySteps, /* negative to go backwards */
@@ -846,7 +913,9 @@ public class Scales
         DrawGraduations
           (
             /*g =*/ g,
+            /*Offset =*/ Offset,
             /*ScaleLength =*/ ScaleLength,
+            /*ViewWidth =*/ ViewWidth,
             /*TopEdge =*/ TopEdge,
             /*TheScale =*/ TheScale,
             /*PrimaryGraduations =*/
@@ -1046,14 +1115,18 @@ public class Scales
         public void Draw
           (
             Canvas g,
-            float ScaleLength,
+            double Offset,
+            int ScaleLength,
+            int ViewWidth, /* visible X coords are in [0.0 .. ViewWidth) */
             boolean TopEdge
           )
           {
             DrawSimpleGradLabels
               (
                 /*g =*/ g,
+                /*Offset =*/ Offset,
                 /*ScaleLength =*/ ScaleLength,
+                /*ViewWidth =*/ ViewWidth,
                 /*TopEdge =*/ TopEdge,
                 /*TheScale =*/ this,
                 /*NrPrimarySteps =*/ Power > 0 ? 10 : -10,
@@ -1115,14 +1188,18 @@ public class Scales
         public void Draw
           (
             Canvas g,
-            float ScaleLength,
+            double Offset,
+            int ScaleLength,
+            int ViewWidth, /* visible X coords are in [0.0 .. ViewWidth) */
             boolean TopEdge
           )
           {
             DrawSimpleGradLabels
               (
                 /*g =*/ g,
+                /*Offset =*/ Offset,
                 /*ScaleLength =*/ ScaleLength,
+                /*ViewWidth =*/ ViewWidth,
                 /*TopEdge =*/ TopEdge,
                 /*TheScale =*/ this,
                 /*NrPrimarySteps =*/ 10,
@@ -1186,7 +1263,9 @@ public class Scales
         public void Draw
           (
             Canvas g,
-            float ScaleLength,
+            double Offset,
+            int ScaleLength,
+            int ViewWidth, /* visible X coords are in [0.0 .. ViewWidth) */
             boolean TopEdge
           )
           {
@@ -1204,7 +1283,9 @@ public class Scales
             DrawGraduations
               (
                 /*g =*/ g,
+                /*Offset =*/ Offset,
                 /*ScaleLength =*/ ScaleLength,
+                /*ViewWidth =*/ ViewWidth,
                 /*TopEdge =*/ TopEdge,
                 /*TheScale =*/ this,
                 /*PrimaryGraduations =*/
@@ -1279,7 +1360,9 @@ public class Scales
         public void Draw
           (
             Canvas g,
-            float ScaleLength,
+            double Offset,
+            int ScaleLength,
+            int ViewWidth, /* visible X coords are in [0.0 .. ViewWidth) */
             boolean TopEdge
           )
           {
@@ -1309,7 +1392,9 @@ public class Scales
             DrawGraduations
               (
                 /*g =*/ g,
+                /*Offset =*/ Offset,
                 /*ScaleLength =*/ ScaleLength,
+                /*ViewWidth =*/ ViewWidth,
                 /*TopEdge =*/ TopEdge,
                 /*TheScale =*/ this,
                 /*PrimaryGraduations =*/
@@ -1417,7 +1502,9 @@ public class Scales
         public void Draw
           (
             Canvas g,
-            float ScaleLength,
+            double Offset,
+            int ScaleLength,
+            int ViewWidth, /* visible X coords are in [0.0 .. ViewWidth) */
             boolean TopEdge
           )
           {
@@ -1460,7 +1547,9 @@ public class Scales
             DrawGraduations
               (
                 /*g =*/ g,
+                /*Offset =*/ Offset,
                 /*ScaleLength =*/ ScaleLength,
+                /*ViewWidth =*/ ViewWidth,
                 /*TopEdge =*/ TopEdge,
                 /*TheScale =*/ this,
                 /*PrimaryGraduations =*/
@@ -1537,7 +1626,9 @@ public class Scales
         public void Draw
           (
             Canvas g,
-            float ScaleLength,
+            double Offset,
+            int ScaleLength,
+            int ViewWidth, /* visible X coords are in [0.0 .. ViewWidth) */
             boolean TopEdge
           )
           {
@@ -1567,7 +1658,9 @@ public class Scales
             DrawGraduations
               (
                 /*g =*/ g,
+                /*Offset =*/ Offset,
                 /*ScaleLength =*/ ScaleLength,
+                /*ViewWidth =*/ ViewWidth,
                 /*TopEdge =*/ TopEdge,
                 /*TheScale =*/ this,
                 /*PrimaryGraduations =*/
@@ -1668,7 +1761,9 @@ public class Scales
         public void Draw
           (
             Canvas g,
-            float ScaleLength,
+            double Offset,
+            int ScaleLength,
+            int ViewWidth, /* visible X coords are in [0.0 .. ViewWidth) */
             boolean TopEdge
           )
           {
@@ -2233,7 +2328,9 @@ public class Scales
             DrawGraduations
               (
                 /*g =*/ g,
+                /*Offset =*/ Offset,
                 /*ScaleLength =*/ ScaleLength,
+                /*ViewWidth =*/ ViewWidth,
                 /*TopEdge =*/ TopEdge,
                 /*TheScale =*/ this,
                 /*PrimaryGraduations =*/

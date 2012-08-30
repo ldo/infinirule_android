@@ -502,7 +502,6 @@ public class SlideView extends android.view.View
           {
             for (boolean Edge = false;;)
               {
-                final android.graphics.Matrix m = new android.graphics.Matrix();
                 final Scales.Scale TheScale =
                     Upper ?
                         Edge ? TopScale : UpperScale
@@ -512,40 +511,45 @@ public class SlideView extends android.view.View
                         (int)(ViewDimensions.x + ScaleLength * TheScale.Size() - 1)
                     /
                         (int)(ScaleLength * TheScale.Size());
-                m.preTranslate
-                  (
-                    (float)(
-                            (
-                                (Upper ?
-                                    Edge ? TopScaleOffset : UpperScaleOffset
-                                :
-                                    Edge ? BottomScaleOffset : LowerScaleOffset
-                                )
-                            +
-                                TheScale.ExtraOffset()
-                            )
-                        *
-                            ScaleLength
-                        *
-                            TheScale.Size()
-                    ),
-                        ViewDimensions.y / 2.0f
-                    +
-                        (Edge ?
-                            Upper ?
-                                - Scales.HalfLayoutHeight
-                            :
-                                + Scales.HalfLayoutHeight
+                double Offset =
+                        (Upper ?
+                            Edge ? TopScaleOffset : UpperScaleOffset
                         :
-                            0.0f
+                            Edge ? BottomScaleOffset : LowerScaleOffset
                         )
-                  );
-                for (int i = -1; i <= ScaleRepeat; ++i)
+                    +
+                        TheScale.ExtraOffset()
+                    ;
                   {
+                    final android.graphics.Matrix m = new android.graphics.Matrix();
+                    m.preTranslate
+                      (
+                        0.0f,
+                            ViewDimensions.y / 2.0f
+                        +
+                            (Edge ?
+                                Upper ?
+                                    - Scales.HalfLayoutHeight
+                                :
+                                    + Scales.HalfLayoutHeight
+                            :
+                                0.0f
+                            )
+                      );
                     g.setMatrix(m_orig);
                     g.concat(m);
-                    TheScale.Draw(g, (float)(ScaleLength * TheScale.Size()), Upper == Edge);
-                    m.preTranslate((float)(ScaleLength * TheScale.Size()), 0.0f);
+                  }
+                for (int i = -1; i <= ScaleRepeat; ++i)
+                  {
+                    TheScale.Draw
+                      (
+                        /*g =*/ g,
+                        /*Offset =*/ Offset,
+                        /*ScaleLength =*/ ScaleLength,
+                        /*ViewWidth =*/ (int)ViewDimensions.x,
+                        /*TopEdge =*/ Upper == Edge
+                      );
+                    Offset += 1.0;
                   } /*for*/
                 if (Edge)
                     break;
