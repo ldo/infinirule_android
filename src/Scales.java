@@ -389,7 +389,6 @@ public class Scales
                   );
                 UsePaint.setTextSize(BaseTextSize);
               } /*if*/
-            System.err.printf("Infinirule.Scales draw mantissa “%s” at x = %.3f\n", Mantissa, x); /* debug */
             Draw.drawText
               (
                 Mantissa,
@@ -570,7 +569,6 @@ public class Scales
           /* draws another level of sub-graduations within the specified interval,
             going recursive if zoom is large enough. */
           {
-            System.err.printf("Infinirule.Scales draw %d subgraduations from %e to %e\n", NrSteps, LeftArg, RightArg); /* debug */
             final boolean Increasing = LeftArg < RightArg;
             final boolean DoSubGradLabels;
               {
