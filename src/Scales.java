@@ -143,21 +143,6 @@ public class Scales
             Offset - Math.ceil(Offset);
       } /*FindScaleOffset*/
 
-    public static boolean WithinView
-      (
-        double Pos,
-        double Size,
-        double Offset,
-        int ScaleLength,
-        int ViewWidth
-      )
-      /* is Pos on the scale visible within the view. */
-      {
-        final float ViewPos = ScaleToView(Pos, Size, Offset, ScaleLength);
-        return
-            ViewPos >= 0 && ViewPos < ViewWidth;
-      } /*WithinView*/
-
 /*
     Common useful stuff
 */
