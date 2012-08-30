@@ -19,6 +19,7 @@ package nz.gen.geek_central.infinirule;
     <http://www.gnu.org/licenses/>.
 */
 
+import android.graphics.Rect;
 import android.graphics.PointF;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -62,7 +63,7 @@ public class Scales
           (
             double Value /* whatever range is returned by ValueAt */
           );
-          /* returns position corresponding to specified scale reading. */
+          /* returns position [0.0 .. 1.0) corresponding to specified scale reading. */
 
         public SpecialMarker[] SpecialMarkers();
           /* returns positions at which to draw special markers, or null if none. */
@@ -73,6 +74,7 @@ public class Scales
             float ScaleLength, /* total width */
             boolean TopEdge /* false for bottom edge */
           );
+
       } /*Scale*/
 
     public static class SpecialMarker
@@ -92,6 +94,49 @@ public class Scales
 
       } /*SpecialMarker*/
 
+    public static float ScaleToView
+      (
+        double Pos, /* [0.0 .. 1.0] */
+        double Size,
+        double Offset,
+        int ScaleLength
+      )
+      /* returns a position on a scale, offset by the given amount,
+        converted to view coordinates. */
+      {
+        return
+            (float)((Pos + Offset) * Size * ScaleLength);
+      } /*ScaleToView*/
+
+    public static double ViewToScale
+      (
+        float Coord,
+        double Size,
+        double Offset,
+        int ScaleLength
+      )
+      /* returns a view coordinate converted to the corresponding
+        position on a scale offset by the given amount. */
+      {
+        return
+            Coord / Size / ScaleLength - Offset;
+      } /*ViewToScale*/
+
+    public static double FindScaleOffset
+      (
+        float Coord,
+        double Size,
+        double Pos,
+        int ScaleLength
+      )
+      /* finds the offset value such that the specified view coordinate
+        maps to the specified position on a scale. */
+      {
+        final double Offset = Coord / Size / ScaleLength - Pos;
+        return
+            Offset - Math.ceil(Offset);
+      } /*FindScaleOffset*/
+
 /*
     Common useful stuff
 */
@@ -107,7 +152,7 @@ public class Scales
       )
       /* draws text at position x, vertically centred around y. */
       {
-        final android.graphics.Rect TextBounds = new android.graphics.Rect();
+        final Rect TextBounds = new Rect();
         UsePaint.getTextBounds(TheText, 0, TheText.length(), TextBounds);
         final float PrevScaleX = UsePaint.getTextScaleX();
         if (MaxWidth > 0.0f && TextBounds.right - TextBounds.left > MaxWidth)
@@ -127,13 +172,13 @@ public class Scales
           } /*if*/
       } /*DrawCenteredText*/
 
-    public static android.graphics.Rect GetCharacterCellBounds()
+    public static Rect GetCharacterCellBounds()
       /* returns the bounds of the character “W” in the label font. */
       {
         final Paint LabelHow = new Paint();
         LabelHow.setTypeface(NormalStyle);
         LabelHow.setTextSize(FontSize);
-        final android.graphics.Rect TextBounds = new android.graphics.Rect();
+        final Rect TextBounds = new Rect();
         LabelHow.getTextBounds("W", 0, 1, TextBounds);
         return
             TextBounds;
@@ -267,7 +312,7 @@ public class Scales
               {
                 Mantissa += "10";
               } /*if*/
-            final android.graphics.Rect MantissaTextBounds = new android.graphics.Rect();
+            final Rect MantissaTextBounds = new Rect();
             UsePaint.getTextBounds(Mantissa, 0, Mantissa.length(), MantissaTextBounds);
             final String ExponentStr =
                 Exponent != 0 ?
@@ -278,7 +323,7 @@ public class Scales
               {
                 UsePaint.setTextSize(ExpTextSize);
               } /*if*/
-            final android.graphics.Rect ExpTextBounds = new android.graphics.Rect();
+            final Rect ExpTextBounds = new Rect();
             UsePaint.getTextBounds(ExponentStr, 0, ExponentStr.length(), ExpTextBounds);
             if (MaxWidth > 0.0f)
               {
@@ -323,6 +368,7 @@ public class Scales
                   );
                 UsePaint.setTextSize(BaseTextSize);
               } /*if*/
+            System.err.printf("Infinirule.Scales draw mantissa “%s” at x = %.3f\n", Mantissa, x); /* debug */
             Draw.drawText
               (
                 Mantissa,
@@ -497,6 +543,7 @@ public class Scales
           /* draws another level of sub-graduations within the specified interval,
             going recursive if zoom is large enough. */
           {
+            System.err.printf("Infinirule.Scales draw %d subgraduations from %e to %e\n", NrSteps, LeftArg, RightArg); /* debug */
             final boolean Increasing = LeftArg < RightArg;
             final boolean DoSubGradLabels;
               {

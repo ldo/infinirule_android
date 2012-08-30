@@ -385,22 +385,8 @@ public class SlideView extends android.view.View
         converted to view coordinates. */
       {
         return
-            (float)((Pos + Offset) * Size * ScaleLength);
+            Scales.ScaleToView(Pos, Size, Offset, ScaleLength);
       } /*ScaleToView*/
-
-    public double ViewToScale
-      (
-        float Coord,
-        double Size,
-        double Offset,
-        int ScaleLength
-      )
-      /* returns a view coordinate converted to the corresponding
-        position on a scale offset by the given amount. */
-      {
-        return
-            Coord / Size / ScaleLength - Offset;
-      } /*ViewToScale*/
 
     public double ViewToScale
       (
@@ -412,23 +398,8 @@ public class SlideView extends android.view.View
         position on a scale offset by the given amount. */
       {
         return
-            ViewToScale(Coord, Size, Offset, ScaleLength);
+            Scales.ViewToScale(Coord, Size, Offset, ScaleLength);
       } /*ViewToScale*/
-
-    public double FindScaleOffset
-      (
-        float Coord,
-        double Size,
-        double Pos,
-        int ScaleLength
-      )
-      /* finds the offset value such that the specified view coordinate
-        maps to the specified position on a scale. */
-      {
-        final double Offset = Coord / Size / ScaleLength - Pos;
-        return
-            Offset - Math.ceil(Offset);
-      } /*FindScaleOffset*/
 
     public double FindScaleOffset
       (
@@ -440,7 +411,7 @@ public class SlideView extends android.view.View
         maps to the specified position on a scale. */
       {
         return
-            FindScaleOffset(Coord, Size, Pos, ScaleLength);
+            Scales.FindScaleOffset(Coord, Size, Pos, ScaleLength);
       } /*FindScaleOffset*/
 
 /*
@@ -1052,11 +1023,11 @@ public class SlideView extends android.view.View
                                         final double Scale2Size =
                                             ((Scales.Scale)(Upper ? UpperScale : LowerScale)).Size();
                                         final double NewOffset1 =
-                                            FindScaleOffset
+                                            Scales.FindScaleOffset
                                               (
                                                 ThisMouse.x,
                                                 Scale1Size,
-                                                ViewToScale
+                                                Scales.ViewToScale
                                                   (
                                                     LastMouse.x,
                                                     Scale1Size,
@@ -1066,11 +1037,11 @@ public class SlideView extends android.view.View
                                                 NewScaleLength
                                               );
                                         final double NewOffset2 =
-                                            FindScaleOffset
+                                            Scales.FindScaleOffset
                                               (
                                                 ThisMouse.x,
                                                 Scale2Size,
-                                                ViewToScale
+                                                Scales.ViewToScale
                                                   (
                                                     LastMouse.x,
                                                     Scale2Size,
