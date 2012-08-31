@@ -637,14 +637,11 @@ public class Scales
                       } /*if*/
                     if
                       (
-                            (Increasing ?
-                                ThisArg >= Leftmost && ThisArg <= Rightmost
-                            :
-                                ThisArg >= Rightmost && ThisArg <= Leftmost
-                            )
-                            /* marker is within scale */
-                        &&
-                            j != NrSteps
+                        Increasing ?
+                            ThisArg >= Leftmost && ThisArg <= Rightmost
+                        :
+                            ThisArg >= Rightmost && ThisArg <= Leftmost
+                        /* marker is within scale */
                       )
                       {
                         final float UseMarkerLength =
