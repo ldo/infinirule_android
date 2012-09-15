@@ -55,7 +55,7 @@ public class SlideView extends android.view.View
     private double[] CurScaleOffset = new double[NR_SCALES];
     private float CursorX; /* view x-coordinate */
     private int ScaleLength; /* in pixels */
-    private static final float MaxZoom = 10000.0f; /* something reasonable so rendering doesn't get too slow */
+    private static final float MaxZoom = 10000.0f; /* limit zooming to avoid integer overflow */
 
     private android.os.Vibrator Vibrate;
 
