@@ -396,6 +396,40 @@ public class SlideView extends android.view.View
     Drawing
 */
 
+    void DrawScaleName
+      (
+        android.graphics.Canvas g,
+        int WhichScale
+      )
+      {
+        final android.graphics.Rect TextBounds = Scales.GetCharacterCellBounds();
+        float Y = GetViewDimensions().y * 0.5f;
+        switch (WhichScale)
+          {
+        case SCALE_TOP:
+            Y +=  - Scales.HalfLayoutHeight + (Scales.PrimaryMarkerLength - TextBounds.top) * 1.5f;
+        break;
+        case SCALE_UPPER:
+            Y += - (Scales.PrimaryMarkerLength + TextBounds.bottom) * 1.5f;
+        break;
+        case SCALE_LOWER:
+            Y += (Scales.PrimaryMarkerLength - TextBounds.top) * 1.5f;
+        break;
+        case SCALE_BOTTOM:
+            Y += Scales.HalfLayoutHeight - (Scales.PrimaryMarkerLength + TextBounds.bottom) * 1.5f;
+        break;
+          } /*switch*/
+        Scales.DrawScaleName
+          (
+            /*g =*/ g,
+            /*TheScale =*/ CurScale[WhichScale],
+            /*Upper =*/ WhichScale <= SCALE_UPPER,
+            /*Pos =*/ new PointF(Scales.PrimaryMarkerLength / 2.0f, Y),
+            /*Alignment =*/ Paint.Align.LEFT,
+            /*Color =*/ Scales.MainColor
+          );
+      } /*DrawScaleName*/
+
     @Override
     public void onDraw
       (
@@ -418,63 +452,10 @@ public class SlideView extends android.view.View
                 /*paint =*/ BGHow
               );
           }
-        final android.graphics.Rect TextBounds = Scales.GetCharacterCellBounds();
-        Scales.DrawScaleName
-          (
-            /*g =*/ g,
-            /*TheScale =*/ CurScale[SCALE_TOP],
-            /*Upper =*/ true,
-            /*Pos =*/
-                new PointF
-                  (
-                    Scales.PrimaryMarkerLength / 2.0f,
-                    ViewDimensions.y / 2.0f - Scales.HalfLayoutHeight + (Scales.PrimaryMarkerLength - TextBounds.top) * 1.5f
-                  ),
-            /*Alignment =*/ Paint.Align.LEFT,
-            /*Color =*/ Scales.MainColor
-          );
-        Scales.DrawScaleName
-          (
-            /*g =*/ g,
-            /*TheScale =*/ CurScale[SCALE_UPPER],
-            /*Upper =*/ true,
-            /*Pos =*/
-                new PointF
-                  (
-                    Scales.PrimaryMarkerLength / 2.0f,
-                    ViewDimensions.y * 0.5f - (Scales.PrimaryMarkerLength + TextBounds.bottom) * 1.5f
-                  ),
-            /*Alignment =*/ Paint.Align.LEFT,
-            /*Color =*/ Scales.MainColor
-          );
-        Scales.DrawScaleName
-          (
-            /*g =*/ g,
-            /*TheScale =*/ CurScale[SCALE_LOWER],
-            /*Upper =*/ false,
-            /*Pos =*/
-                new PointF
-                  (
-                    Scales.PrimaryMarkerLength / 2.0f,
-                    ViewDimensions.y * 0.5f + (Scales.PrimaryMarkerLength - TextBounds.top) * 1.5f
-                  ),
-            /*Alignment =*/ Paint.Align.LEFT,
-            /*Color =*/ Scales.MainColor
-          );
-        Scales.DrawScaleName
-          (
-            /*g =*/ g,
-            /*TheScale =*/ CurScale[SCALE_BOTTOM],
-            /*Upper =*/ false,
-            /*Pos =*/
-                new PointF
-                  (
-                    Scales.PrimaryMarkerLength / 2.0f,
-                    ViewDimensions.y / 2.0f + Scales.HalfLayoutHeight - (Scales.PrimaryMarkerLength + TextBounds.bottom) * 1.5f
-                  ),
-            /*Alignment =*/ Paint.Align.LEFT,
-            /*Color =*/ Scales.MainColor
-          );
+        for (int i = 0; i < NR_SCALES; ++i)
+          {
+            DrawScaleName(g, i);
+          } /*for*/
         final android.graphics.Matrix m_orig = g.getMatrix();
         for (boolean Upper = false;;)
           {
