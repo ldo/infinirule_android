@@ -804,7 +804,10 @@ public class SlideView extends android.view.View
                               {
                                 CurScaleOffset[i] = FindScaleOffset
                                   (
-                                    ThisMouseUpper.x,
+                                    i == SCALE_TOP || i == SCALE_UPPER ?
+                                        ThisMouseUpper.x
+                                    :
+                                        ThisMouseLower.x,
                                     CurScale[i].Size(),
                                     ViewToScale
                                       (
