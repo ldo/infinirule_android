@@ -37,6 +37,8 @@ public class Scales
     public static final Typeface NormalStyle = Typeface.defaultFromStyle(Typeface.NORMAL);
     public static final Typeface ItalicStyle = Typeface.defaultFromStyle(Typeface.ITALIC);
 
+    private static Rect CharacterCellBounds; /* precomputed result from GetCharacterCellBounds */
+
     public static void LoadParams
       (
         android.content.res.Resources r
@@ -53,6 +55,11 @@ public class Scales
         FontSize = r.getDimension(R.dimen.font_size);
         HalfLayoutHeight = r.getDimension(R.dimen.half_layout_height);
         HalfCursorWidth = r.getDimension(R.dimen.half_cursor_width);
+        final Paint TextHow = new Paint();
+        TextHow.setTypeface(NormalStyle);
+        TextHow.setTextSize(FontSize);
+        CharacterCellBounds = new Rect();
+        TextHow.getTextBounds("W", 0, 1, CharacterCellBounds);
       } /*LoadParams*/
 
     public interface Scale /* implemented by all slide-rule scales */
@@ -199,13 +206,8 @@ public class Scales
     public static Rect GetCharacterCellBounds()
       /* returns the bounds of the character “W” in the label font. */
       {
-        final Paint LabelHow = new Paint();
-        LabelHow.setTypeface(NormalStyle);
-        LabelHow.setTextSize(FontSize);
-        final Rect TextBounds = new Rect();
-        LabelHow.getTextBounds("W", 0, 1, TextBounds);
         return
-            TextBounds;
+            new Rect(CharacterCellBounds);
       } /*GetCharacterCellBounds*/
 
     public static class GradLabel
