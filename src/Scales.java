@@ -37,6 +37,24 @@ public class Scales
     public static final Typeface NormalStyle = Typeface.defaultFromStyle(Typeface.NORMAL);
     public static final Typeface ItalicStyle = Typeface.defaultFromStyle(Typeface.ITALIC);
 
+    public static void LoadParams
+      (
+        android.content.res.Resources r
+      )
+      /* loads various settings from app resources. */
+      {
+        BackgroundColor = r.getColor(R.color.background);
+        MainColor = r.getColor(R.color.main);
+        AltColor = r.getColor(R.color.alt);
+        SpecialMarkerColor = r.getColor(R.color.special_marker);
+        CursorFillColor = r.getColor(R.color.cursor_fill);
+        CursorEdgeColor = r.getColor(R.color.cursor_edge);
+        PrimaryMarkerLength = r.getDimension(R.dimen.primary_marker_length);
+        FontSize = r.getDimension(R.dimen.font_size);
+        HalfLayoutHeight = r.getDimension(R.dimen.half_layout_height);
+        HalfCursorWidth = r.getDimension(R.dimen.half_cursor_width);
+      } /*LoadParams*/
+
     public interface Scale /* implemented by all slide-rule scales */
       {
         public String Name();
