@@ -1,5 +1,8 @@
 Feature highlights:
 
+15598.0, 2012 September 15:
+    fix broken simultaneous multitouch scrolling of both halves of rule.
+
 15577.4, 2012 August 26:
     correct numbers of divisions on exponential parts of scales.
     dynamically interpolate additional labels as scale is magnified

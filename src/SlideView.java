@@ -896,7 +896,6 @@ public class SlideView extends android.view.View
                                     BottomScale.Size(),
                                     ViewToScale(LastMouseLower.x, BottomScale.Size(), BottomScaleOffset)
                                   );
-                            invalidate();
                           }
                         else
                           {
@@ -1072,10 +1071,10 @@ public class SlideView extends android.view.View
                                   } /*switch*/
                                 ScaleLength = NewScaleLength;
                               } /*if*/
-                            invalidate();
-                            LastMouse1 = ThisMouse1;
-                            LastMouse2 = ThisMouse2;
                           } /*if*/
+                        invalidate();
+                        LastMouse1 = ThisMouse1;
+                        LastMouse2 = ThisMouse2;
                       } /*if*/
                   } /*if*/
                 Handled = true;
