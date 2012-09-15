@@ -2,7 +2,7 @@ package nz.gen.geek_central.infinirule;
 /*
     Infinirule--let the user choose which scales to show.
 
-    Copyright 2011 Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
+    Copyright 2011, 2012 Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
 
     This program is free software: you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -26,7 +26,7 @@ public class ScalePicker extends android.app.Activity
     private static boolean Reentered = false; /* sanity check */
     private static ScalePicker Current = null;
 
-    private static Global.ScaleSelector WhichScale;
+    private static int /*SCALE.**/ WhichScale;
     private static String CurScaleName;
 
     private android.widget.ListView PickerListView;
@@ -137,9 +137,9 @@ public class ScalePicker extends android.app.Activity
                                     /*g =*/ null,
                                     /*Scale =*/ Scales.KnownScales.get(ThisItem.Name),
                                     /*Upper =*/
-                                            WhichScale == Global.ScaleSelector.TopScale
+                                            WhichScale == SCALE.TOP
                                         ||
-                                            WhichScale == Global.ScaleSelector.UpperScale,
+                                            WhichScale == SCALE.UPPER,
                                     /*Pos =*/ null,
                                     /*Alignment =*/ android.graphics.Paint.Align.LEFT,
                                     /*Color =*/ 0
@@ -173,9 +173,9 @@ public class ScalePicker extends android.app.Activity
                     /*g =*/ ItemDraw,
                     /*Scale =*/ Scales.KnownScales.get(ThisItem.Name),
                     /*Upper =*/
-                            WhichScale == Global.ScaleSelector.TopScale
+                            WhichScale == SCALE.TOP
                         ||
-                            WhichScale == Global.ScaleSelector.UpperScale,
+                            WhichScale == SCALE.UPPER,
                     /*Pos =*/
                         new android.graphics.PointF
                           (
@@ -313,7 +313,7 @@ public class ScalePicker extends android.app.Activity
     public static void Launch
       (
         android.app.Activity Caller,
-        Global.ScaleSelector WhichScale,
+        int /*SCALE.**/ WhichScale,
         int RequestCode,
         String CurScaleName
       )

@@ -2378,19 +2378,19 @@ public class Scales
 
     public static Scale DefaultScale
       (
-        Global.ScaleSelector WhichScale
+        int /*SCALE.**/ WhichScale
       )
       {
         final Scale Result;
         switch (WhichScale)
           {
         default: /*sigh*/
-        case UpperScale:
-        case LowerScale:
+        case SCALE.UPPER:
+        case SCALE.LOWER:
             Result = KnownScales.get("\u1e8b");
         break;
-        case TopScale:
-        case BottomScale:
+        case SCALE.TOP:
+        case SCALE.BOTTOM:
             Result = KnownScales.get("\u1e8b²");
         break;
           } /*switch*/

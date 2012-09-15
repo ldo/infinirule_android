@@ -2,7 +2,7 @@ package nz.gen.geek_central.infinirule;
 /*
     Global data for Infinirule.
 
-    Copyright 2011 Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
+    Copyright 2011, 2012 Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
 
     This program is free software: you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -35,34 +35,26 @@ public class Global
                 android.util.DisplayMetrics.DENSITY_DEFAULT;
       } /*PixelDensity*/
 
-    public static enum ScaleSelector
-      {
-        TopScale,
-        UpperScale,
-        LowerScale,
-        BottomScale,
-      } /*ScaleSelector*/
-
     public static int ScaleNameID
       (
-        ScaleSelector WhichScale
+        int /*SCALE.**/ WhichScale
       )
       /* returns the string ID for an adjective to describe the specified scale. */
       {
         final int SelectorID;
         switch (WhichScale)
           {
-        case TopScale:
+        case SCALE.TOP:
             SelectorID = R.string.top;
         break;
         default: /*sigh*/
-        case UpperScale:
+        case SCALE.UPPER:
             SelectorID = R.string.upper;
         break;
-        case LowerScale:
+        case SCALE.LOWER:
             SelectorID = R.string.lower;
         break;
-        case BottomScale:
+        case SCALE.BOTTOM:
             SelectorID = R.string.bottom;
         break;
           } /*switch*/

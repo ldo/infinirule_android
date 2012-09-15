@@ -113,12 +113,12 @@ public class Main
     private static class SetScaleEntry
       {
         public final int RequestCode;
-        public final Global.ScaleSelector WhichScale;
+        public final int /*SCALE.**/ WhichScale;
 
         public SetScaleEntry
           (
             int RequestCode,
-            Global.ScaleSelector WhichScale
+            int /*SCALE.**/ WhichScale
           )
           {
             this.RequestCode = RequestCode;
@@ -128,10 +128,10 @@ public class Main
     private static final SetScaleEntry[] WhichScales =
         new SetScaleEntry[]
             {
-                new SetScaleEntry(SetTopScaleRequest, Global.ScaleSelector.TopScale),
-                new SetScaleEntry(SetUpperScaleRequest, Global.ScaleSelector.UpperScale),
-                new SetScaleEntry(SetLowerScaleRequest, Global.ScaleSelector.LowerScale),
-                new SetScaleEntry(SetBottomScaleRequest, Global.ScaleSelector.BottomScale),
+                new SetScaleEntry(SetTopScaleRequest, SCALE.TOP),
+                new SetScaleEntry(SetUpperScaleRequest, SCALE.UPPER),
+                new SetScaleEntry(SetLowerScaleRequest, SCALE.LOWER),
+                new SetScaleEntry(SetBottomScaleRequest, SCALE.BOTTOM),
             };
 
     private SlideView Slide;
