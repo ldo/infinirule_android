@@ -21,6 +21,7 @@ package nz.gen.geek_central.infinirule;
 
 import android.graphics.Matrix;
 import android.graphics.PointF;
+import android.graphics.Rect;
 import android.graphics.Paint;
 import android.view.MotionEvent;
 
@@ -30,7 +31,7 @@ public class SlideView extends android.view.View
       {
         Cursor,
         Scales,
-      } /*ContextMenuTypes*/
+      } /*ContextMenuTypes*/;
     public interface ContextMenuAction
       {
         public void CreateContextMenu
@@ -38,17 +39,26 @@ public class SlideView extends android.view.View
             android.view.ContextMenu TheMenu,
             ContextMenuTypes MenuType
           );
-      } /*ContextMenuAction*/
+      } /*ContextMenuAction*/;
+    public interface ScaleNameClickAction
+      {
+        public void OnScaleNameClick
+          (
+            int /*SCALE.**/ WhichScale
+          );
+      } /*ScaleNameClickAction*/;
 
     private boolean LayoutDone = false;
     private Matrix Orient, InverseOrient;
       /* rotate entire display so rule is drawn in landscape orientation,
         but context menus pop up in orientation of activity, which is portrait */
+    private float MinScaleButtonLength;
     private Scales.Scale[] CurScale = new Scales.Scale[SCALE.NR]; /* (-1.0 .. 0.0] */
     private double[] CurScaleOffset = new double[SCALE.NR];
     private float CursorX; /* view x-coordinate */
     private int ScaleLength; /* in pixels */
     private static final float MaxZoom = 10000.0f; /* limit zooming to avoid integer overflow */
+    private int /*SCALE.**/ ScaleNameTapped = -1, OrigScaleNameTapped = -1;
 
     private android.os.Vibrator Vibrate;
 
@@ -132,6 +142,7 @@ public class SlideView extends android.view.View
             CurScale[i] = Scales.DefaultScale(i);
           } /*for*/
         ScaleLength = -1; /* proper value deferred to onLayout */
+        MinScaleButtonLength = Context.getResources().getDimension(R.dimen.min_scale_button_length);
         Vibrate =
             (android.os.Vibrator)Context.getSystemService(android.content.Context.VIBRATOR_SERVICE);
         Reset(false);
@@ -277,6 +288,14 @@ public class SlideView extends android.view.View
         DoContextMenu = TheAction;
       } /*SetContextMenuAction*/
 
+    public void SetScaleNameClickAction
+      (
+        ScaleNameClickAction TheAction
+      )
+      {
+        DoScaleNameClick = TheAction;
+      } /*SetScaleNameClickAction*/
+
 /*
     Mapping between image coordinates and view coordinates
 */
@@ -329,7 +348,7 @@ public class SlideView extends android.view.View
         int WhichScale
       )
       {
-        final android.graphics.Rect TextBounds = Scales.GetCharacterCellBounds();
+        final Rect TextBounds = Scales.GetCharacterCellBounds();
         float Y = GetViewDimensions().y * 0.5f;
         switch (WhichScale)
           {
@@ -349,6 +368,25 @@ public class SlideView extends android.view.View
         return
             new PointF(Scales.PrimaryMarkerLength / 2.0f, Y);
       } /*ScaleNamePos*/
+
+    Rect ScaleNameBounds
+      (
+        int WhichScale
+      )
+      {
+        final Rect NameBounds = Scales.GetCharacterCellBounds();
+        final PointF NamePos = ScaleNamePos(WhichScale);
+        final float HalfHeight = Math.abs(ScaleNamePos(WhichScale ^ 1).y - NamePos.y) / 2.0f;
+          /* make label buttons as tall as possible without running into adjacent ones */
+        final float LeftMargin = (NameBounds.right - NameBounds.left) * 0.5f;
+        final float NameMid = (NameBounds.top + NameBounds.bottom) / 2.0f;
+        NameBounds.bottom = (int)(NamePos.y + HalfHeight + NameMid);
+        NameBounds.top = (int)(NamePos.y - HalfHeight + NameMid);
+        NameBounds.left = (int)(NamePos.x - LeftMargin);
+        NameBounds.right = (int)(Math.max(NamePos.x + DrawScaleName(null, WhichScale), MinScaleButtonLength) - LeftMargin);
+        return
+            NameBounds;
+      } /*ScaleNameBounds*/
 
     float DrawScaleName
       (
@@ -393,6 +431,13 @@ public class SlideView extends android.view.View
         for (int i = 0; i < SCALE.NR; ++i)
           {
             DrawScaleName(g, i);
+            if (i == ScaleNameTapped)
+              {
+                final Paint BGHow = new Paint();
+                BGHow.setColor(Scales.MainColor & 0x00FFFFFF | 0x80000000); /* fixme: choose something more theme-appropriate? */
+                BGHow.setStyle(Paint.Style.FILL);
+                g.drawRect(ScaleNameBounds(i), BGHow);
+              } /*if*/
           } /*for*/
         final android.graphics.Matrix m_orig = g.getMatrix();
         for (boolean Upper = false;;)
@@ -491,6 +536,7 @@ public class SlideView extends android.view.View
         MovingLowerScale,
       } /*MovingState*/
     private ContextMenuAction DoContextMenu = null;
+    private ScaleNameClickAction DoScaleNameClick = null;
     private boolean MouseMoved = false;
     private MovingState MovingWhat = MovingState.MovingNothing;
     private boolean PrecisionMove = false;
@@ -608,27 +654,44 @@ public class SlideView extends android.view.View
         case MotionEvent.ACTION_DOWN:
             LastMouse1 = GetPoint(TheEvent.getX(), TheEvent.getY());
             Mouse1ID = TheEvent.getPointerId(0);
-            if
-              (
-                    CursorX - Scales.HalfCursorWidth <= LastMouse1.x
-                &&
-                    LastMouse1.x < CursorX + Scales.HalfCursorWidth
-              )
+            for (int /*SCALE.**/ WhichScale = 0;;) /* fixme: should perhaps ignore tap on labels if cursor is covering them? */
               {
-                MovingWhat = MovingState.MovingCursor;
-              }
-            else if (LastMouse1.y > ViewDimensions.y / 2.0f)
+                if (WhichScale == SCALE.NR)
+                    break;
+                if (ScaleNameBounds(WhichScale).contains((int)LastMouse1.x, (int)LastMouse1.y))
+                  {
+                    ScaleNameTapped = WhichScale;
+                    OrigScaleNameTapped = ScaleNameTapped;
+                    LastMouse1 = null;
+                    invalidate();
+                    break;
+                  } /*if*/
+                ++WhichScale;
+              } /*for*/
+            if (LastMouse1 != null)
               {
-                MovingWhat = MovingState.MovingLowerScale;
-              }
-            else
-              {
-                MovingWhat = MovingState.MovingBothScales;
+                if
+                  (
+                        CursorX - Scales.HalfCursorWidth <= LastMouse1.x
+                    &&
+                        LastMouse1.x < CursorX + Scales.HalfCursorWidth
+                  )
+                  {
+                    MovingWhat = MovingState.MovingCursor;
+                  }
+                else if (LastMouse1.y > ViewDimensions.y / 2.0f)
+                  {
+                    MovingWhat = MovingState.MovingLowerScale;
+                  }
+                else
+                  {
+                    MovingWhat = MovingState.MovingBothScales;
+                  } /*if*/
+                PrecisionMove = Math.abs(LastMouse1.y - ViewDimensions.y / 2.0f) > Scales.HalfLayoutHeight;
+                MouseMoved = false;
+                getHandler().postDelayed(LongClicker, android.view.ViewConfiguration.getLongPressTimeout());
               } /*if*/
-            PrecisionMove = Math.abs(LastMouse1.y - ViewDimensions.y / 2.0f) > Scales.HalfLayoutHeight;
-            MouseMoved = false;
             Handled = true;
-            getHandler().postDelayed(LongClicker, android.view.ViewConfiguration.getLongPressTimeout());
         break;
         case MotionEvent.ACTION_POINTER_DOWN:
             if
@@ -667,9 +730,26 @@ public class SlideView extends android.view.View
             Handled = true;
         break;
         case MotionEvent.ACTION_MOVE:
-            if(LastMouse1 != null)
+            final int Mouse1Index = TheEvent.findPointerIndex(Mouse1ID);
+            if (OrigScaleNameTapped >= 0)
               {
-                final int Mouse1Index = TheEvent.findPointerIndex(Mouse1ID);
+                final PointF MoveWhere = GetPoint(TheEvent.getX(Mouse1Index), TheEvent.getY(Mouse1Index));
+                final int /*SCALE.**/ NewScaleNameTapped =
+                    ScaleNameBounds(OrigScaleNameTapped)
+                        .contains((int)MoveWhere.x, (int)MoveWhere.y)
+                    ?
+                        OrigScaleNameTapped
+                    :
+                        -1;
+                if (NewScaleNameTapped != ScaleNameTapped)
+                  {
+                    ScaleNameTapped = NewScaleNameTapped;
+                    invalidate();
+                  } /*if*/
+                Handled = true;
+              }
+            else if (LastMouse1 != null)
+              {
                 final int Mouse2Index =
                     LastMouse2 != null ?
                         TheEvent.findPointerIndex(Mouse2ID)
@@ -956,13 +1036,30 @@ public class SlideView extends android.view.View
             Handled = true;
         break;
         case MotionEvent.ACTION_UP:
-            getHandler().removeCallbacks(LongClicker);
-            LastMouse1 = null;
-            LastMouse2 = null;
-            Mouse1ID = -1;
-            Mouse2ID = -1;
-            MovingWhat = MovingState.MovingNothing;
-            Handled = MouseMoved;
+            if (OrigScaleNameTapped >= 0)
+              {
+                if (ScaleNameTapped >= 0)
+                  {
+                    if (DoScaleNameClick != null)
+                      {
+                        DoScaleNameClick.OnScaleNameClick(ScaleNameTapped);
+                      } /*if*/
+                    invalidate();
+                  } /*if*/
+                ScaleNameTapped = -1;
+                OrigScaleNameTapped = -1;
+                Handled = true;
+              }
+            else
+              {
+                getHandler().removeCallbacks(LongClicker);
+                LastMouse1 = null;
+                LastMouse2 = null;
+                Mouse1ID = -1;
+                Mouse2ID = -1;
+                MovingWhat = MovingState.MovingNothing;
+                Handled = MouseMoved;
+              } /*if*/
         break;
           } /*switch*/
         return

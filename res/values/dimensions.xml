@@ -4,4 +4,5 @@
     <dimen name="primary_marker_length">20dp</dimen>
     <dimen name="half_layout_height">100dp</dimen>
     <dimen name="half_cursor_width">40dp</dimen>
+    <dimen name="min_scale_button_length">56dp</dimen>
 </resources>

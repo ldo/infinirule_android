@@ -204,7 +204,8 @@ public class Scales
       } /*DrawCenteredText*/
 
     public static Rect GetCharacterCellBounds()
-      /* returns the bounds of the character “W” in the label font. */
+      /* returns the bounds of the character “W” in the label font relative
+        to an origin of (0, 0). */
       {
         return
             new Rect(CharacterCellBounds);

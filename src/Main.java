@@ -21,7 +21,7 @@ package nz.gen.geek_central.infinirule;
 
 public class Main
     extends android.app.Activity
-    implements SlideView.ContextMenuAction
+    implements SlideView.ContextMenuAction, SlideView.ScaleNameClickAction
   {
 
     public static byte[] ReadAll
@@ -104,35 +104,11 @@ public class Main
 
     private java.util.Map<Integer, RequestResponseAction> ActivityResultActions;
 
-  /* request codes, all arbitrarily assigned */
-    private static final int SetTopScaleRequest = 1;
-    private static final int SetUpperScaleRequest = 2;
-    private static final int SetLowerScaleRequest = 3;
-    private static final int SetBottomScaleRequest = 4;
-
-    private static class SetScaleEntry
-      {
-        public final int RequestCode;
-        public final int /*SCALE.**/ WhichScale;
-
-        public SetScaleEntry
-          (
-            int RequestCode,
-            int /*SCALE.**/ WhichScale
-          )
-          {
-            this.RequestCode = RequestCode;
-            this.WhichScale = WhichScale;
-          } /*SetScaleEntry*/
-      } /*SetScaleEntry*/
-    private static final SetScaleEntry[] WhichScales =
-        new SetScaleEntry[]
-            {
-                new SetScaleEntry(SetTopScaleRequest, SCALE.TOP),
-                new SetScaleEntry(SetUpperScaleRequest, SCALE.UPPER),
-                new SetScaleEntry(SetLowerScaleRequest, SCALE.LOWER),
-                new SetScaleEntry(SetBottomScaleRequest, SCALE.BOTTOM),
-            };
+  /* request codes */
+    private static final int SetFirstScaleRequest = 1;
+      /* arbitrary starting point for contiguous range mapping to scale indexes */
+    private static final int SetLastPlusOneScaleRequest = SetFirstScaleRequest + SCALE.NR;
+      /* exclusive end of contiguous range */
 
     private SlideView Slide;
     private android.text.ClipboardManager Clipboard;
@@ -153,6 +129,7 @@ public class Main
         setContentView(R.layout.main);
         Slide = (SlideView)findViewById(R.id.slide_view);
         Slide.SetContextMenuAction(this);
+        Slide.SetScaleNameClickAction(this);
       } /*onCreate*/
 
     @Override
@@ -239,11 +216,12 @@ public class Main
     void BuildActivityResultActions()
       {
         ActivityResultActions = new java.util.HashMap<Integer, RequestResponseAction>();
-        for (final SetScaleEntry s : WhichScales)
+        for (int WhichScale = 0; WhichScale < SCALE.NR; ++WhichScale)
           {
+            final int LocalWhichScale = WhichScale;
             ActivityResultActions.put
               (
-                s.RequestCode,
+                SetFirstScaleRequest + WhichScale,
                 new RequestResponseAction()
                   {
                     public void Run
@@ -252,7 +230,7 @@ public class Main
                         android.content.Intent Data
                       )
                       {
-                        Slide.SetScale(Data.getStringExtra(ScalePicker.NameID), s.WhichScale);
+                        Slide.SetScale(Data.getStringExtra(ScalePicker.NameID), LocalWhichScale);
                       } /*Run*/
                   } /*RequestResponseAction*/
               );
@@ -271,8 +249,9 @@ public class Main
         case Cursor:
             for (boolean Pasting = false;;)
               {
-                for (final SetScaleEntry s : WhichScales)
+                for (int WhichScale = 0; WhichScale < SCALE.NR; ++WhichScale)
                   {
+                    final int LocalWhichScale = WhichScale;
                     ContextMenu.put
                       (
                         TheMenu.add
@@ -280,7 +259,7 @@ public class Main
                             String.format
                               (
                                 getString(Pasting ? R.string.paste_prompt : R.string.copy_prompt),
-                                getString(Global.ScaleNameID(s.WhichScale))
+                                getString(Global.ScaleNameID(WhichScale))
                               )
                           ),
                         Pasting ?
@@ -291,7 +270,7 @@ public class Main
                                     final CharSequence NumString = Clipboard.getText();
                                     if (NumString != null)
                                       {
-                                        final Scales.Scale TheScale = Slide.GetScale(s.WhichScale);
+                                        final Scales.Scale TheScale = Slide.GetScale(LocalWhichScale);
                                         try
                                           {
                                             final double Value = Double.parseDouble(NumString.toString());
@@ -305,7 +284,7 @@ public class Main
                                               {
                                                 Slide.SetCursorPos
                                                   (
-                                                    /*ByScale =*/ s.WhichScale,
+                                                    /*ByScale =*/ LocalWhichScale,
                                                     /*NewPos =*/ ScalePos - Math.floor(ScalePos),
                                                     /*Animate =*/ true
                                                   );
@@ -320,7 +299,7 @@ public class Main
                                                           (
                                                             getString(R.string.paste_range),
                                                             Global.FormatNumber(Value),
-                                                            getString(Global.ScaleNameID(s.WhichScale)),
+                                                            getString(Global.ScaleNameID(LocalWhichScale)),
                                                             Global.FormatNumber(TheScale.ValueAt(0.0)),
                                                             Global.FormatNumber(TheScale.ValueAt(1.0))
                                                           ),
@@ -349,8 +328,8 @@ public class Main
                                       (
                                         Global.FormatNumber
                                           (
-                                            Slide.GetScale(s.WhichScale)
-                                                .ValueAt(Slide.GetCursorPos(s.WhichScale))
+                                            Slide.GetScale(LocalWhichScale)
+                                                .ValueAt(Slide.GetCursorPos(LocalWhichScale))
                                           )
                                       );
                                   } /*run*/
@@ -363,36 +342,29 @@ public class Main
               } /*for*/
         break;
         case Scales:
-            for (final SetScaleEntry s : WhichScales)
-              {
-                ContextMenu.put
-                  (
-                    TheMenu.add
-                      (
-                        String.format
-                          (
-                            getString(R.string.set_scale),
-                            getString(Global.ScaleNameID(s.WhichScale))
-                          )
-                      ),
-                    new Runnable()
-                      {
-                        public void run()
-                          {
-                            ScalePicker.Launch
-                              (
-                                /*Caller =*/ Main.this,
-                                /*WhichScale =*/ s.WhichScale,
-                                /*RequestCode =*/s.RequestCode,
-                                /*CurScaleName =*/ Slide.GetScale(s.WhichScale).Name()
-                              );
-                          } /*run*/
-                      } /*Runnable*/
-                  );
-              } /*for*/
+            android.widget.Toast.makeText
+              (
+                /*context =*/ Main.this,
+                /*text =*/ R.string.not_set_scale,
+                /*duration =*/ android.widget.Toast.LENGTH_SHORT
+              ).show();
         break;
           } /*switch*/
       } /*CreateContextMenu*/
+
+    public void OnScaleNameClick
+      (
+        int /*SCALE.**/ WhichScale
+      )
+      {
+        ScalePicker.Launch
+          (
+            /*Caller =*/ Main.this,
+            /*WhichScale =*/ WhichScale,
+            /*RequestCode =*/ SetFirstScaleRequest + WhichScale,
+            /*CurScaleName =*/ Slide.GetScale(WhichScale).Name()
+          );
+      } /*OnScaleNameClick*/
 
     @Override
     public boolean onOptionsItemSelected

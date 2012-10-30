@@ -1,5 +1,8 @@
 Feature highlights:
 
+15643.2, 2012 October 30:
+    scale selection is now done by tapping on current scale names.
+
 15598.0, 2012 September 15:
     fix broken simultaneous multitouch scrolling of both halves of rule.
 
