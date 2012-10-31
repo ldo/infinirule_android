@@ -49,18 +49,19 @@ public class SlideView extends android.view.View
       } /*ScaleNameClickAction*/;
 
     private boolean LayoutDone = false;
-    private Matrix Orient, InverseOrient;
+    private final Matrix Orient, InverseOrient;
       /* rotate entire display so rule is drawn in landscape orientation,
         but context menus pop up in orientation of activity, which is portrait */
     private float MinScaleButtonLength;
-    private Scales.Scale[] CurScale = new Scales.Scale[SCALE.NR]; /* (-1.0 .. 0.0] */
-    private double[] CurScaleOffset = new double[SCALE.NR];
+    private final Scales.Scale[] CurScale = new Scales.Scale[SCALE.NR]; /* (-1.0 .. 0.0] */
+    private final double[] CurScaleOffset = new double[SCALE.NR];
     private float CursorX; /* view x-coordinate */
     private int ScaleLength; /* in pixels */
     private static final float MaxZoom = 10000.0f; /* limit zooming to avoid integer overflow */
     private int /*SCALE.**/ ScaleNameTapped = -1, OrigScaleNameTapped = -1;
+    private android.graphics.drawable.Drawable HighlightDrawable;
 
-    private android.os.Vibrator Vibrate;
+    private final android.os.Vibrator Vibrate;
 
     private PointF GetPoint
       (
@@ -129,32 +130,12 @@ public class SlideView extends android.view.View
           } /*if*/
       } /*Reset*/
 
-    private void Init
-      (
-        android.content.Context Context
-      )
-      /* common code for all constructors */
-      {
-        Orient = new Matrix();
-        InverseOrient = new Matrix();
-        for (int i = 0; i < SCALE.NR; ++i)
-          {
-            CurScale[i] = Scales.DefaultScale(i);
-          } /*for*/
-        ScaleLength = -1; /* proper value deferred to onLayout */
-        MinScaleButtonLength = Context.getResources().getDimension(R.dimen.min_scale_button_length);
-        Vibrate =
-            (android.os.Vibrator)Context.getSystemService(android.content.Context.VIBRATOR_SERVICE);
-        Reset(false);
-      } /*Init*/
-
     public SlideView
       (
         android.content.Context Context
       )
       {
-        super(Context);
-        Init(Context);
+        this(Context, null, 0);
       } /*SlideView*/
 
     public SlideView
@@ -174,7 +155,24 @@ public class SlideView extends android.view.View
       )
       {
         super(Context, Attributes, DefaultStyle);
-        Init(Context);
+        System.err.println("Infinirule.SlideView(Context, Attributes, DefaultStyle)\n"); /* debug */
+        Orient = new Matrix();
+        InverseOrient = new Matrix();
+        for (int i = 0; i < SCALE.NR; ++i)
+          {
+            CurScale[i] = Scales.DefaultScale(i);
+          } /*for*/
+        ScaleLength = -1; /* proper value deferred to onLayout */
+        MinScaleButtonLength = Context.getResources().getDimension(R.dimen.min_scale_button_length);
+        Vibrate =
+            (android.os.Vibrator)Context.getSystemService(android.content.Context.VIBRATOR_SERVICE);
+        HighlightDrawable = Context.getResources().getDrawable(android.R.drawable.btn_default);
+        HighlightDrawable.mutate();
+        HighlightDrawable.setState
+          (
+            new int[] {android.R.attr.state_pressed}
+          ); /* only state I use */
+        Reset(false);
       } /*SlideView*/
 
     public void SetScale
@@ -430,14 +428,12 @@ public class SlideView extends android.view.View
           }
         for (int i = 0; i < SCALE.NR; ++i)
           {
-            DrawScaleName(g, i);
             if (i == ScaleNameTapped)
               {
-                final Paint BGHow = new Paint();
-                BGHow.setColor(Scales.MainColor & 0x00FFFFFF | 0x80000000); /* fixme: choose something more theme-appropriate? */
-                BGHow.setStyle(Paint.Style.FILL);
-                g.drawRect(ScaleNameBounds(i), BGHow);
+                HighlightDrawable.setBounds(ScaleNameBounds(i));
+                HighlightDrawable.draw(g);
               } /*if*/
+            DrawScaleName(g, i);
           } /*for*/
         final android.graphics.Matrix m_orig = g.getMatrix();
         for (boolean Upper = false;;)
