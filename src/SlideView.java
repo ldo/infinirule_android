@@ -155,7 +155,6 @@ public class SlideView extends android.view.View
       )
       {
         super(Context, Attributes, DefaultStyle);
-        System.err.println("Infinirule.SlideView(Context, Attributes, DefaultStyle)\n"); /* debug */
         Orient = new Matrix();
         InverseOrient = new Matrix();
         for (int i = 0; i < SCALE.NR; ++i)
