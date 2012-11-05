@@ -449,7 +449,7 @@ public class SlideView extends android.view.View
                         (int)(ViewDimensions.x + ScaleLength * TheScale.Size() - 1)
                     /
                         (int)(ScaleLength * TheScale.Size());
-                double Offset = CurScaleOffset[ScaleIndex] + TheScale.ExtraOffset();
+                double Offset = CurScaleOffset[ScaleIndex];
                   {
                     final android.graphics.Matrix m = new android.graphics.Matrix();
                     m.preTranslate

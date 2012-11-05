@@ -72,9 +72,6 @@ public class Scales
           /* returns a measure of relative scale length, e.g. 1.0 for C & D scales,
             2.0 for square root, 0.5 for A & B (squares). */
 
-        public double ExtraOffset();
-          /* nonzero for folded versions of scales */
-
         public boolean Wrap();
           /* true if scale seamlessly wraps around, so decimal point is somewhat arbitrary. */
 
@@ -1075,17 +1072,12 @@ public class Scales
                 true;
           } /*Wrap*/
 
-        public double ExtraOffset()
-          {
-            return
-                Offset;
-          } /*ExtraOffset*/
-
         public double ValueAt
           (
             double Pos
           )
           {
+            Pos -= Offset;
             return
                 Math.pow(10.0, Power > 0 ? Pos : 1.0 - Pos) / 10.0;
           } /*ValueAt*/
@@ -1096,10 +1088,14 @@ public class Scales
           )
           {
             return
-                Power > 0 ?
-                    Math.log10(Value * 10.0)
-                :
-                    1.0 - Math.log10(Value * 10.0);
+                    (
+                    Power > 0 ?
+                        Math.log10(Value * 10.0)
+                    :
+                        1.0 - Math.log10(Value * 10.0)
+                    )
+                +
+                    Offset;
           } /*PosAt*/
 
         public SpecialMarker[] SpecialMarkers()
@@ -1155,12 +1151,6 @@ public class Scales
             return
                 false;
           } /*Wrap*/
-
-        public double ExtraOffset()
-          {
-            return
-                0.0;
-          } /*ExtraOffset*/
 
         public double ValueAt
           (
@@ -1230,12 +1220,6 @@ public class Scales
             return
                 true;
           } /*Wrap*/
-
-        public double ExtraOffset()
-          {
-            return
-                0.0;
-          } /*ExtraOffset*/
 
         public double ValueAt
           (
@@ -1327,12 +1311,6 @@ public class Scales
             return
                 false;
           } /*Wrap*/
-
-        public double ExtraOffset()
-          {
-            return
-                0.0;
-          } /*ExtraOffset*/
 
         public double ValueAt
           (
@@ -1453,12 +1431,6 @@ public class Scales
             return
                 false;
           } /*Wrap*/
-
-        public double ExtraOffset()
-          {
-            return
-                0.0;
-          } /*ExtraOffset*/
 
         public double ValueAt
           (
@@ -1592,12 +1564,6 @@ public class Scales
                 false;
           } /*Wrap*/
 
-        public double ExtraOffset()
-          {
-            return
-                0.0;
-          } /*ExtraOffset*/
-
         public double ValueAt
           (
             double Pos
@@ -1720,12 +1686,6 @@ public class Scales
             return
                 false;
           } /*Wrap*/
-
-        public double ExtraOffset()
-          {
-            return
-                0.0;
-          } /*ExtraOffset*/
 
         public double ValueAt
           (
