@@ -649,42 +649,47 @@ public class SlideView extends android.view.View
         case MotionEvent.ACTION_DOWN:
             LastMouse1 = GetPoint(TheEvent.getX(), TheEvent.getY());
             Mouse1ID = TheEvent.getPointerId(0);
-            for (int /*SCALE.**/ WhichScale = 0;;) /* fixme: should perhaps ignore tap on labels if cursor is covering them? */
+            if
+              (
+                    CursorX - Scales.HalfCursorWidth <= LastMouse1.x
+                &&
+                    LastMouse1.x < CursorX + Scales.HalfCursorWidth
+              )
               {
-                if (WhichScale == SCALE.NR)
-                    break;
-                if (ScaleNameBounds(WhichScale).contains((int)LastMouse1.x, (int)LastMouse1.y))
-                  {
-                    ScaleNameTapped = WhichScale;
-                    OrigScaleNameTapped = ScaleNameTapped;
-                    LastMouse1 = null;
-                    invalidate();
-                    break;
-                  } /*if*/
-                ++WhichScale;
-              } /*for*/
-            if (LastMouse1 != null)
+                MovingWhat = MovingState.MovingCursor;
+              }
+            else
               {
-                if
-                  (
-                        CursorX - Scales.HalfCursorWidth <= LastMouse1.x
-                    &&
-                        LastMouse1.x < CursorX + Scales.HalfCursorWidth
-                  )
+              /* only process tap on labels if cursor is not covering them */
+                for (int /*SCALE.**/ WhichScale = 0;;)
                   {
-                    MovingWhat = MovingState.MovingCursor;
-                  }
-                else if (LastMouse1.y > ViewDimensions.y / 2.0f)
+                    if (WhichScale == SCALE.NR)
+                        break;
+                    if (ScaleNameBounds(WhichScale).contains((int)LastMouse1.x, (int)LastMouse1.y))
+                      {
+                        ScaleNameTapped = WhichScale;
+                        OrigScaleNameTapped = ScaleNameTapped;
+                        LastMouse1 = null;
+                        invalidate();
+                        break;
+                      } /*if*/
+                    ++WhichScale;
+                  } /*for*/
+                if (LastMouse1 != null)
                   {
-                    MovingWhat = MovingState.MovingLowerScale;
-                  }
-                else
-                  {
-                    MovingWhat = MovingState.MovingBothScales;
+                  /* tap on actual scales */
+                    if (LastMouse1.y > ViewDimensions.y / 2.0f)
+                      {
+                        MovingWhat = MovingState.MovingLowerScale;
+                      }
+                    else
+                      {
+                        MovingWhat = MovingState.MovingBothScales;
+                      } /*if*/
+                    PrecisionMove = Math.abs(LastMouse1.y - ViewDimensions.y / 2.0f) > Scales.HalfLayoutHeight;
+                    MouseMoved = false;
+                    getHandler().postDelayed(LongClicker, android.view.ViewConfiguration.getLongPressTimeout());
                   } /*if*/
-                PrecisionMove = Math.abs(LastMouse1.y - ViewDimensions.y / 2.0f) > Scales.HalfLayoutHeight;
-                MouseMoved = false;
-                getHandler().postDelayed(LongClicker, android.view.ViewConfiguration.getLongPressTimeout());
               } /*if*/
             Handled = true;
         break;
