@@ -649,6 +649,8 @@ public class SlideView extends android.view.View
         case MotionEvent.ACTION_DOWN:
             LastMouse1 = GetPoint(TheEvent.getX(), TheEvent.getY());
             Mouse1ID = TheEvent.getPointerId(0);
+            PrecisionMove = Math.abs(LastMouse1.y - ViewDimensions.y / 2.0f) > Scales.HalfLayoutHeight;
+            MouseMoved = false;
             if
               (
                     CursorX - Scales.HalfCursorWidth <= LastMouse1.x
@@ -686,10 +688,11 @@ public class SlideView extends android.view.View
                       {
                         MovingWhat = MovingState.MovingBothScales;
                       } /*if*/
-                    PrecisionMove = Math.abs(LastMouse1.y - ViewDimensions.y / 2.0f) > Scales.HalfLayoutHeight;
-                    MouseMoved = false;
-                    getHandler().postDelayed(LongClicker, android.view.ViewConfiguration.getLongPressTimeout());
                   } /*if*/
+              } /*if*/
+            if (LastMouse1 != null)
+              {
+                getHandler().postDelayed(LongClicker, android.view.ViewConfiguration.getLongPressTimeout());
               } /*if*/
             Handled = true;
         break;
