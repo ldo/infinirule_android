@@ -39,6 +39,8 @@ public class Scales
 
     private static Rect CharacterCellBounds; /* precomputed result from GetCharacterCellBounds */
 
+    private static int MaxFigures = 9; /* enough precision for all permissible scale zoom levels */
+
     public static void LoadParams
       (
         android.content.res.Resources r
@@ -103,7 +105,7 @@ public class Scales
             boolean TopEdge /* false for bottom edge */
           );
 
-      } /*Scale*/
+      } /*Scale*/;
 
     public static class SpecialMarker
       {
@@ -120,7 +122,7 @@ public class Scales
             this.Value = Value;
           } /*SpecialMarker*/
 
-      } /*SpecialMarker*/
+      } /*SpecialMarker*/;
 
     public static float ScaleToView
       (
@@ -454,7 +456,7 @@ public class Scales
                 Result;
           } /*Subdivide*/
 
-      } /*GradLabel*/
+      } /*GradLabel*/;
 
     private static GradLabel[] MakeGradLabels
       (
@@ -1130,7 +1132,7 @@ public class Scales
                 /*IncludeZero =*/ false
               );
           } /*Draw*/
-      } /*XNScale*/
+      } /*XNScale*/;
 
     public static class LogXScale implements Scale
       {
@@ -1197,7 +1199,7 @@ public class Scales
                 /*IncludeZero =*/ true
               );
           } /*Draw*/
-      } /*LogXScale*/
+      } /*LogXScale*/;
 
     public static class LnXScale implements Scale
       {
@@ -1289,7 +1291,7 @@ public class Scales
                 /*Rightmost =*/ ValueAt(1.0)
               );
           } /*Draw*/
-      } /*LnXScale*/
+      } /*LnXScale*/;
 
     public static class ASinATanXScale implements Scale
       /* 0.57° < asin/atan X in degrees ≤ 5.7° */
@@ -1392,7 +1394,7 @@ public class Scales
                 /*Rightmost =*/ 18.0 / Math.PI
               );
           } /*Draw*/
-      } /*ASinATanXScale*/
+      } /*ASinATanXScale*/;
 
     public static class ASinACosXScale implements Scale
       /* asin/acos X in degrees, > 5.7° */
@@ -1541,7 +1543,7 @@ public class Scales
                 /*Rightmost =*/ Rightmost
               );
           } /*Draw*/
-      } /*ASinACosXScale*/
+      } /*ASinACosXScale*/;
 
     public static class ATanXScale implements Scale
       /* atan X in degrees, > 5.7° */
@@ -1646,7 +1648,7 @@ public class Scales
                 /*Rightmost =*/ 45.0
               );
           } /*Draw*/
-      } /*ATanXScale*/
+      } /*ATanXScale*/;
 
     public static class ExpXScale implements Scale
       {
@@ -2310,7 +2312,297 @@ public class Scales
                 /*Rightmost =*/ Rightmost
               );
           } /*Draw*/
-      } /*ExpXScale*/
+      } /*ExpXScale*/;
+
+    public static class ASinhCoshXScale implements Scale
+      {
+        public final String ScaleName;
+        public final boolean CoshScale;
+        public final int Level; /* -1 or 0 only */
+
+        public ASinhCoshXScale
+          (
+            boolean CoshScale,
+            int Level
+          )
+          {
+            this.CoshScale = CoshScale;
+            this.Level = Level;
+            ScaleName = String.format
+              (
+                Global.StdLocale,
+                "a%s %s\u1e8b",
+                CoshScale ? "cosh" : "sinh",
+                Level == -1 ? "0.1" : ""
+              );
+          } /*ASinhCoshXScale*/
+
+        public String Name()
+          {
+            return
+                ScaleName;
+          } /*Name*/
+
+        public double Size()
+          {
+            return
+                1.0;
+          } /*Size*/
+
+        public boolean Wrap()
+          {
+            return
+                false;
+          } /*Wrap*/
+
+        public double ValueAt
+          (
+            double Pos
+          )
+          {
+            final double T = Math.pow(10.0, Pos + Level);
+            return
+                Math.log
+                  (
+                        T
+                    +
+                        Math.sqrt
+                          (
+                            CoshScale ?
+                                (T + 1) * (T - 1)
+                            :
+                                (T * T + 1)
+                          )
+                  );
+          } /*ValueAt*/
+
+        public double PosAt
+          (
+            double Value
+          )
+          {
+            return
+                    Math.log10
+                      (
+                        CoshScale ?
+                            Math.cosh(Value)
+                        :
+                            Math.sinh(Value)
+                      )
+                -
+                    Level;
+          } /*PosAt*/
+
+        public SpecialMarker[] SpecialMarkers()
+          {
+            return
+                null;
+          } /*SpecialMarker*/
+
+        public void Draw
+          (
+            Canvas g,
+            double Offset,
+            int ScaleLength,
+            int ViewWidth, /* visible X coords are in [0.0 .. ViewWidth) */
+            boolean TopEdge
+          )
+          {
+            double[] GradLabels;
+            double Leftmost, Rightmost;
+            int[] NrDivisions;
+            int NrDecimals;
+            switch (Level)
+              {
+                case -1:
+                    GradLabels = new double[]
+                        {
+                            0.1,
+                            0.2,
+                            0.3,
+                            0.4,
+                            0.5,
+                            0.6,
+                            0.7,
+                            0.8,
+                            0.9,
+                        };
+                    NrDivisions = new int[]
+                        {
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                        };
+                    NrDecimals = 2;
+                break;
+                default: /*sigh*/
+                case 0:
+                    GradLabels = new double[]
+                        {
+                            0.8,
+                            0.9,
+                            1.0,
+                            2.0,
+                            3.0,
+                        };
+                    NrDivisions = new int[]
+                        {
+                            10,
+                            10,
+                            10,
+                            10,
+                        };
+                    NrDecimals = 1;
+                break;
+              } /*switch*/
+            DrawGraduations
+              (
+                /*g =*/ g,
+                /*Offset =*/ Offset,
+                /*ScaleLength =*/ ScaleLength,
+                /*ViewWidth =*/ ViewWidth,
+                /*TopEdge =*/ TopEdge,
+                /*TheScale =*/ this,
+                /*PrimaryGraduations =*/
+                    MakeGradLabels
+                      (
+                        /*Values =*/ GradLabels,
+                        /*NrDecimals =*/ NrDecimals,
+                        /*MinDecimals =*/ 1,
+                        /*Multiplier =*/ 1,
+                        /*PlusExponents =*/ false,
+                        /*FromExponent =*/ 0,
+                        /*ToExponent =*/ 0
+                      ),
+                /*NrDivisions =*/ NrDivisions,
+                /*Leftmost =*/ ValueAt(0.0),
+                /*Rightmost =*/ ValueAt(1.0)
+              );
+          } /*Draw*/
+
+      } /*ASinhCoshXScale*/;
+
+    public static class ATanhXScale implements Scale    
+      {
+        public final String ScaleName;
+
+        public ATanhXScale()
+          {
+            ScaleName = "atanh \u1e8b ≥ 0.1 < 3";
+          } /*ATanhXScale*/
+
+        public String Name()
+          {
+            return
+                ScaleName;
+          } /*Name*/
+
+        public double Size()
+          {
+            return
+                1.0;
+          } /*Size*/
+
+        public boolean Wrap()
+          {
+            return
+                false;
+          } /*Wrap*/
+
+        public double ValueAt
+          (
+            double Pos
+          )
+          {
+            final double T = Math.pow(10.0, Pos - 1);
+            return
+                0.5 * Math.log((1 + T) / (1 - T));
+          } /*ValueAt*/
+
+        public double PosAt
+          (
+            double Value
+          )
+          {
+            return
+                Math.log10(Math.tanh(Value)) + 1;
+          } /*PosAt*/
+
+        public SpecialMarker[] SpecialMarkers()
+          {
+            return
+                null;
+          } /*SpecialMarker*/
+
+        public void Draw
+          (
+            Canvas g,
+            double Offset,
+            int ScaleLength,
+            int ViewWidth, /* visible X coords are in [0.0 .. ViewWidth) */
+            boolean TopEdge
+          )
+          {
+            DrawGraduations
+              (
+                /*g =*/ g,
+                /*Offset =*/ Offset,
+                /*ScaleLength =*/ ScaleLength,
+                /*ViewWidth =*/ ViewWidth,
+                /*TopEdge =*/ TopEdge,
+                /*TheScale =*/ this,
+                /*PrimaryGraduations =*/
+                    MakeGradLabels
+                      (
+                        /*Values =*/
+                            new double[]
+                                {
+                                    0.1,
+                                    0.2,
+                                    0.3,
+                                    0.4,
+                                    0.5,
+                                    0.6,
+                                    0.7,
+                                    0.8,
+                                    0.9,
+                                    1.0,
+                                    2.0,
+                                    3.0,
+                                },
+                        /*NrDecimals =*/ 2,
+                        /*MinDecimals =*/ 1,
+                        /*Multiplier =*/ 1,
+                        /*PlusExponents =*/ false,
+                        /*FromExponent =*/ 0,
+                        /*ToExponent =*/ 0
+                      ),
+                /*NrDivisions =*/
+                    new int[]
+                        {
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                        },
+                /*Leftmost =*/ ValueAt(0.0),
+                /*Rightmost =*/ ValueAt(1.0)
+              );
+          } /*Draw*/
+
+      } /*ATanhXScale*/;
 
     public static java.util.Map<String, Scale> KnownScales =
         new java.util.HashMap<String, Scale>();
@@ -2334,6 +2626,11 @@ public class Scales
                         new ASinACosXScale(false),
                         new ASinACosXScale(true),
                         new ATanXScale(),
+                        new ASinhCoshXScale(false, -1),
+                        new ASinhCoshXScale(true, -1),
+                        new ASinhCoshXScale(false, 0),
+                        new ASinhCoshXScale(true, 0),
+                        new ATanhXScale(),
                         new ExpXScale("exp(\u1e8b)", 1, false),
                         new ExpXScale("exp(0.1\u1e8b)", 2, false),
                         new ExpXScale("exp(0.01\u1e8b)", 3, false),
