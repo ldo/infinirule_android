@@ -2318,7 +2318,7 @@ public class Scales
       {
         public final String ScaleName;
         public final boolean CoshScale;
-        public final int Level; /* -1 or 0 only */
+        public final int Level; /* -1 or 0 only for sinh, 0 or 1 only for cosh */
 
         public ASinhCoshXScale
           (
@@ -2333,7 +2333,7 @@ public class Scales
                 Global.StdLocale,
                 "a%s %s\u1e8b",
                 CoshScale ? "cosh" : "sinh",
-                Level == -1 ? "0.1" : ""
+                Level == (CoshScale ? 0 : -1) ? "0.1" : ""
               );
           } /*ASinhCoshXScale*/
 
@@ -2412,8 +2412,49 @@ public class Scales
             double Leftmost, Rightmost;
             int[] NrDivisions;
             int NrDecimals;
-            switch (Level)
+            if (CoshScale)
               {
+                switch (Level)
+                  {
+                case 0:
+                    GradLabels = new double[]
+                        {
+                            0.0,
+                            1.0,
+                            2.0,
+                            3.0,
+                        };
+                    NrDivisions = new int[]
+                        {
+                            10,
+                            10,
+                            10,
+                        };
+                    NrDecimals = 0;
+                break;
+                default: /*sigh*/
+                case 1:
+                    GradLabels = new double[]
+                        {
+                            3.0,
+                            4.0,
+                            5.0,
+                            6.0,
+                        };
+                    NrDivisions = new int[]
+                        {
+                            10,
+                            10,
+                            10,
+                        };
+                    NrDecimals = 1;
+                break;
+                  } /*switch*/
+              }
+            else
+              {
+                switch (Level)
+                  {
                 case -1:
                     GradLabels = new double[]
                         {
@@ -2459,7 +2500,8 @@ public class Scales
                         };
                     NrDecimals = 1;
                 break;
-              } /*switch*/
+                  } /*switch*/
+              } /*if*/
             DrawGraduations
               (
                 /*g =*/ g,
@@ -2627,9 +2669,9 @@ public class Scales
                         new ASinACosXScale(true),
                         new ATanXScale(),
                         new ASinhCoshXScale(false, -1),
-                        new ASinhCoshXScale(true, -1),
-                        new ASinhCoshXScale(false, 0),
                         new ASinhCoshXScale(true, 0),
+                        new ASinhCoshXScale(false, 0),
+                        new ASinhCoshXScale(true, 1),
                         new ATanhXScale(),
                         new ExpXScale("exp(\u1e8b)", 1, false),
                         new ExpXScale("exp(0.1\u1e8b)", 2, false),
