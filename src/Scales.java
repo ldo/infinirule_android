@@ -2333,7 +2333,7 @@ public class Scales
                 Global.StdLocale,
                 "a%s %s\u1e8b",
                 CoshScale ? "cosh" : "sinh",
-                new String[]{"0.1", "", "10"}[Level + (CoshScale ? 0 : 1)]
+                new String[]{"0.1", "", "10"}[Level + 1]
               );
           } /*ASinhCoshXScale*/
 
