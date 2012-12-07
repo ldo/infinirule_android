@@ -2318,7 +2318,7 @@ public class Scales
       {
         public final String ScaleName;
         public final boolean CoshScale;
-        public final int Level; /* -1 or 0 only for sinh, 0 or 1 only for cosh */
+        public final int Level; /* -1, 0 or +1 for sinh, 0 or +1 for cosh */
 
         public ASinhCoshXScale
           (
@@ -2333,7 +2333,7 @@ public class Scales
                 Global.StdLocale,
                 "a%s %s\u1e8b",
                 CoshScale ? "cosh" : "sinh",
-                Level == (CoshScale ? 0 : -1) ? "0.1" : ""
+                new String[]{"0.1", "", "10"}[Level + (CoshScale ? 0 : 1)]
               );
           } /*ASinhCoshXScale*/
 
@@ -2494,6 +2494,22 @@ public class Scales
                     NrDivisions = new int[]
                         {
                             10,
+                            10,
+                            10,
+                            10,
+                        };
+                    NrDecimals = 1;
+                break;
+                case 1:
+                    GradLabels = new double[]
+                        {
+                            3.0,
+                            4.0,
+                            5.0,
+                            6.0,
+                        };
+                    NrDivisions = new int[]
+                        {
                             10,
                             10,
                             10,
@@ -2672,6 +2688,7 @@ public class Scales
                         new ASinhCoshXScale(true, 0),
                         new ASinhCoshXScale(false, 0),
                         new ASinhCoshXScale(true, 1),
+                        new ASinhCoshXScale(false, 1),
                         new ATanhXScale(),
                         new ExpXScale("exp(\u1e8b)", 1, false),
                         new ExpXScale("exp(0.1\u1e8b)", 2, false),
