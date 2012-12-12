@@ -2545,13 +2545,14 @@ public class Scales
 
       } /*ASinhCoshXScale*/;
 
-    public static class ATanhXScale implements Scale    
+    public static class ATanhXScale implements Scale
+      /* upper limit of 7.0 is about right for current maximum magnification */
       {
         public final String ScaleName;
 
         public ATanhXScale()
           {
-            ScaleName = "atanh \u1e8b ≥ 0.1 < 3";
+            ScaleName = "atanh \u1e8b ≥ 0.1 < 7";
           } /*ATanhXScale*/
 
         public String Name()
@@ -2630,8 +2631,7 @@ public class Scales
                                     0.8,
                                     0.9,
                                     1.0,
-                                    2.0,
-                                    3.0,
+                                    7.0,
                                 },
                         /*NrDecimals =*/ 2,
                         /*MinDecimals =*/ 1,
@@ -2652,11 +2652,10 @@ public class Scales
                             10,
                             10,
                             10,
-                            10,
-                            10,
+                            6,
                         },
                 /*Leftmost =*/ ValueAt(0.0),
-                /*Rightmost =*/ ValueAt(1.0)
+                /*Rightmost =*/ 7.0
               );
           } /*Draw*/
 
