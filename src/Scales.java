@@ -2409,7 +2409,6 @@ public class Scales
           )
           {
             double[] GradLabels;
-            double Leftmost, Rightmost;
             int[] NrDivisions;
             int NrDecimals;
             if (CoshScale)
@@ -2546,13 +2545,24 @@ public class Scales
       } /*ASinhCoshXScale*/;
 
     public static class ATanhXScale implements Scale
-      /* upper limit of 7.0 is about right for current maximum magnification */
       {
+        final double MaxDomain = 7.0;
+          /* upper limit about right for current maximum magnification */
         public final String ScaleName;
+        public final int Level; /* -2 or -1 */
 
-        public ATanhXScale()
+        public ATanhXScale
+          (
+            int Level
+          )
           {
-            ScaleName = "atanh \u1e8b ≥ 0.1 < 7";
+            this.Level = Level;
+            ScaleName = String.format
+              (
+                Global.StdLocale,
+                "atanh %s\u1e8b",
+                new String[]{"0.01", "0.1"}[Level + 2]
+              );
           } /*ATanhXScale*/
 
         public String Name()
@@ -2578,7 +2588,7 @@ public class Scales
             double Pos
           )
           {
-            final double T = Math.pow(10.0, Pos - 1);
+            final double T = Math.pow(10.0, Pos + Level);
             return
                 0.5 * Math.log((1 + T) / (1 - T));
           } /*ValueAt*/
@@ -2589,7 +2599,7 @@ public class Scales
           )
           {
             return
-                Math.log10(Math.tanh(Value)) + 1;
+                Math.log10(Math.tanh(Value)) - Level;
           } /*PosAt*/
 
         public SpecialMarker[] SpecialMarkers()
@@ -2607,6 +2617,73 @@ public class Scales
             boolean TopEdge
           )
           {
+            double[] GradLabels;
+            int[] NrDivisions;
+            double Rightmost;
+            switch (Level)
+              {
+            case -2:
+                GradLabels = new double[]
+                    {
+                        0.01,
+                        0.02,
+                        0.03,
+                        0.04,
+                        0.05,
+                        0.06,
+                        0.07,
+                        0.08,
+                        0.09,
+                        0.1,
+                        0.11,
+                    };
+                NrDivisions = new int[]
+                    {
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                    };
+                Rightmost = ValueAt(1.0);
+            break;
+            default: /*sigh*/
+            case -1:
+                GradLabels = new double[]
+                    {
+                        0.1,
+                        0.2,
+                        0.3,
+                        0.4,
+                        0.5,
+                        0.6,
+                        0.7,
+                        0.8,
+                        0.9,
+                        1.0,
+                        MaxDomain,
+                    };
+                NrDivisions = new int[]
+                    {
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        (int)MaxDomain - 1,
+                    };
+                Rightmost = MaxDomain;
+            break;
+              } /*switch*/
             DrawGraduations
               (
                 /*g =*/ g,
@@ -2618,21 +2695,7 @@ public class Scales
                 /*PrimaryGraduations =*/
                     MakeGradLabels
                       (
-                        /*Values =*/
-                            new double[]
-                                {
-                                    0.1,
-                                    0.2,
-                                    0.3,
-                                    0.4,
-                                    0.5,
-                                    0.6,
-                                    0.7,
-                                    0.8,
-                                    0.9,
-                                    1.0,
-                                    7.0,
-                                },
+                        /*Values =*/ GradLabels,
                         /*NrDecimals =*/ 2,
                         /*MinDecimals =*/ 1,
                         /*Multiplier =*/ 1,
@@ -2640,22 +2703,9 @@ public class Scales
                         /*FromExponent =*/ 0,
                         /*ToExponent =*/ 0
                       ),
-                /*NrDivisions =*/
-                    new int[]
-                        {
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            6,
-                        },
+                /*NrDivisions =*/ NrDivisions,
                 /*Leftmost =*/ ValueAt(0.0),
-                /*Rightmost =*/ 7.0
+                /*Rightmost =*/ Rightmost
               );
           } /*Draw*/
 
@@ -2688,7 +2738,8 @@ public class Scales
                         new ASinhCoshXScale(false, 0),
                         new ASinhCoshXScale(true, 1),
                         new ASinhCoshXScale(false, 1),
-                        new ATanhXScale(),
+                        new ATanhXScale(-2),
+                        new ATanhXScale(-1),
                         new ExpXScale("exp(\u1e8b)", 1, false),
                         new ExpXScale("exp(0.1\u1e8b)", 2, false),
                         new ExpXScale("exp(0.01\u1e8b)", 3, false),
