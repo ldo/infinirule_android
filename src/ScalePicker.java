@@ -131,24 +131,27 @@ public class ScalePicker extends android.app.Activity
                     /*width =*/
                         Math.max
                           (
-                            (int)(
-                                Scales.DrawScaleName
-                                  (
-                                    /*g =*/ null,
-                                    /*Scale =*/ Scales.KnownScales.get(ThisItem.Name),
-                                    /*Upper =*/
-                                            WhichScale == SCALE.TOP
-                                        ||
-                                            WhichScale == SCALE.UPPER,
-                                    /*Pos =*/ null,
-                                    /*Alignment =*/ android.graphics.Paint.Align.LEFT,
-                                    /*Color =*/ 0
-                                  )
-                              *
-                                1.2
-                              *
-                                Global.PixelDensity()
-                            ),
+                                (int)(
+                                    Scales.DrawScaleName
+                                      (
+                                        /*g =*/ null,
+                                        /*Scale =*/ Scales.KnownScales.get(ThisItem.Name),
+                                        /*Upper =*/
+                                                WhichScale == SCALE.TOP
+                                            ||
+                                                WhichScale == SCALE.UPPER,
+                                        /*Pos =*/ null,
+                                        /*Alignment =*/ android.graphics.Paint.Align.LEFT,
+                                        /*Color =*/ 0
+                                      )
+                                  *
+                                    1.2
+                                  *
+                                    Global.PixelDensity()
+                                )
+                            +
+                                (TextBounds.right - TextBounds.left),
+                                  /* extra to allow for italic slant */
                             100
                           ),
                     /*height =*/
