@@ -697,6 +697,13 @@ public class SlideView extends android.view.View
             Handled = true;
         break;
         case MotionEvent.ACTION_POINTER_DOWN:
+            if (OrigScaleNameTapped >= 0)
+              {
+              /* avoid multitouch confusion */
+                ScaleNameTapped = -1;
+                OrigScaleNameTapped = -1;
+                invalidate();
+              } /*if*/
             if
               (
                     MovingWhat == MovingState.MovingLowerScale
