@@ -409,6 +409,9 @@ public class SlideView extends android.view.View
         android.graphics.Canvas g
       )
       {
+      /* Note that hardware acceleration needs to be disabled for this view,
+        because otherwise getMatrix/setMatrix behave inconsistently. This is
+        done in the layout to avoid writing version-dependent code. */
         final PointF ViewDimensions = GetViewDimensions();
         g.save();
         g.concat(Orient);
