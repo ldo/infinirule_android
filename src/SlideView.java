@@ -1159,8 +1159,8 @@ public class SlideView extends android.view.View
         int Right,
         int Bottom
       )
-      /* just a place to finish initialization/state restoriation after I
-        know what my layout will be */
+      /* just a place to finish initialization/state restoration after I
+        know what my layout will be. */
       {
         super.onLayout(Changed, Left, Top, Right, Bottom);
         LayoutDone = true;

@@ -2,10 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="nz.gen.geek_central.infinirule"
     android:versionCode="5"
-    android:versionName="15670.0"
+    android:versionName="15915.1"
 >
     <uses-sdk
         android:minSdkVersion="7"
+        android:targetSdkVersion="14"
     />
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-feature android:name="android.hardware.touchscreen.multitouch"/>

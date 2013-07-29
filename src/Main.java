@@ -15,12 +15,11 @@ package nz.gen.geek_central.infinirule;
     General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with this program. If not, see
-    <http://www.gnu.org/licenses/>.
+    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 public class Main
-    extends android.app.Activity
+    extends ActionActivity
     implements SlideView.ContextMenuAction, SlideView.ScaleNameClickAction
   {
 
@@ -90,9 +89,6 @@ public class Main
         startActivity(LaunchHelp);
       } /*ShowHelp*/
 
-    private java.util.Map<android.view.MenuItem, Runnable> OptionsMenu;
-    private java.util.Map<android.view.MenuItem, Runnable> ContextMenu;
-
     interface RequestResponseAction /* response to an activity result */
       {
         public void Run
@@ -116,11 +112,14 @@ public class Main
     @Override
     public void onCreate
       (
-        android.os.Bundle SavedInstanceState
+        android.os.Bundle ToRestore
       )
       {
-        super.onCreate(SavedInstanceState);
-        getWindow().requestFeature(android.view.Window.FEATURE_CUSTOM_TITLE);
+        super.onCreate(ToRestore);
+        if (!HasActionBar)
+          {
+            getWindow().requestFeature(android.view.Window.FEATURE_CUSTOM_TITLE);
+          } /*if*/
         Clipboard = (android.text.ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
         BuildActivityResultActions();
         Global.MainMetrics = new android.util.DisplayMetrics();
@@ -135,82 +134,88 @@ public class Main
     @Override
     public void onPostCreate
       (
-        android.os.Bundle SavedInstanceState
+        android.os.Bundle ToRestore
       )
       {
-        super.onPostCreate(SavedInstanceState);
-        getWindow().setFeatureInt
-          (
-            android.view.Window.FEATURE_CUSTOM_TITLE,
-            R.layout.title_bar
-          );
-        ((android.widget.Button)findViewById(R.id.action_help)).setOnClickListener
-          (
-            new android.view.View.OnClickListener()
-              {
-                public void onClick
-                  (
-                    android.view.View ButtonView
-                  )
+        super.onPostCreate(ToRestore);
+        if (!HasActionBar)
+          {
+            getWindow().setFeatureInt
+              (
+                android.view.Window.FEATURE_CUSTOM_TITLE,
+                R.layout.title_bar
+              );
+            ((android.widget.Button)findViewById(R.id.action_help)).setOnClickListener
+              (
+                new android.view.View.OnClickListener()
                   {
-                    ShowHelp("help/index.html", null);
-                  } /*onClick*/
-              } /*OnClickListener*/
-          );
+                    public void onClick
+                      (
+                        android.view.View ButtonView
+                      )
+                      {
+                        ShowHelp("help/index.html", null);
+                      } /*onClick*/
+                  } /*OnClickListener*/
+              );
+          } /*if*/
       } /*onPostCreate*/
 
     @Override
-    public boolean onCreateOptionsMenu
-      (
-        android.view.Menu TheMenu
-      )
+    protected void OnCreateOptionsMenu()
       {
-        OptionsMenu = new java.util.HashMap<android.view.MenuItem, Runnable>();
-        OptionsMenu.put
+        AddOptionsMenuItem
           (
-            TheMenu.add(R.string.show_help),
-            new Runnable()
-              {
-                public void run()
+            /*StringID =*/ R.string.show_help,
+            /*IconID =*/ android.R.drawable.ic_menu_help,
+            /*ActionBarUsage =*/ android.view.MenuItem.SHOW_AS_ACTION_IF_ROOM,
+            /*Action =*/
+                new Runnable()
                   {
-                    ShowHelp("help/index.html", null);
-                  } /*run*/
-              } /*Runnable*/
-          );
-        OptionsMenu.put
-          (
-            TheMenu.add(R.string.reset),
-            new Runnable()
-              {
-                public void run()
-                  {
-                    Slide.Reset(true);
-                  } /*run*/
-              } /*Runnable*/
-          );
-        OptionsMenu.put
-          (
-            TheMenu.add(R.string.about_me),
-            new Runnable()
-              {
-                public void run()
-                  {
-                    String VersionName;
-                    try
+                    public void run()
                       {
-                        VersionName =
-                            getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
-                      }
-                    catch (android.content.pm.PackageManager.NameNotFoundException CantFindMe)
-                      {
-                        VersionName = "CANTFINDME"; /*!*/
-                      } /*catch*/
-                    ShowHelp("help/about.html", new String[] {VersionName});
-                  } /*run*/
-              } /*Runnable*/
+                        ShowHelp("help/index.html", null);
+                      } /*run*/
+                  } /*Runnable*/
           );
-        return
-            true;
+        AddOptionsMenuItem
+          (
+            /*StringID =*/ R.string.reset,
+            /*IconID =*/ R.drawable.ic_reset,
+            /*ActionBarUsage =*/ android.view.MenuItem.SHOW_AS_ACTION_IF_ROOM,
+            /*Action =*/
+                new Runnable()
+                  {
+                    public void run()
+                      {
+                        Slide.Reset(true);
+                      } /*run*/
+                  } /*Runnable*/
+          );
+        AddOptionsMenuItem
+          (
+            /*StringID =*/ R.string.about_me,
+            /*IconID =*/ android.R.drawable.ic_menu_info_details,
+            /*ActionBarUsage =*/ android.view.MenuItem.SHOW_AS_ACTION_IF_ROOM,
+            /*Action =*/
+                new Runnable()
+                  {
+                    public void run()
+                      {
+                        String VersionName;
+                        try
+                          {
+                            VersionName =
+                                getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+                          }
+                        catch (android.content.pm.PackageManager.NameNotFoundException CantFindMe)
+                          {
+                            VersionName = "CANTFINDME"; /*!*/
+                          } /*catch*/
+                        ShowHelp("help/about.html", new String[] {VersionName});
+                      } /*run*/
+                  } /*Runnable*/
+          );
       } /*onCreateOptionsMenu*/
 
     void BuildActivityResultActions()
@@ -243,7 +248,7 @@ public class Main
         SlideView.ContextMenuTypes MenuType
       )
       {
-        ContextMenu = new java.util.HashMap<android.view.MenuItem, Runnable>();
+        InitContextMenu(TheMenu);
         switch (MenuType)
           {
         case Cursor:
@@ -252,88 +257,87 @@ public class Main
                 for (int WhichScale = 0; WhichScale < SCALE.NR; ++WhichScale)
                   {
                     final int LocalWhichScale = WhichScale;
-                    ContextMenu.put
+                    AddContextMenuItem
                       (
-                        TheMenu.add
-                          (
+                        /*Name =*/
                             String.format
                               (
                                 getString(Pasting ? R.string.paste_prompt : R.string.copy_prompt),
                                 getString(Global.ScaleNameID(WhichScale))
-                              )
-                          ),
-                        Pasting ?
-                            new Runnable()
-                              {
-                                public void run()
+                              ),
+                        /*Action =*/
+                            Pasting ?
+                                new Runnable()
                                   {
-                                    final CharSequence NumString = Clipboard.getText();
-                                    if (NumString != null)
+                                    public void run()
                                       {
-                                        final Scales.Scale TheScale = Slide.GetScale(LocalWhichScale);
-                                        try
+                                        final CharSequence NumString = Clipboard.getText();
+                                        if (NumString != null)
                                           {
-                                            final double Value = Double.parseDouble(NumString.toString());
-                                            double ScalePos = TheScale.PosAt(Value);
-                                            if
-                                              (
-                                                    TheScale.Wrap()
-                                                ||
-                                                    ScalePos >= 0.0 && ScalePos < 1.0
-                                              )
+                                            final Scales.Scale TheScale = Slide.GetScale(LocalWhichScale);
+                                            try
                                               {
-                                                Slide.SetCursorPos
+                                                final double Value = Double.parseDouble(NumString.toString());
+                                                double ScalePos = TheScale.PosAt(Value);
+                                                if
                                                   (
-                                                    /*ByScale =*/ LocalWhichScale,
-                                                    /*NewPos =*/ ScalePos - Math.floor(ScalePos),
-                                                    /*Animate =*/ true
-                                                  );
+                                                        TheScale.Wrap()
+                                                    ||
+                                                        ScalePos >= 0.0 && ScalePos < 1.0
+                                                  )
+                                                  {
+                                                    Slide.SetCursorPos
+                                                      (
+                                                        /*ByScale =*/ LocalWhichScale,
+                                                        /*NewPos =*/ ScalePos - Math.floor(ScalePos),
+                                                        /*Animate =*/ true
+                                                      );
+                                                  }
+                                                else
+                                                  {
+                                                    android.widget.Toast.makeText
+                                                      (
+                                                        /*context =*/ Main.this,
+                                                        /*text =*/
+                                                            String.format
+                                                              (
+                                                                getString(R.string.paste_range),
+                                                                Global.FormatNumber(Value),
+                                                                getString(Global.ScaleNameID(LocalWhichScale)),
+                                                                Global.FormatNumber(TheScale.ValueAt(0.0)),
+                                                                Global.FormatNumber(TheScale.ValueAt(1.0))
+                                                              ),
+                                                        /*duration =*/ android.widget.Toast.LENGTH_SHORT
+                                                      ).show();
+                                                  } /*if*/
                                               }
-                                            else
+                                            catch (NumberFormatException BadNum)
                                               {
                                                 android.widget.Toast.makeText
                                                   (
                                                     /*context =*/ Main.this,
-                                                    /*text =*/
-                                                        String.format
-                                                          (
-                                                            getString(R.string.paste_range),
-                                                            Global.FormatNumber(Value),
-                                                            getString(Global.ScaleNameID(LocalWhichScale)),
-                                                            Global.FormatNumber(TheScale.ValueAt(0.0)),
-                                                            Global.FormatNumber(TheScale.ValueAt(1.0))
-                                                          ),
+                                                    /*text =*/ getString(R.string.paste_nan),
                                                     /*duration =*/ android.widget.Toast.LENGTH_SHORT
                                                   ).show();
-                                              } /*if*/
-                                          }
-                                        catch (NumberFormatException BadNum)
-                                          {
-                                            android.widget.Toast.makeText
-                                              (
-                                                /*context =*/ Main.this,
-                                                /*text =*/ getString(R.string.paste_nan),
-                                                /*duration =*/ android.widget.Toast.LENGTH_SHORT
-                                              ).show();
-                                          } /*try*/
-                                      } /*if*/
-                                  } /*run*/
-                              } /*Runnable*/
-                        :
-                            new Runnable()
-                              {
-                                public void run()
+                                              } /*try*/
+                                          } /*if*/
+                                      } /*run*/
+                                  } /*Runnable*/
+                            :
+                                new Runnable()
                                   {
-                                    Clipboard.setText
-                                      (
-                                        Global.FormatNumber
+                                    public void run()
+                                      {
+                                        Clipboard.setText
                                           (
-                                            Slide.GetScale(LocalWhichScale)
-                                                .ValueAt(Slide.GetCursorPos(LocalWhichScale))
-                                          )
-                                      );
-                                  } /*run*/
-                              } /*Runnable*/
+                                            Global.FormatNumber
+                                              (
+                                                Slide.GetScale(LocalWhichScale)
+                                                    .ValueAt(Slide.GetCursorPos(LocalWhichScale))
+                                              )
+                                          );
+                                      } /*run*/
+                                  } /*Runnable*/
                       );
                   } /*for*/
                 if (Pasting)
@@ -367,40 +371,6 @@ public class Main
       } /*OnScaleNameClick*/
 
     @Override
-    public boolean onOptionsItemSelected
-      (
-        android.view.MenuItem TheItem
-      )
-      {
-        boolean Handled = false;
-        final Runnable Action = OptionsMenu.get(TheItem);
-        if (Action != null)
-          {
-            Action.run();
-            Handled = true;
-          } /*if*/
-        return
-            Handled;
-      } /*onOptionsItemSelected*/
-
-    @Override
-    public boolean onContextItemSelected
-      (
-        android.view.MenuItem TheItem
-      )
-      {
-        boolean Handled = false;
-        final Runnable Action = ContextMenu.get(TheItem);
-        if (Action != null)
-          {
-            Action.run();
-            Handled = true;
-          } /*if*/
-        return
-            Handled;
-      } /*onContextItemSelected*/
-
-    @Override
     public void onActivityResult
       (
         int RequestCode,
@@ -422,21 +392,21 @@ public class Main
     @Override
     public void onSaveInstanceState
       (
-        android.os.Bundle ToSaveInstanceState
+        android.os.Bundle ToSave
       )
       {
-        super.onSaveInstanceState(ToSaveInstanceState);
-        ToSaveInstanceState.putAll(Slide.SaveState());
+        super.onSaveInstanceState(ToSave);
+        ToSave.putAll(Slide.SaveState());
       } /*onPause*/
 
     @Override
     public void onRestoreInstanceState
       (
-        android.os.Bundle SavedInstanceState
+        android.os.Bundle ToRestore
       )
       {
-        Slide.RestoreState(SavedInstanceState);
-        super.onRestoreInstanceState(SavedInstanceState);
+        Slide.RestoreState(ToRestore);
+        super.onRestoreInstanceState(ToRestore);
       } /*onResume*/
 
-  } /*Main*/
+  } /*Main*/;

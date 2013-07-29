@@ -1,5 +1,9 @@
 Feature highlights:
 
+15915.1, 2013 July 29:
+    support action bar on post-Gingerbread systems.
+    fix one source of crashes.
+
 15670.0, 2012 November 27:
     add hyperbolic scales.
 

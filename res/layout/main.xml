@@ -9,5 +9,8 @@
         android:layout_height="fill_parent"
         android:id="@+id/slide_view"
         android:layout_centerVertical="true"
+        android:layerType="software"
     />
+    <!-- need to disable hardware acceleration because of getMatrix/setMatrix
+        inconsistency that happens with it enabled -->
 </RelativeLayout>
