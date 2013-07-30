@@ -26,6 +26,10 @@ TABLE.labels > TBODY > TR > TD.unused
   {
     background : #D5D5D5;
   }
+.descending
+  {
+    color : #f20001;
+  }
 </STYLE>
 </HEAD>
 <BODY>
@@ -338,7 +342,8 @@ rather than 3.5 or anything else. To 3 figures, it is approximately 0.353.
 <P>Scales are named in Infinirule according to the mathematical
 formula defining them, not according to the traditional slide rule scale
 labels. Here is a table of correspondences between traditional labels
-and Infinirule names:
+and Infinirule names (names shown in <SPAN CLASS="descending">red</SPAN> are
+descending scales, rest are ascending):
 
 <TABLE CLASS="labels">
 <TR><TH>Traditional<BR>Label</TH><TH>Infinirule<BR>Name</TH><TH>Wrap</TH></TR>
@@ -346,10 +351,10 @@ and Infinirule names:
 <TR><TD>B</TD><TD><I>y</I><SUP>2</SUP></TD><TD>yes</TD></TR>
 <TR><TD>C</TD><TD><I>y</I></TD><TD>yes</TD></TR>
 <TR><TD>CF</TD><TD>π<I>y</I></TD><TD>yes</TD></TR>
-<TR><TD>CI</TD><TD>1/<I>y</I></TD><TD>yes</TD></TR>
+<TR><TD><SPAN CLASS="descending">CI</SPAN></TD><TD><SPAN CLASS="descending">1/<I>y</I></SPAN></TD><TD>yes</TD></TR>
 <TR><TD>D</TD><TD><I>x</I></TD><TD>yes</TD></TR>
 <TR><TD>DF</TD><TD>π<I>x</I></TD><TD>yes</TD></TR>
-<TR><TD>DI</TD><TD>1/<I>x</I></TD><TD>yes</TD></TR>
+<TR><TD><SPAN CLASS="descending">DI</SPAN></TD><TD><SPAN CLASS="descending">1/<I>x</I></SPAN></TD><TD>yes</TD></TR>
 <TR><TD>K</TD><TD><I>x</I><SUP>3</SUP></TD><TD>yes</TD></TR>
 <TR><TD>L</TD><TD>log10 <I>y</I></TD><TD>yes</TD></TR>
 <TR><TD>Ln</TD><TD>ln <I>y</I></TD><TD>no</TD></TR>
@@ -357,19 +362,19 @@ and Infinirule names:
 <TR><TD>LL<SUB>2</SUB></TD><TD>exp(0.1<I>x</I>)</TD><TD>no</TD></TR>
 <TR><TD>LL<SUB>1</SUB></TD><TD>exp(0.01<I>x</I>)</TD><TD>no</TD></TR>
 <TR><TD>LL<SUB>0</SUB></TD><TD>exp(0.001<I>x</I>)</TD><TD>no</TD></TR>
-<TR><TD CLASS="unused"></TD><TD>exp(-<I>x</I>)</TD><TD>no</TD></TR>
-<TR><TD CLASS="unused"></TD><TD>exp(-0.1<I>x</I>)</TD><TD>no</TD></TR>
-<TR><TD CLASS="unused"></TD><TD>exp(-0.01<I>x</I>)</TD><TD>no</TD></TR>
-<TR><TD CLASS="unused"></TD><TD>exp(-0.001<I>x</I>)</TD><TD>no</TD></TR>
+<TR><TD CLASS="unused"></TD><TD><SPAN CLASS="descending">exp(-<I>x</I>)</SPAN></TD><TD>no</TD></TR>
+<TR><TD CLASS="unused"></TD><TD><SPAN CLASS="descending">exp(-0.1<I>x</I>)</SPAN></TD><TD>no</TD></TR>
+<TR><TD CLASS="unused"></TD><TD><SPAN CLASS="descending">exp(-0.01<I>x</I>)</SPAN></TD><TD>no</TD></TR>
+<TR><TD CLASS="unused"></TD><TD><SPAN CLASS="descending">exp(-0.001<I>x</I>)</SPAN></TD><TD>no</TD></TR>
 <TR><TD>N<SUB>3</SUB></TD><TD>10**<I>x</I></TD><TD>no</TD></TR>
 <TR><TD>N<SUB>2</SUB></TD><TD>10**(0.1<I>x</I>)</TD><TD>no</TD></TR>
 <TR><TD>N<SUB>1</SUB></TD><TD>10**(0.01<I>x</I>)</TD><TD>no</TD></TR>
 <TR><TD>N<SUB>0</SUB></TD><TD>10**(0.001<I>x</I>)</TD><TD>no</TD></TR>
-<TR><TD CLASS="unused"></TD><TD>10**(-<I>x</I>)</TD><TD>no</TD></TR>
-<TR><TD CLASS="unused"></TD><TD>10**(-0.1<I>x</I>)</TD><TD>no</TD></TR>
-<TR><TD CLASS="unused"></TD><TD>10**(-0.01<I>x</I>)</TD><TD>no</TD></TR>
-<TR><TD CLASS="unused"></TD><TD>10**(-0.001<I>x</I>)</TD><TD>no</TD></TR>
-<TR><TD CLASS="unused"></TD><TD>acos° <I>y</I> &gt; 5.7°</TD><TD>no</TD></TR>
+<TR><TD CLASS="unused"></TD><TD><SPAN CLASS="descending">10**(-<I>x</I>)</SPAN></TD><TD>no</TD></TR>
+<TR><TD CLASS="unused"></TD><TD><SPAN CLASS="descending">10**(-0.1<I>x</I>)</SPAN></TD><TD>no</TD></TR>
+<TR><TD CLASS="unused"></TD><TD><SPAN CLASS="descending">10**(-0.01<I>x</I>)</SPAN></TD><TD>no</TD></TR>
+<TR><TD CLASS="unused"></TD><TD><SPAN CLASS="descending">10**(-0.001<I>x</I>)</SPAN></TD><TD>no</TD></TR>
+<TR><TD CLASS="unused"></TD><TD><SPAN CLASS="descending">acos° <I>y</I> &gt; 5.7°</SPAN></TD><TD>no</TD></TR>
 <TR><TD CLASS="unused"</TD><TD>acosh <I>x</I></TD><TD>no</TD></TR>
 <TR><TD CLASS="unused"</TD><TD>acosh 10<I>x</I></TD><TD>no</TD></TR>
 <TR><TD>S</TD><TD>asin° <I>y</I> &gt; 5.7°</TD><TD>no</TD></TR>
