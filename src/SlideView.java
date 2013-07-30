@@ -618,7 +618,7 @@ public class SlideView extends android.view.View
                         +
                             (EndScaleOffset[i] - StartScaleOffset[i]) * AnimAmt;
                   } /*for*/
-                CursorX = StartCursorX + (float)((EndCursorX - StartCursorX) * AnimAmt);
+                CursorX = StartCursorX + (EndCursorX - StartCursorX) * AnimAmt;
                 ScaleLength = StartScaleLength + (int)((EndScaleLength - StartScaleLength) * AnimAmt);
                 invalidate();
                 final android.os.Handler MyHandler = getHandler();

@@ -121,7 +121,7 @@ public class ScalePicker extends android.app.Activity
               {
                 TheView = TemplateInflater.inflate(ResID, null);
               } /*if*/
-            final PickerItem ThisItem = (PickerItem)this.getItem(Position);
+            final PickerItem ThisItem = this.getItem(Position);
             final android.widget.ImageView ItemDisplay =
                 (android.widget.ImageView)TheView.findViewById(R.id.select_name);
               {
