@@ -16,9 +16,9 @@
    version="1.1"
    inkscape:version="0.48.4 r9939"
    sodipodi:docname="ic_reset_light.svg"
-   inkscape:export-filename="/home/ldo/projects/infinirule/res/drawable-mdpi/ic_reset.png"
-   inkscape:export-xdpi="12.8"
-   inkscape:export-ydpi="12.8">
+   inkscape:export-filename="/home/ldo/projects/infinirule/res/drawable-xhdpi/ic_reset.png"
+   inkscape:export-xdpi="28.799999"
+   inkscape:export-ydpi="28.799999">
   <defs
      id="defs4">
     <linearGradient
@@ -83,8 +83,8 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.3161675"
-     inkscape:cx="109.26189"
+     inkscape:zoom="3.2755555"
+     inkscape:cx="107.21722"
      inkscape:cy="112.5"
      inkscape:document-units="pt"
      inkscape:current-layer="layer2"
@@ -92,8 +92,8 @@
      units="pt"
      inkscape:window-width="1162"
      inkscape:window-height="904"
-     inkscape:window-x="57"
-     inkscape:window-y="78"
+     inkscape:window-x="51"
+     inkscape:window-y="94"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata7">
@@ -146,24 +146,14 @@
        id="path3863"
        style="color:#000000;fill:url(#linearGradient3865);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:2.5;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        sodipodi:type="arc" />
-    <rect
-       style="color:#000000;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:2.5;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
-       id="rect3944"
-       width="19.285715"
-       height="93.928574"
-       x="101.76984"
-       y="65.35714" />
     <path
-       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none"
-       d="M 32.484118,161.42804 101.4127,113.03554 32.483761,64.643036 z"
-       id="path3946"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cccc" />
+       d="m 190.34091,167.89341 -68.92857,-48.3925 68.92893,-48.392506 z m -157.856792,0 68.928582,-48.3925 -68.928939,-48.392506 z m 69.285722,-96.070902 19.28571,0 0,93.928572 -19.28571,0 z"
+       style="fill:#444444;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="path3784"
+       inkscape:connector-curvature="0" />
     <path
-       sodipodi:nodetypes="cccc"
-       inkscape:connector-curvature="0"
        id="path3950"
-       d="m 190.34091,161.42804 -68.92857,-48.3925 68.92893,-48.392504 z"
-       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none" />
+       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 190.34091,161.42804 -68.92857,-48.3925 68.92893,-48.392504 z m -157.856792,0 68.928582,-48.3925 -68.928939,-48.392504 z m 69.285722,-96.0709 19.28571,0 0,93.92857 -19.28571,0 z" />
   </g>
 </svg>
