@@ -2,7 +2,7 @@ package nz.gen.geek_central.infinirule;
 /*
     Slide-rule display widget for Infinirule.
 
-    Copyright 2011, 2012 Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
+    Copyright 2011-2013 Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
 
     This program is free software: you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -15,8 +15,7 @@ package nz.gen.geek_central.infinirule;
     General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with this program. If not, see
-    <http://www.gnu.org/licenses/>.
+    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 import android.graphics.Matrix;
@@ -638,6 +637,90 @@ public class SlideView extends android.view.View
 
     private SlideAnimator CurrentAnim = null;
 
+    private void SetScaleView
+      (
+        MovingState MovingWhat,
+        int NewScaleLength, /* for zooming */
+        PointF LastMouse,
+        PointF ThisMouse /* for relative repositioning */
+      )
+      {
+        final PointF ViewDimensions = GetViewDimensions();
+        NewScaleLength = Math.min
+          (
+            Math.max(NewScaleLength, (int)ViewDimensions.x),
+            MaxZoom > 0.0f ?
+                (int)(ViewDimensions.x * MaxZoom)
+            :
+                Integer.MAX_VALUE
+          );
+        switch (MovingWhat)
+          {
+        case MovingCursor:
+        case MovingBothScales:
+            CursorX =
+                Math.max
+                  (
+                    0.0f,
+                    Math.min
+                      (
+                                (CursorX - LastMouse.x) / ScaleLength
+                            *
+                                NewScaleLength
+                        +
+                            ThisMouse.x,
+                        ViewDimensions.x
+                      )
+                  );
+        break;
+          } /*switch*/
+        switch (MovingWhat)
+          {
+        case MovingBothScales:
+        case MovingLowerScale:
+            for (boolean Upper = false;;)
+              {
+                final int i = Upper ? SCALE.TOP : SCALE.BOTTOM;
+                final int j = Upper ? SCALE.UPPER : SCALE.LOWER;
+                final double Scale1Size = CurScale[i].Size();
+                final double Scale2Size = CurScale[j].Size();
+                CurScaleOffset[i] =
+                    Scales.FindScaleOffset
+                      (
+                        ThisMouse.x,
+                        Scale1Size,
+                        Scales.ViewToScale
+                          (
+                            LastMouse.x,
+                            Scale1Size,
+                            CurScaleOffset[i],
+                            ScaleLength
+                          ),
+                        NewScaleLength
+                      );
+                CurScaleOffset[j] =
+                    Scales.FindScaleOffset
+                      (
+                        ThisMouse.x,
+                        Scale2Size,
+                        Scales.ViewToScale
+                          (
+                            LastMouse.x,
+                            Scale2Size,
+                            CurScaleOffset[j],
+                            ScaleLength
+                          ),
+                        NewScaleLength
+                      );
+                if (Upper || MovingWhat != MovingState.MovingBothScales)
+                    break;
+                Upper = true;
+              } /*for*/
+        break;
+          } /*switch*/
+        ScaleLength = NewScaleLength;
+      } /*SetScaleView*/
+
     @Override
     public boolean onTouchEvent
       (
@@ -934,87 +1017,16 @@ public class SlideView extends android.view.View
                                       )
                                       {
                                         NewScaleLength =
-                                            Math.min
-                                              (
-                                                Math.max
-                                                  (
-                                                    (int)(
-                                                        ScaleLength * ThisDistance /  LastDistance
-                                                    ),
-                                                    (int)ViewDimensions.x
-                                                  ),
-                                                MaxZoom > 0.0f ?
-                                                    (int)(ViewDimensions.x * MaxZoom)
-                                                :
-                                                    Integer.MAX_VALUE
-                                              );
+                                            (int)(ScaleLength * ThisDistance /  LastDistance);
                                       } /*if*/
                                   } /*if*/
-                                switch (MovingWhat)
-                                  {
-                                case MovingCursor:
-                                case MovingBothScales:
-                                    CursorX =
-                                        Math.max
-                                          (
-                                            0.0f,
-                                            Math.min
-                                              (
-                                                        (CursorX - LastMouse.x) / ScaleLength
-                                                    *
-                                                        NewScaleLength
-                                                +
-                                                    ThisMouse.x,
-                                                ViewDimensions.x
-                                              )
-                                          );
-                                break;
-                                  } /*switch*/
-                                switch (MovingWhat)
-                                  {
-                                case MovingBothScales:
-                                case MovingLowerScale:
-                                    for (boolean Upper = false;;)
-                                      {
-                                        final int i = Upper ? SCALE.TOP : SCALE.BOTTOM;
-                                        final int j = Upper ? SCALE.UPPER : SCALE.LOWER;
-                                        final double Scale1Size = CurScale[i].Size();
-                                        final double Scale2Size = CurScale[j].Size();
-                                        CurScaleOffset[i] =
-                                            Scales.FindScaleOffset
-                                              (
-                                                ThisMouse.x,
-                                                Scale1Size,
-                                                Scales.ViewToScale
-                                                  (
-                                                    LastMouse.x,
-                                                    Scale1Size,
-                                                    CurScaleOffset[i],
-                                                    ScaleLength
-                                                  ),
-                                                NewScaleLength
-                                              );
-                                        CurScaleOffset[j] =
-                                            Scales.FindScaleOffset
-                                              (
-                                                ThisMouse.x,
-                                                Scale2Size,
-                                                Scales.ViewToScale
-                                                  (
-                                                    LastMouse.x,
-                                                    Scale2Size,
-                                                    CurScaleOffset[j],
-                                                    ScaleLength
-                                                  ),
-                                                NewScaleLength
-                                              );
-                                        if (Upper || MovingWhat != MovingState.MovingBothScales)
-                                            break;
-                                        Upper = true;
-                                      } /*for*/
-                                break;
-                                  } /*switch*/
-                                ScaleLength = NewScaleLength;
+                                SetScaleView
+                                  (
+                                    /*MovingWhat =*/ MovingWhat,
+                                    /*NewScaleLength =*/ NewScaleLength,
+                                    /*LastMouse =*/ LastMouse,
+                                    /*ThisMouse =*/ ThisMouse
+                                  );
                               } /*if*/
                           } /*if*/
                         invalidate();
@@ -1098,6 +1110,22 @@ public class SlideView extends android.view.View
               );
           } /*if*/
       } /*onCreateContextMenu*/
+
+    public void ZoomBy
+      (
+        float Factor
+      )
+      {
+        final PointF ZoomPoint = new PointF(GetViewDimensions().x / 2, 0); /* zoom about middle */
+        SetScaleView
+          (
+            /*MovingWhat =*/ MovingState.MovingBothScales,
+            /*NewScaleLength =*/ (int)(ScaleLength * Factor),
+            /*LastMouse =*/ ZoomPoint,
+            /*ThisMouse =*/ ZoomPoint
+          );
+        invalidate();
+      } /*ZoomBy*/
 
 /*
     Save/restore state

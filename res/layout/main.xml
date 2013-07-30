@@ -13,4 +13,11 @@
     />
     <!-- need to disable hardware acceleration because of getMatrix/setMatrix
         inconsistency that happens with it enabled -->
+    <ZoomControls
+        android:id="@+id/viewzoomer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+    />
 </RelativeLayout>

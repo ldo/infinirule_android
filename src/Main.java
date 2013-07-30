@@ -2,7 +2,7 @@ package nz.gen.geek_central.infinirule;
 /*
     Infinirule--the infinitely stretchable and scrollable slide rule, mainline.
 
-    Copyright 2011, 2012 Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
+    Copyright 2011-2013 Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
 
     This program is free software: you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -107,6 +107,7 @@ public class Main
       /* exclusive end of contiguous range */
 
     private SlideView Slide;
+    private android.widget.ZoomControls Zoomer;
     private android.text.ClipboardManager Clipboard;
 
     @Override
@@ -129,6 +130,47 @@ public class Main
         Slide = (SlideView)findViewById(R.id.slide_view);
         Slide.SetContextMenuAction(this);
         Slide.SetScaleNameClickAction(this);
+        Zoomer = (android.widget.ZoomControls)findViewById(R.id.viewzoomer);
+        if
+          (
+            getPackageManager()
+                .hasSystemFeature(android.content.pm.PackageManager.FEATURE_TOUCHSCREEN_MULTITOUCH)
+          )
+          {
+            Zoomer.setVisibility(Zoomer.GONE);
+          }
+        else
+          {
+            Zoomer.setVisibility(Zoomer.VISIBLE);
+            Zoomer.setOnZoomInClickListener
+              (
+                new android.view.View.OnClickListener()
+                  {
+                    @Override
+                    public void onClick
+                      (
+                        android.view.View TheZoomButton
+                      )
+                      {
+                        Slide.ZoomBy(2.0f);
+                      } /*onClick*/
+                  } /*OnClickListener*/
+              );
+            Zoomer.setOnZoomOutClickListener
+              (
+                new android.view.View.OnClickListener()
+                  {
+                    @Override
+                    public void onClick
+                      (
+                        android.view.View TheZoomButton
+                      )
+                      {
+                        Slide.ZoomBy(0.5f);
+                      } /*onClick*/
+                  } /*OnClickListener*/
+              );
+          } /*if*/
       } /*onCreate*/
 
     @Override
