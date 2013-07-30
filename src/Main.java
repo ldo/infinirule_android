@@ -80,7 +80,7 @@ public class Main
           (
             nz.gen.geek_central.infinirule.Help.ContentID,
             FormatArgs != null ?
-                String.format(Global.StdLocale, new String(HelpRaw), FormatArgs)
+                String.format(Global.StdLocale, new String(HelpRaw), (Object[])FormatArgs)
                     .getBytes()
             :
                 HelpRaw
