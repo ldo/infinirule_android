@@ -229,6 +229,7 @@ public class ScalePicker extends android.app.Activity
           );
         int ScrollToItem = 0;
         PickerList = new SelectedItemAdapter(this, R.layout.scale_picker_item, getLayoutInflater());
+        PickerList.setNotifyOnChange(false);
         PickerList.clear();
           {
             final java.util.TreeSet<PickerItem> ResultTemp = /* this is how you sort things in Java */
@@ -272,7 +273,7 @@ public class ScalePicker extends android.app.Activity
                 PickerList.add(ThisItem);
               } /*for*/
           }
-        PickerList.notifyDataSetChanged(); /* is this necessary? */
+        PickerList.notifyDataSetChanged();
         PickerListView = (android.widget.ListView)findViewById(R.id.list);
         PickerListView.setAdapter(PickerList);
           {
