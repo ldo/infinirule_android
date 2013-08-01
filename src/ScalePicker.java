@@ -227,6 +227,7 @@ public class ScalePicker extends android.app.Activity
                 getString(Global.ScaleNameID(WhichScale))
               )
           );
+        int ScrollToItem = 0;
         PickerList = new SelectedItemAdapter(this, R.layout.scale_picker_item, getLayoutInflater());
         PickerList.clear();
           {
@@ -264,12 +265,29 @@ public class ScalePicker extends android.app.Activity
               } /*for*/
             for (PickerItem ThisItem : ResultTemp)
               {
+                if (ThisItem.Selected)
+                  {
+                    ScrollToItem = PickerList.getCount();
+                  } /*if*/
                 PickerList.add(ThisItem);
               } /*for*/
           }
         PickerList.notifyDataSetChanged(); /* is this necessary? */
         PickerListView = (android.widget.ListView)findViewById(R.id.list);
         PickerListView.setAdapter(PickerList);
+          {
+            final int ScrollTo = ScrollToItem;
+            PickerListView.post
+              (
+                new Runnable()
+                  {
+                    public void run()
+                      {
+                        PickerListView.setSelection(ScrollTo);
+                      } /*run*/
+                  } /*Runnable*/
+              );
+          }
       } /*onCreate*/
 
     @Override
