@@ -29,28 +29,42 @@ public abstract class ActionActivity extends android.app.Activity
     protected Menu TheOptionsMenu;
     protected android.view.ContextMenu TheContextMenu;
 
-    protected static final boolean HasActionBar;
-    static
+    public static boolean ClassHasMethod
+      (
+        String ClassName,
+        String MethodName,
+        Class<?>... ArgTypes
+      )
+      /* does the named class have a method with the specified argument types. */
       {
-        boolean DoesHaveActionBar;
+        boolean HasIt;
         try
           {
-            DoesHaveActionBar =
-                    Class.forName("android.view.MenuItem")
-                        .getDeclaredMethod("setShowAsAction", Integer.TYPE)
+            HasIt =
+                    Class.forName(ClassName)
+                        .getDeclaredMethod(MethodName, ArgTypes)
                 !=
                     null;
           }
         catch (NoSuchMethodException Nope)
           {
-            DoesHaveActionBar = false;
+            HasIt = false;
           }
         catch (ClassNotFoundException Huh)
           {
             throw new RuntimeException(Huh.toString());
           } /*try*/
-        HasActionBar = DoesHaveActionBar;
-      } /*static*/
+        return
+            HasIt;
+      } /*ClassHasMethod*/
+
+    public static final boolean HasActionBar =
+        ClassHasMethod
+          (
+            /*ClassName =*/ "android.view.MenuItem",
+            /*MethodName = */ "setShowAsAction",
+            /*ArgTypes =*/ Integer.TYPE
+          );
 
     protected abstract void OnCreateOptionsMenu();
       /* Do actual creation of options menu here. */
