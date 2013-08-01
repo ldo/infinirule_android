@@ -166,6 +166,8 @@ public class SlideView extends android.view.View
             (android.os.Vibrator)Context.getSystemService(android.content.Context.VIBRATOR_SERVICE);
         HighlightDrawable = Context.getResources().getDrawable(android.R.drawable.btn_default);
         HighlightDrawable.mutate();
+          /* unfortunately crashes on 2.1 and earlier
+            <http://code.google.com/p/android/issues/detail?id=17184> */
         HighlightDrawable.setState
           (
             new int[] {android.R.attr.state_pressed}

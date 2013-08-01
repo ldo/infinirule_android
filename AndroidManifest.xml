@@ -5,7 +5,7 @@
     android:versionName="15915.1"
 >
     <uses-sdk
-        android:minSdkVersion="7"
+        android:minSdkVersion="8"
         android:targetSdkVersion="14"
     />
     <uses-permission android:name="android.permission.VIBRATE"/>
