@@ -2,7 +2,7 @@ package nz.gen.geek_central.infinirule;
 /*
     Infinirule--let the user choose which scales to show.
 
-    Copyright 2011, 2012 Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
+    Copyright 2011-2013 Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
 
     This program is free software: you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -22,6 +22,13 @@ package nz.gen.geek_central.infinirule;
 public class ScalePicker extends android.app.Activity
   {
     public static final String NameID = "nz.gen.geek_central.infinirule.name";
+    private static final boolean HasSmoothScroll =
+        ActionActivity.ClassHasMethod
+          (
+            /*ClassName =*/ "android.widget.ListView",
+            /*MethodName = */ "smoothScrollToPosition",
+            /*ArgTypes =*/ Integer.TYPE
+          );
 
     private static boolean Reentered = false; /* sanity check */
     private static ScalePicker Current = null;
@@ -284,7 +291,14 @@ public class ScalePicker extends android.app.Activity
                   {
                     public void run()
                       {
-                        PickerListView.setSelection(ScrollTo);
+                        if (HasSmoothScroll)
+                          {
+                            PickerListView.smoothScrollToPosition(ScrollTo);
+                          }
+                        else
+                          {
+                            PickerListView.setSelection(ScrollTo);
+                          } /*if*/
                       } /*run*/
                   } /*Runnable*/
               );
