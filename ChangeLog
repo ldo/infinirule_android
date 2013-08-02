@@ -1,5 +1,9 @@
 Feature highlights:
 
+15919.0, 2013 August 2:
+    colour-code descending scales in help.
+    drop support for Android 2.1 because of crashing system bug.
+
 15915.1, 2013 July 29:
     support action bar on post-Gingerbread systems.
     fix one source of crashes.
