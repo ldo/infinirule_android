@@ -22,13 +22,6 @@ package nz.gen.geek_central.infinirule;
 public class ScalePicker extends android.app.Activity
   {
     public static final String NameID = "nz.gen.geek_central.infinirule.name";
-    private static final boolean HasSmoothScroll =
-        ActionActivity.ClassHasMethod
-          (
-            /*ClassName =*/ "android.widget.ListView",
-            /*MethodName = */ "smoothScrollToPosition",
-            /*ArgTypes =*/ Integer.TYPE
-          );
 
     private static boolean Reentered = false; /* sanity check */
     private static ScalePicker Current = null;
@@ -291,14 +284,7 @@ public class ScalePicker extends android.app.Activity
                   {
                     public void run()
                       {
-                        if (HasSmoothScroll)
-                          {
-                            PickerListView.smoothScrollToPosition(ScrollTo);
-                          }
-                        else
-                          {
-                            PickerListView.setSelection(ScrollTo);
-                          } /*if*/
+                        PickerListView.smoothScrollToPosition(ScrollTo);
                       } /*run*/
                   } /*Runnable*/
               );
