@@ -23,7 +23,7 @@ Museum at <http://sliderulemuseum.com/>.
 Contents:
     src/ -- Java sources for the Android app
     res/ -- resources for the Android app
-    art/ -- artwork for app icon
+    art/ -- artwork for app icons
     assets/ -- additional data (help file) for the Android app
     AndroidManifest.xml, build.xml, *.properties -- for driving
         Google's Android build tools (note that you will have to
