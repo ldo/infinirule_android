@@ -9,12 +9,12 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="225"
+   width="75"
    height="225"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.1 r9760"
-   sodipodi:docname="icon.svg"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="scale_texture.svg"
    inkscape:export-filename="/home/ldo/projects/infinirule/art/icon.png"
    inkscape:export-xdpi="14.4"
    inkscape:export-ydpi="14.4">
@@ -28,13 +28,13 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.8"
-     inkscape:cx="118.21733"
+     inkscape:cx="176.96733"
      inkscape:cy="114.81331"
      inkscape:document-units="pt"
      inkscape:current-layer="layer2"
      showgrid="false"
      units="pt"
-     inkscape:window-width="1113"
+     inkscape:window-width="1442"
      inkscape:window-height="904"
      inkscape:window-x="27"
      inkscape:window-y="48"
@@ -47,7 +47,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -56,18 +56,10 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-827.36221)"
-     style="display:inline"
-     sodipodi:insensitive="true">
-    <rect
-       style="color:#000000;fill:#fffffa;fill-opacity:0.85490196;fill-rule:nonzero;stroke:#000000;stroke-width:0.2947138;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
-       id="rect3841"
-       width="112.20528"
-       height="224.70529"
-       x="56.397358"
-       y="827.50952" />
+     style="display:inline">
     <path
        style="fill:none;stroke:#000000;stroke-width:1.0059104px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 113,827.42293 0,224.94157"
+       d="m 38.714286,827.42293 0,224.94157"
        id="path3004"
        inkscape:connector-curvature="0" />
   </g>
@@ -78,7 +70,7 @@
      style="display:inline">
     <g
        id="g3925"
-       transform="translate(0,44.951788)">
+       transform="translate(-74.285714,44.951788)">
       <path
          inkscape:connector-curvature="0"
          id="path3006"
@@ -145,7 +137,7 @@
          style="fill:none;stroke:#000000;stroke-width:1.2786628px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline" />
     </g>
     <g
-       transform="matrix(-1,0,0,1,225.89748,27.808931)"
+       transform="matrix(-1,0,0,1.0035714,151.61177,27.536193)"
        id="g3938">
       <path
          style="fill:none;stroke:#000000;stroke-width:1.2786628px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline"
@@ -211,30 +203,6 @@
          id="path3960"
          inkscape:connector-curvature="0"
          sodipodi:nodetypes="cc" />
-    </g>
-  </g>
-  <g
-     inkscape:groupmode="layer"
-     id="layer3"
-     inkscape:label="Cursor"
-     style="display:inline"
-     sodipodi:insensitive="true">
-    <g
-       transform="translate(0,-827.36221)"
-       id="g3854">
-      <rect
-         y="902.60193"
-         x="56.489689"
-         height="74.520622"
-         width="112.02062"
-         id="rect3069"
-         style="color:#000000;fill:#202020;fill-opacity:0.1254902;stroke:#000000;stroke-width:0.47937486;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
-      <path
-         sodipodi:nodetypes="cc"
-         inkscape:connector-curvature="0"
-         id="path3839"
-         d="m 57.120557,939.20245 110.758883,0"
-         style="fill:none;stroke:#000000;stroke-width:1.31951249px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
     </g>
   </g>
 </svg>
