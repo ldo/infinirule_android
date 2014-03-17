@@ -2,7 +2,7 @@ package nz.gen.geek_central.infinirule;
 /*
     Individual slide-rule scale definition and rendering for Infinirule.
 
-    Copyright 2011, 2012 Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
+    Copyright 2011, 2012, 2014 Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
 
     This program is free software: you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -2765,24 +2765,11 @@ public class Scales
 
     public static Scale DefaultScale
       (
-        int /*SCALE.**/ WhichScale
+        ScaleSlot WhichScale
       )
       {
-        final Scale Result;
-        switch (WhichScale)
-          {
-        default: /*sigh*/
-        case SCALE.UPPER:
-        case SCALE.LOWER:
-            Result = KnownScales.get("\u1e8b");
-        break;
-        case SCALE.TOP:
-        case SCALE.BOTTOM:
-            Result = KnownScales.get("\u1e8b²");
-        break;
-          } /*switch*/
         return
-            Result;
+            KnownScales.get(WhichScale.Edge ? "\u1e8b²" : "\u1e8b");
       } /*DefaultScale*/
 
-  } /*Scales*/
+  } /*Scales*/;

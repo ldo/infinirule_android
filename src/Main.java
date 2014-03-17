@@ -2,7 +2,7 @@ package nz.gen.geek_central.infinirule;
 /*
     Infinirule--the infinitely stretchable and scrollable slide rule, mainline.
 
-    Copyright 2011-2013 Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
+    Copyright 2011-2014 Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
 
     This program is free software: you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -103,7 +103,7 @@ public class Main
   /* request codes */
     private static final int SetFirstScaleRequest = 1;
       /* arbitrary starting point for contiguous range mapping to scale indexes */
-    private static final int SetLastPlusOneScaleRequest = SetFirstScaleRequest + SCALE.NR;
+    private static final int SetLastPlusOneScaleRequest = SetFirstScaleRequest + ScaleSlot.NR;
       /* exclusive end of contiguous range */
 
     private SlideView Slide;
@@ -263,12 +263,12 @@ public class Main
     void BuildActivityResultActions()
       {
         ActivityResultActions = new java.util.HashMap<Integer, RequestResponseAction>();
-        for (int WhichScale = 0; WhichScale < SCALE.NR; ++WhichScale)
+        for (ScaleSlot WhichScale : ScaleSlot.values())
           {
-            final int LocalWhichScale = WhichScale;
+            final ScaleSlot LocalWhichScale = WhichScale;
             ActivityResultActions.put
               (
-                SetFirstScaleRequest + WhichScale,
+                SetFirstScaleRequest + WhichScale.Val,
                 new RequestResponseAction()
                   {
                     public void Run
@@ -296,16 +296,16 @@ public class Main
         case Cursor:
             for (boolean Pasting = false;;)
               {
-                for (int WhichScale = 0; WhichScale < SCALE.NR; ++WhichScale)
+                for (ScaleSlot WhichScale : ScaleSlot.values())
                   {
-                    final int LocalWhichScale = WhichScale;
+                    final ScaleSlot LocalWhichScale = WhichScale;
                     AddContextMenuItem
                       (
                         /*Name =*/
                             String.format
                               (
                                 getString(Pasting ? R.string.paste_prompt : R.string.copy_prompt),
-                                getString(Global.ScaleNameID(WhichScale))
+                                getString(WhichScale.SelectorID)
                               ),
                         /*Action =*/
                             Pasting ?
@@ -345,7 +345,7 @@ public class Main
                                                               (
                                                                 getString(R.string.paste_range),
                                                                 Global.FormatNumber(Value),
-                                                                getString(Global.ScaleNameID(LocalWhichScale)),
+                                                                getString(LocalWhichScale.SelectorID),
                                                                 Global.FormatNumber(TheScale.ValueAt(0.0)),
                                                                 Global.FormatNumber(TheScale.ValueAt(1.0))
                                                               ),
@@ -400,14 +400,14 @@ public class Main
 
     public void OnScaleNameClick
       (
-        int /*SCALE.**/ WhichScale
+        ScaleSlot WhichScale
       )
       {
         ScalePicker.Launch
           (
             /*Caller =*/ Main.this,
             /*WhichScale =*/ WhichScale,
-            /*RequestCode =*/ SetFirstScaleRequest + WhichScale,
+            /*RequestCode =*/ SetFirstScaleRequest + WhichScale.Val,
             /*CurScaleName =*/ Slide.GetScale(WhichScale).Name()
           );
       } /*OnScaleNameClick*/

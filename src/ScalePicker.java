@@ -2,7 +2,7 @@ package nz.gen.geek_central.infinirule;
 /*
     Infinirule--let the user choose which scales to show.
 
-    Copyright 2011-2013 Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
+    Copyright 2011-2014 Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
 
     This program is free software: you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -26,7 +26,7 @@ public class ScalePicker extends android.app.Activity
     private static boolean Reentered = false; /* sanity check */
     private static ScalePicker Current = null;
 
-    private static int /*SCALE.**/ WhichScale;
+    private static ScaleSlot WhichScale;
     private static String CurScaleName;
 
     private android.widget.ListView PickerListView;
@@ -136,10 +136,7 @@ public class ScalePicker extends android.app.Activity
                                       (
                                         /*g =*/ null,
                                         /*Scale =*/ Scales.KnownScales.get(ThisItem.Name),
-                                        /*Upper =*/
-                                                WhichScale == SCALE.TOP
-                                            ||
-                                                WhichScale == SCALE.UPPER,
+                                        /*Upper =*/ WhichScale.Upper,
                                         /*Pos =*/ null,
                                         /*Alignment =*/ android.graphics.Paint.Align.LEFT,
                                         /*Color =*/ 0
@@ -175,10 +172,7 @@ public class ScalePicker extends android.app.Activity
                   (
                     /*g =*/ ItemDraw,
                     /*Scale =*/ Scales.KnownScales.get(ThisItem.Name),
-                    /*Upper =*/
-                            WhichScale == SCALE.TOP
-                        ||
-                            WhichScale == SCALE.UPPER,
+                    /*Upper =*/ WhichScale.Upper,
                     /*Pos =*/
                         new android.graphics.PointF
                           (
@@ -215,6 +209,7 @@ public class ScalePicker extends android.app.Activity
         android.os.Bundle SavedInstanceState
       )
       {
+        System.err.println("ScalePicker.onCreate"); /* debug */
         super.onCreate(SavedInstanceState);
         Current = this;
         setContentView(R.layout.scale_picker);
@@ -224,7 +219,7 @@ public class ScalePicker extends android.app.Activity
               (
                 Global.StdLocale,
                 getString(R.string.picker_prompt),
-                getString(Global.ScaleNameID(WhichScale))
+                getString(WhichScale.SelectorID)
               )
           );
         int ScrollToItem = 0;
@@ -335,7 +330,7 @@ public class ScalePicker extends android.app.Activity
     public static void Launch
       (
         android.app.Activity Caller,
-        int /*SCALE.**/ WhichScale,
+        ScaleSlot WhichScale,
         int RequestCode,
         String CurScaleName
       )
@@ -366,4 +361,4 @@ public class ScalePicker extends android.app.Activity
         Reentered = false;
       } /*Cleanup*/
 
-  } /*ScalePicker*/
+  } /*ScalePicker*/;

@@ -35,33 +35,6 @@ public class Global
                 android.util.DisplayMetrics.DENSITY_DEFAULT;
       } /*PixelDensity*/
 
-    public static int ScaleNameID
-      (
-        int /*SCALE.**/ WhichScale
-      )
-      /* returns the string ID for an adjective to describe the specified scale. */
-      {
-        final int SelectorID;
-        switch (WhichScale)
-          {
-        case SCALE.TOP:
-            SelectorID = R.string.top;
-        break;
-        default: /*sigh*/
-        case SCALE.UPPER:
-            SelectorID = R.string.upper;
-        break;
-        case SCALE.LOWER:
-            SelectorID = R.string.lower;
-        break;
-        case SCALE.BOTTOM:
-            SelectorID = R.string.bottom;
-        break;
-          } /*switch*/
-        return
-            SelectorID;
-      } /*ScaleNameID*/
-
     public static final int NrSigFigures = 4;
       /* for formatting reals */
 
@@ -74,4 +47,4 @@ public class Global
             String.format(StdLocale, String.format(StdLocale, "%%.%de", NrSigFigures), Value);
       } /*FormatNumber*/
 
-  } /*Global*/
+  } /*Global*/;

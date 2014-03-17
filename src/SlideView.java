@@ -43,7 +43,7 @@ public class SlideView extends android.view.View
       {
         public void OnScaleNameClick
           (
-            int /*SCALE.**/ WhichScale
+            ScaleSlot WhichScale
           );
       } /*ScaleNameClickAction*/;
 
@@ -52,12 +52,12 @@ public class SlideView extends android.view.View
       /* rotate entire display so rule is drawn in landscape orientation,
         but context menus pop up in orientation of activity, which is portrait */
     private float MinScaleButtonLength;
-    private final Scales.Scale[] CurScale = new Scales.Scale[SCALE.NR]; /* (-1.0 .. 0.0] */
-    private final double[] CurScaleOffset = new double[SCALE.NR];
+    private final Scales.Scale[] CurScale = new Scales.Scale[ScaleSlot.NR]; /* (-1.0 .. 0.0] */
+    private final double[] CurScaleOffset = new double[ScaleSlot.NR];
     private float CursorX; /* view x-coordinate */
     private int ScaleLength; /* in pixels */
     private static final float MaxZoom = 10000.0f; /* limit zooming to avoid integer overflow */
-    private int /*SCALE.**/ ScaleNameTapped = -1, OrigScaleNameTapped = -1;
+    private int ScaleNameTapped = -1, OrigScaleNameTapped = -1;
     private android.graphics.drawable.Drawable HighlightDrawable;
 
     private final android.os.Vibrator Vibrate;
@@ -116,7 +116,7 @@ public class SlideView extends android.view.View
           }
         else
           {
-            for (int i = 0; i < SCALE.NR; ++i)
+            for (int i = 0; i < ScaleSlot.NR; ++i)
               {
                 CurScaleOffset[i] = 0.0;
               } /*for*/
@@ -156,9 +156,9 @@ public class SlideView extends android.view.View
         super(Context, Attributes, DefaultStyle);
         Orient = new Matrix();
         InverseOrient = new Matrix();
-        for (int i = 0; i < SCALE.NR; ++i)
+        for (ScaleSlot i : ScaleSlot.values())
           {
-            CurScale[i] = Scales.DefaultScale(i);
+            CurScale[i.Val] = Scales.DefaultScale(i);
           } /*for*/
         ScaleLength = -1; /* proper value deferred to onLayout */
         MinScaleButtonLength = Context.getResources().getDimension(R.dimen.min_scale_button_length);
@@ -178,56 +178,56 @@ public class SlideView extends android.view.View
     public void SetScale
       (
         String NewScaleName,
-        int /*SCALE.**/ WhichScale
+        ScaleSlot WhichScale
       )
       {
-        CurScale[WhichScale] = Scales.KnownScales.get(NewScaleName);
+        CurScale[WhichScale.Val] = Scales.KnownScales.get(NewScaleName);
       /* need to reset scale offsets to keep scales on the same side in sync */
-        CurScaleOffset[WhichScale] = 0.0;
-        CurScaleOffset[WhichScale ^ 1] = 0.0;
+        CurScaleOffset[WhichScale.Val] = 0.0;
+        CurScaleOffset[WhichScale.WithFlags(WhichScale.Upper, !WhichScale.Edge).Val] = 0.0;
         invalidate();
       } /*SetScale*/
 
     public Scales.Scale GetScale
       (
-        int /*SCALE.**/ WhichScale
+        ScaleSlot WhichScale
       )
       {
         return
-            CurScale[WhichScale];
+            CurScale[WhichScale.Val];
       } /*GetScale*/
 
     public double GetCursorPos
       (
-        int /*SCALE.**/ ByScale
+        ScaleSlot ByScale
       )
       /* returns the cursor position relative to the specified scale. */
       {
-        final double Pos = ViewToScale(CursorX, CurScale[ByScale].Size(), CurScaleOffset[ByScale]);
+        final double Pos = ViewToScale(CursorX, CurScale[ByScale.Val].Size(), CurScaleOffset[ByScale.Val]);
         return
             Pos - Math.floor(Pos);
       } /*GetCursorPos*/
 
     public void SetCursorPos
       (
-        int /*SCALE.**/ ByScale,
+        ScaleSlot ByScale,
         double NewPos,
         boolean Animate
       )
       /* sets a new cursor position relative to the specified scale. */
       {
-        final double[] NewScaleOffset = new double[SCALE.NR];
-        for (int i = 0; i < SCALE.NR; ++i)
+        final double[] NewScaleOffset = new double[ScaleSlot.NR];
+        for (int i = 0; i < ScaleSlot.NR; ++i)
           {
             NewScaleOffset[i] = CurScaleOffset[i]; /* to begin with */
           } /*for*/
         final float ViewWidth = GetViewDimensions().x;
-        final Scales.Scale TheScale = CurScale[ByScale];
-        float NewCursorX = ScaleToView(NewPos, TheScale.Size(), CurScaleOffset[ByScale]);
+        final Scales.Scale TheScale = CurScale[ByScale.Val];
+        float NewCursorX = ScaleToView(NewPos, TheScale.Size(), CurScaleOffset[ByScale.Val]);
         if (TheScale.Wrap() && (NewCursorX < 0.0f || NewCursorX >= ViewWidth))
           {
-            final float Left = ScaleToView(0.0, TheScale.Size(), CurScaleOffset[ByScale]);
-            final float Right = ScaleToView(1.0, TheScale.Size(), CurScaleOffset[ByScale]);
+            final float Left = ScaleToView(0.0, TheScale.Size(), CurScaleOffset[ByScale.Val]);
+            final float Right = ScaleToView(1.0, TheScale.Size(), CurScaleOffset[ByScale.Val]);
             final float Length = Right - Left;
             final float NewX = NewCursorX - (float)Math.floor((NewCursorX - Left) / Length) * Length;
             if (NewX >= 0 && NewX < ViewWidth)
@@ -239,7 +239,7 @@ public class SlideView extends android.view.View
           {
           /* adjust offsets of all scales as necessary to bring cursor position into view */
             final float NewX = ViewWidth * 0.5f; /* new cursor position will be in middle */
-            for (int i = 0; i < SCALE.NR; ++i)
+            for (int i = 0; i < ScaleSlot.NR; ++i)
               {
                 NewScaleOffset[i] = FindScaleOffset
                   (
@@ -269,7 +269,7 @@ public class SlideView extends android.view.View
           }
         else
           {
-            for (int i = 0; i < SCALE.NR; ++i)
+            for (int i = 0; i < ScaleSlot.NR; ++i)
               {
                 CurScaleOffset[i] = NewScaleOffset[i];
               } /*for*/
@@ -343,38 +343,22 @@ public class SlideView extends android.view.View
 
     PointF ScaleNamePos
       (
-        int WhichScale
+        ScaleSlot WhichScale
       )
       {
-        final Rect TextBounds = Scales.GetCharacterCellBounds();
-        float Y = GetViewDimensions().y * 0.5f;
-        switch (WhichScale)
-          {
-        case SCALE.TOP:
-            Y +=  - Scales.HalfLayoutHeight + (Scales.PrimaryMarkerLength - TextBounds.top) * 1.5f;
-        break;
-        case SCALE.UPPER:
-            Y += - (Scales.PrimaryMarkerLength + TextBounds.bottom) * 1.5f;
-        break;
-        case SCALE.LOWER:
-            Y += (Scales.PrimaryMarkerLength - TextBounds.top) * 1.5f;
-        break;
-        case SCALE.BOTTOM:
-            Y += Scales.HalfLayoutHeight - (Scales.PrimaryMarkerLength + TextBounds.bottom) * 1.5f;
-        break;
-          } /*switch*/
+        final float Y = GetViewDimensions().y * 0.5f + WhichScale.YOffset();
         return
             new PointF(Scales.PrimaryMarkerLength / 2.0f, Y);
       } /*ScaleNamePos*/
 
     Rect ScaleNameBounds
       (
-        int WhichScale
+        ScaleSlot WhichScale
       )
       {
         final Rect NameBounds = Scales.GetCharacterCellBounds();
         final PointF NamePos = ScaleNamePos(WhichScale);
-        final float HalfHeight = Math.abs(ScaleNamePos(WhichScale ^ 1).y - NamePos.y) / 2.0f;
+        final float HalfHeight = Math.abs(ScaleNamePos(WhichScale.WithFlags(WhichScale.Upper, !WhichScale.Edge)).y - NamePos.y) / 2.0f;
           /* make label buttons as tall as possible without running into adjacent ones */
         final float LeftMargin = (NameBounds.right - NameBounds.left) * 0.5f;
         final float NameMid = (NameBounds.top + NameBounds.bottom) / 2.0f;
@@ -389,15 +373,15 @@ public class SlideView extends android.view.View
     float DrawScaleName
       (
         android.graphics.Canvas g, /* null to only measure text */
-        int WhichScale
+        ScaleSlot WhichScale
       )
       {
         return
             Scales.DrawScaleName
               (
                 /*g =*/ g,
-                /*TheScale =*/ CurScale[WhichScale],
-                /*Upper =*/ WhichScale <= SCALE.UPPER,
+                /*TheScale =*/ CurScale[WhichScale.Val],
+                /*Upper =*/ WhichScale.Upper,
                 /*Pos =*/ ScaleNamePos(WhichScale),
                 /*Alignment =*/ Paint.Align.LEFT,
                 /*Color =*/ Scales.MainColor
@@ -429,9 +413,9 @@ public class SlideView extends android.view.View
                 /*paint =*/ BGHow
               );
           }
-        for (int i = 0; i < SCALE.NR; ++i)
+        for (ScaleSlot i : ScaleSlot.values())
           {
-            if (i == ScaleNameTapped)
+            if (i.Val == ScaleNameTapped)
               {
                 HighlightDrawable.setBounds(ScaleNameBounds(i));
                 HighlightDrawable.draw(g);
@@ -443,11 +427,7 @@ public class SlideView extends android.view.View
           {
             for (boolean Edge = false;;)
               {
-                final int ScaleIndex =
-                    Upper ?
-                        Edge ? SCALE.TOP : SCALE.UPPER
-                    :
-                        Edge ? SCALE.BOTTOM : SCALE.LOWER;
+                final int ScaleIndex = ScaleSlot.WithFlags(Upper, Edge).Val;
                 final Scales.Scale TheScale = CurScale[ScaleIndex];
                 final int ScaleRepeat =
                         (int)(ViewDimensions.x + ScaleLength * TheScale.Size() - 1)
@@ -562,8 +542,8 @@ public class SlideView extends android.view.View
         final android.view.animation.Interpolator AnimFunction;
         final double StartTime, EndTime;
         final double[]
-            StartScaleOffset = new double[SCALE.NR],
-            EndScaleOffset = new double[SCALE.NR];
+            StartScaleOffset = new double[ScaleSlot.NR],
+            EndScaleOffset = new double[ScaleSlot.NR];
         final float
             StartCursorX, EndCursorX;
         final int
@@ -574,8 +554,8 @@ public class SlideView extends android.view.View
             android.view.animation.Interpolator AnimFunction,
             double StartTime,
             double EndTime,
-            double[/*SCALE.NR*/] StartScaleOffset,
-            double[/*SCALE.NR*/] EndScaleOffset,
+            double[/*ScaleSlot.NR*/] StartScaleOffset,
+            double[/*ScaleSlot.NR*/] EndScaleOffset,
             float StartCursorX,
             float EndCursorX,
             int StartScaleLength,
@@ -585,7 +565,7 @@ public class SlideView extends android.view.View
             this.AnimFunction = AnimFunction;
             this.StartTime = StartTime;
             this.EndTime = EndTime;
-            for (int i = 0; i < SCALE.NR; ++i)
+            for (int i = 0; i < ScaleSlot.NR; ++i)
               {
                 this.StartScaleOffset[i] = StartScaleOffset[i];
                 this.EndScaleOffset[i] = EndScaleOffset[i];
@@ -613,7 +593,7 @@ public class SlideView extends android.view.View
                                 (EndTime - StartTime)
                         )
                       );
-                for (int i = 0; i < SCALE.NR; ++i)
+                for (int i = 0; i < ScaleSlot.NR; ++i)
                   {
                     CurScaleOffset[i] =
                             StartScaleOffset[i]
@@ -682,8 +662,8 @@ public class SlideView extends android.view.View
         case MovingLowerScale:
             for (boolean Upper = false;;)
               {
-                final int i = Upper ? SCALE.TOP : SCALE.BOTTOM;
-                final int j = Upper ? SCALE.UPPER : SCALE.LOWER;
+                final int i = ScaleSlot.WithFlags(Upper, true).Val;
+                final int j = ScaleSlot.WithFlags(Upper, false).Val;
                 final double Scale1Size = CurScale[i].Size();
                 final double Scale2Size = CurScale[j].Size();
                 CurScaleOffset[i] =
@@ -751,19 +731,20 @@ public class SlideView extends android.view.View
             else
               {
               /* only process tap on labels if cursor is not covering them */
-                for (int /*SCALE.**/ WhichScale = 0;;)
+                for (int i = 0;;)
                   {
-                    if (WhichScale == SCALE.NR)
+                    if (i == ScaleSlot.NR)
                         break;
+                    final ScaleSlot WhichScale = ScaleSlot.values()[i];
                     if (ScaleNameBounds(WhichScale).contains((int)LastMouse1.x, (int)LastMouse1.y))
                       {
-                        ScaleNameTapped = WhichScale;
+                        ScaleNameTapped = WhichScale.Val;
                         OrigScaleNameTapped = ScaleNameTapped;
                         LastMouse1 = null;
                         invalidate();
                         break;
                       } /*if*/
-                    ++WhichScale;
+                    ++i;
                   } /*for*/
                 if (LastMouse1 != null)
                   {
@@ -832,8 +813,8 @@ public class SlideView extends android.view.View
             if (OrigScaleNameTapped >= 0)
               {
                 final PointF MoveWhere = GetPoint(TheEvent.getX(Mouse1Index), TheEvent.getY(Mouse1Index));
-                final int /*SCALE.**/ NewScaleNameTapped =
-                    ScaleNameBounds(OrigScaleNameTapped)
+                final int NewScaleNameTapped =
+                    ScaleNameBounds(ScaleSlot.WithVal(OrigScaleNameTapped))
                         .contains((int)MoveWhere.x, (int)MoveWhere.y)
                     ?
                         OrigScaleNameTapped
@@ -916,23 +897,23 @@ public class SlideView extends android.view.View
                                     ThisMouseLower.y
                                   );
                               } /*if*/
-                            for (int i = 0; i < SCALE.NR; ++i)
+                            for (ScaleSlot i : ScaleSlot.values())
                               {
-                                CurScaleOffset[i] = FindScaleOffset
+                                CurScaleOffset[i.Val] = FindScaleOffset
                                   (
-                                    i == SCALE.TOP || i == SCALE.UPPER ?
+                                    i.Upper ?
                                         ThisMouseUpper.x
                                     :
                                         ThisMouseLower.x,
-                                    CurScale[i].Size(),
+                                    CurScale[i.Val].Size(),
                                     ViewToScale
                                       (
-                                        i == SCALE.TOP || i == SCALE.UPPER ?
+                                        i.Upper ?
                                             LastMouseUpper.x
                                         :
                                             LastMouseLower.x,
-                                        CurScale[i].Size(),
-                                        CurScaleOffset[i]
+                                        CurScale[i.Val].Size(),
+                                        CurScaleOffset[i.Val]
                                       )
                                   );
                               } /*for*/
@@ -1069,7 +1050,7 @@ public class SlideView extends android.view.View
                   {
                     if (DoScaleNameClick != null)
                       {
-                        DoScaleNameClick.OnScaleNameClick(ScaleNameTapped);
+                        DoScaleNameClick.OnScaleNameClick(ScaleSlot.WithVal(ScaleNameTapped));
                       } /*if*/
                     invalidate();
                   } /*if*/
@@ -1133,18 +1114,17 @@ public class SlideView extends android.view.View
     Save/restore state
 */
 
-    static final String[] SaveItemName =
-        new String[/*SCALE.NR*/] {"topscale", "upperscale", "lowerscale", "bottomscale"};
+    static final String ItemNameSuffix = "scale";
     static final String SaveItemOffsetSuffix = "_offset";
 
     public android.os.Bundle SaveState()
       /* returns a snapshot of the current slide rule state. */
       {
         final android.os.Bundle SavedState = new android.os.Bundle();
-        for (int i = 0; i < SCALE.NR; ++i)
+        for (ScaleSlot i : ScaleSlot.values())
           {
-            SavedState.putString(SaveItemName[i], CurScale[i].Name());
-            SavedState.putDouble(SaveItemName[i] + SaveItemOffsetSuffix, CurScaleOffset[i]);
+            SavedState.putString(i.Name + ItemNameSuffix, CurScale[i.Val].Name());
+            SavedState.putDouble(i.Name + ItemNameSuffix + SaveItemOffsetSuffix, CurScaleOffset[i.Val]);
           } /*for*/
         SavedState.putFloat("cursor_x", CursorX);
         SavedState.putFloat("scalezoom", ScaleLength / GetViewDimensions().x);
@@ -1162,15 +1142,16 @@ public class SlideView extends android.view.View
       {
         if (LayoutDone)
           {
-            for (int i = 0; i < SCALE.NR; ++i)
+            for (ScaleSlot i : ScaleSlot.values())
               {
-                Scales.Scale TheScale = Scales.KnownScales.get(SavedState.getString(SaveItemName[i]));
+                Scales.Scale TheScale =
+                    Scales.KnownScales.get(SavedState.getString(i.Name + ItemNameSuffix));
                 if (TheScale == null)
                   {
                     TheScale = Scales.DefaultScale(i);
                   } /*if*/
-                CurScale[i] = TheScale;
-                CurScaleOffset[i] = SavedState.getDouble(SaveItemName[i] + SaveItemOffsetSuffix, 0.0);
+                CurScale[i.Val] = TheScale;
+                CurScaleOffset[i.Val] = SavedState.getDouble(i.Name + ItemNameSuffix + SaveItemOffsetSuffix, 0.0);
               } /*for*/
             CursorX = Math.max(0.0f, Math.min(SavedState.getFloat("cursor_x", 0.0f), GetViewDimensions().x));
             ScaleLength = (int)(SavedState.getFloat("scalezoom", 1.0f) * GetViewDimensions().x);
@@ -1212,4 +1193,4 @@ public class SlideView extends android.view.View
           } /*if*/
       } /*onLayout*/
 
-  } /*SlideView*/
+  } /*SlideView*/;
