@@ -13,6 +13,14 @@
     />
     <!-- need to disable hardware acceleration because of getMatrix/setMatrix
         inconsistency that happens with it enabled -->
+    <CheckBox
+        android:button="@drawable/ic_padlock"
+        android:id="@+id/slide_lock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+    />
     <ZoomControls
         android:id="@+id/viewzoomer"
         android:layout_width="wrap_content"

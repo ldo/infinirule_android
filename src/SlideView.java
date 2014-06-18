@@ -2,7 +2,7 @@ package nz.gen.geek_central.infinirule;
 /*
     Slide-rule display widget for Infinirule.
 
-    Copyright 2011-2013 Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
+    Copyright 2011-2014 Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
 
     This program is free software: you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -56,6 +56,7 @@ public class SlideView extends android.view.View
     private final double[] CurScaleOffset = new double[ScaleSlot.NR];
     private float CursorX; /* view x-coordinate */
     private int ScaleLength; /* in pixels */
+    private boolean SlideLocked = false;
     private static final float MaxZoom = 10000.0f; /* limit zooming to avoid integer overflow */
     private int ScaleNameTapped = -1, OrigScaleNameTapped = -1;
     private android.graphics.drawable.Drawable HighlightDrawable;
@@ -749,7 +750,7 @@ public class SlideView extends android.view.View
                 if (LastMouse1 != null)
                   {
                   /* tap on actual scales */
-                    if (LastMouse1.y > ViewDimensions.y / 2.0f)
+                    if (LastMouse1.y > ViewDimensions.y / 2.0f && !SlideLocked)
                       {
                         MovingWhat = MovingState.MovingLowerScale;
                       }
@@ -868,6 +869,7 @@ public class SlideView extends android.view.View
                           )
                           {
                           /* simultaneous scrolling of both scales */
+                          /* note SlideLocked has no effect here */
                             PointF
                                 ThisMouseUpper, ThisMouseLower, LastMouseUpper, LastMouseLower;
                             if (ThisMouse1.y < ViewDimensions.y / 2.0f)
@@ -1109,6 +1111,20 @@ public class SlideView extends android.view.View
           );
         invalidate();
       } /*ZoomBy*/
+
+    public void SetSlideLocked
+      (
+        boolean Locked
+      )
+      {
+        SlideLocked = Locked;
+      } /*SetSlideLocked*/
+
+    public boolean GetSlideLocked()
+      {
+        return
+            SlideLocked;
+      } /*GetSlideLocked*/
 
 /*
     Save/restore state

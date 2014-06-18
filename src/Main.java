@@ -107,6 +107,7 @@ public class Main
       /* exclusive end of contiguous range */
 
     private SlideView Slide;
+    private android.widget.CheckBox SlideLock;
     private android.widget.ZoomControls Zoomer;
     private android.text.ClipboardManager Clipboard;
 
@@ -130,6 +131,22 @@ public class Main
         Slide = (SlideView)findViewById(R.id.slide_view);
         Slide.SetContextMenuAction(this);
         Slide.SetScaleNameClickAction(this);
+        SlideLock = (android.widget.CheckBox)findViewById(R.id.slide_lock);
+        SlideLock.setChecked(Slide.GetSlideLocked());
+        SlideLock.setOnCheckedChangeListener
+          (
+            new android.widget.CheckBox.OnCheckedChangeListener()
+              {
+                public void onCheckedChanged
+                  (
+                    android.widget.CompoundButton TheButton,
+                    boolean IsChecked
+                  )
+                  {
+                    Slide.SetSlideLocked(IsChecked);
+                  } /*onCheckedChanged*/
+              } /*CheckBox.OnCheckedChangeListener*/
+          );
         Zoomer = (android.widget.ZoomControls)findViewById(R.id.viewzoomer);
         if
           (
