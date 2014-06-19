@@ -2729,6 +2729,7 @@ public class Scales
                         new LogXScale(),
                         new LnXScale(),
                         new XNScale("\u03c0\u1e8b", 1, - Math.log10(Math.PI)),
+                        new XNScale("1/(\u03c0\u1e8b)", -1, - Math.log10(Math.PI)),
                         new ASinATanXScale(),
                         new ASinACosXScale(false),
                         new ASinACosXScale(true),
