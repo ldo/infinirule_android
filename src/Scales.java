@@ -1151,7 +1151,7 @@ public class Scales
         public boolean Wrap()
           {
             return
-                false;
+                true;
           } /*Wrap*/
 
         public double ValueAt
