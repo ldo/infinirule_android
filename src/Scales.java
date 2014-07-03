@@ -1545,6 +1545,117 @@ public class Scales
           } /*Draw*/
       } /*ASinACosXScale*/;
 
+    public static class ACosSmallXScale implements Scale
+      /* acos X in degrees, > 0.8° < 8° */
+      {
+        public ACosSmallXScale()
+          {
+          } /*ACosSmallXScale*/
+
+        public String Name()
+          {
+            return
+                "0.8° < acos° (\u1e8b + 0.99) < 8°";
+          } /*Name*/
+
+        public double Size()
+          {
+            return
+                1.0;
+          } /*Size*/
+
+        public boolean Wrap()
+          {
+            return
+                false;
+          } /*Wrap*/
+
+        public double ValueAt
+          (
+            double Pos
+          )
+          {
+            final double T = Math.pow(10.0, Pos - 3.0);
+            return
+                Math.toDegrees(Math.acos(T + 0.99));
+          } /*ValueAt*/
+
+        public double PosAt
+          (
+            double Value
+          )
+          {
+            final double T = Math.toRadians(Value);
+            return
+                    Math.log10(Math.cos(T) - 0.99) + 3.0;
+          } /*PosAt*/
+
+        public SpecialMarker[] SpecialMarkers()
+          {
+            return
+                null;
+          } /*SpecialMarker*/
+
+        public void Draw
+          (
+            Canvas g,
+            double Offset,
+            int ScaleLength,
+            int ViewWidth, /* visible X coords are in [0.0 .. ViewWidth) */
+            boolean TopEdge
+          )
+          {
+            final double[] GradLabels = new double[]
+                {
+                    8.0,
+                    7.0,
+                    6.0,
+                    5.0,
+                    4.0,
+                    3.0,
+                    2.0,
+                    1.0,
+                    0.0,
+                };
+            final int[] NrDivisions = new int[]
+                {
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                };
+            final double Leftmost = Math.toDegrees(Math.acos(0.991));
+            final double Rightmost = 0.0;
+            DrawGraduations
+              (
+                /*g =*/ g,
+                /*Offset =*/ Offset,
+                /*ScaleLength =*/ ScaleLength,
+                /*ViewWidth =*/ ViewWidth,
+                /*TopEdge =*/ TopEdge,
+                /*TheScale =*/ this,
+                /*PrimaryGraduations =*/
+                    MakeGradLabels
+                      (
+                        /*Values =*/ GradLabels,
+                        /*NrDecimals =*/ 1,
+                        /*MinDecimals =*/ 1,
+                        /*Multiplier =*/ 1,
+                        /*PlusExponents =*/ false,
+                        /*FromExponent =*/ 0,
+                        /*ToExponent =*/ 0
+                      ),
+                /*NrDivisions =*/ NrDivisions,
+                /*Leftmost =*/ Leftmost,
+                /*Rightmost =*/ Rightmost
+              );
+          } /*Draw*/
+      } /*ACosSmallXScale*/;
+
     public static class ATanXScale implements Scale
       /* atan X in degrees, > 5.7° */
       {
@@ -2733,6 +2844,7 @@ public class Scales
                         new ASinATanXScale(),
                         new ASinACosXScale(false),
                         new ASinACosXScale(true),
+                        new ACosSmallXScale(),
                         new ATanXScale(),
                         new ASinhCoshXScale(false, -1),
                         new ASinhCoshXScale(true, 0),
