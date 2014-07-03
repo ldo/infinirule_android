@@ -1151,6 +1151,130 @@ public class Scales
           } /*Draw*/
       } /*XNScale*/;
 
+    public static class XNthRootScale implements Scale
+      {
+        public final String ScaleName;
+        public final int InvPower, InvPowerPart;
+        public final double Offset;
+
+        public XNthRootScale
+          (
+            String ScaleName,
+            int InvPower, /* > 1 or < -1 */
+            int InvPowerPart, /* in [0 .. abs(InvPower)) */
+            double Offset
+          )
+          {
+            this.ScaleName = ScaleName;
+            this.InvPower = InvPower;
+            this.InvPowerPart = InvPowerPart;
+            this.Offset = Offset;
+          } /*XNthRootScale*/
+
+        public String Name()
+          {
+            return
+                ScaleName;
+          } /*Name*/
+
+        public double Size()
+          {
+            return
+                1.0;
+          } /*Size*/
+
+        public boolean Wrap()
+          {
+            return
+                false;
+          } /*Wrap*/
+
+        public double ValueAt
+          (
+            double Pos
+          )
+          {
+            Pos -= Offset;
+            return
+                    Math.pow
+                      (
+                        10.0,
+                        ((InvPower > 0 ? Pos : 1.0 - Pos) + InvPowerPart) / Math.abs(InvPower)
+                      )
+                /
+                    10.0;
+          } /*ValueAt*/
+
+        public double PosAt
+          (
+            double Value
+          )
+          {
+            return
+                        (InvPower > 0 ?
+                            Math.log10(Value * 10.0)
+                        :
+                            1.0 - Math.log10(Value * 10.0)
+                        )
+                    *
+                        Math.abs(InvPower)
+                -
+                    InvPowerPart
+                +
+                    Offset;
+          } /*PosAt*/
+
+        public SpecialMarker[] SpecialMarkers()
+          {
+            return
+                null;
+          } /*SpecialMarkers*/
+
+        public void Draw
+          (
+            Canvas g,
+            double Offset,
+            int ScaleLength,
+            int ViewWidth, /* visible X coords are in [0.0 .. ViewWidth) */
+            boolean TopEdge
+          )
+          {
+            final int LowGradLabel =
+                (int)Math.floor(Math.pow(10.0, (double)InvPowerPart / Math.abs(InvPower)));
+            final int HighGradLabel =
+                (int)Math.ceil(Math.pow(10.0, (InvPowerPart + 1.0) / Math.abs(InvPower)));
+            final int NrGradLabels = HighGradLabel - LowGradLabel + 1;
+            final double[] GradLabels = new double[NrGradLabels];
+            for (int i = 0; i < NrGradLabels; ++i)
+              {
+                GradLabels[i] = (i + LowGradLabel) / 10.0;
+              } /*for*/
+            DrawGraduations
+              (
+                /*g =*/ g,
+                /*Offset =*/ Offset,
+                /*ScaleLength =*/ ScaleLength,
+                /*ViewWidth =*/ ViewWidth,
+                /*TopEdge =*/ TopEdge,
+                /*TheScale =*/ this,
+                /*PrimaryGraduations =*/
+                    MakeGradLabels
+                      (
+                        /*Values =*/ GradLabels,
+                        /*NrDecimals =*/ 0,
+                        /*MinDecimals =*/ 0,
+                        /*Multiplier =*/ 10,
+                        /*PlusExponents =*/ false,
+                        /*FromExponent =*/ 0,
+                        /*ToExponent =*/ 0
+                      ),
+                /*NrDivisions =*/ MakeRepeat(10, NrGradLabels - 1),
+                /*Leftmost =*/ GradLabels[0],
+                /*Rightmost =*/ GradLabels[GradLabels.length - 1]
+              );
+          } /*Draw*/
+      } /*XNthRootScale*/;
+
     public static class LogXScale implements Scale
       {
         public String Name()
@@ -2796,6 +2920,8 @@ public class Scales
                         new XNScale("\u1e8b³", 3, 0.0),
                         new XNScale("1/\u1e8b²", -2, 0.0),
                         new XNScale("1/\u1e8b³", -3, 0.0),
+                        new XNthRootScale("√\u1e8b", 2, 0, 0.0),
+                        new XNthRootScale("√10\u1e8b", 2, 1, 0.0),
                         new LogXScale(),
                         new LnXScale(),
                         new XNScale("\u03c0\u1e8b", 1, - Math.log10(Math.PI)),

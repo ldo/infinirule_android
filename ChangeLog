@@ -5,6 +5,7 @@ Feature highlights:
     separate out asin and atan scales < 5.7°, since Infinirule has
     enough accuracy to distinguish between them.
     Long-tapping on scales no longer brings up legacy message.
+    Add √x and √10x (R₁ and R₂) scales.
 
 16240.1, 2014 June 19:
     add 1/(πx) (CIF/DIF) scale.
