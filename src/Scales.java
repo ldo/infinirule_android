@@ -218,6 +218,21 @@ public class Scales
             new Rect(CharacterCellBounds);
       } /*GetCharacterCellBounds*/
 
+    public static int[] MakeRepeat
+      (
+        int Value,
+        int NrCopies
+      )
+      {
+        final int[] Result = new int[NrCopies];
+        for (int i = 0; i < NrCopies; ++i)
+          {
+            Result[i] = Value;
+          } /*for*/
+        return
+            Result;
+      } /*MakeRepeat*/
+
     public static class GradLabel
       /* represents a text label for a scale graduation. */
       {
@@ -913,11 +928,6 @@ public class Scales
             GradLabels[NrPrimarySteps > 0 ? i : NrGradLabels - 1 - i] =
                 (i + (IncludeZero ? 0 : 1)) / Math.abs((double)NrPrimarySteps);
           } /*for*/
-        final int[] NrDivisions = new int[NrGradLabels - 1];
-        for (int i = 0; i < NrDivisions.length; ++i)
-          {
-            NrDivisions[i] = 10;
-          } /*for*/
         DrawGraduations
           (
             /*g =*/ g,
@@ -937,7 +947,7 @@ public class Scales
                     /*FromExponent =*/ 0,
                     /*ToExponent =*/ 0
                   ),
-            /*NrDivisions =*/ NrDivisions,
+            /*NrDivisions =*/ MakeRepeat(10, NrGradLabels - 1),
             /*Leftmost =*/ GradLabels[0],
             /*Rightmost =*/ GradLabels[GradLabels.length - 1]
           );
@@ -1098,8 +1108,7 @@ public class Scales
           )
           {
             return
-                    (
-                    Power > 0 ?
+                    (Power > 0 ?
                         Math.log10(Value * 10.0)
                     :
                         1.0 - Math.log10(Value * 10.0)
@@ -1270,11 +1279,6 @@ public class Scales
               {
                 GradLabels[i] = i / 10.0;
               } /*for*/
-            final int[] NrDivisions = new int[NrGradLabels - 1];
-            for (int i = 0; i < NrDivisions.length; ++i)
-              {
-                NrDivisions[i] = 10;
-              } /*for*/
             DrawGraduations
               (
                 /*g =*/ g,
@@ -1294,7 +1298,7 @@ public class Scales
                         /*FromExponent =*/ 0,
                         /*ToExponent =*/ 0
                       ),
-                /*NrDivisions =*/ NrDivisions,
+                /*NrDivisions =*/ MakeRepeat(10, NrGradLabels - 1),
                 /*Leftmost =*/ GradLabels[0],
                 /*Rightmost =*/ ValueAt(1.0)
               );
@@ -1691,17 +1695,7 @@ public class Scales
                     1.0,
                     0.0,
                 };
-            final int[] NrDivisions = new int[]
-                {
-                    10,
-                    10,
-                    10,
-                    10,
-                    10,
-                    10,
-                    10,
-                    10,
-                };
+            final int[] NrDivisions = MakeRepeat(10, 8);
             final double Leftmost = Math.toDegrees(Math.acos(0.991));
             final double Rightmost = 0.0;
             DrawGraduations
@@ -2126,23 +2120,7 @@ public class Scales
                             0.15,
                             0.10,
                         };
-                    NrDivisions = new int[]
-                        {
-                            5,
-                            5,
-                            5,
-                            5,
-                            5,
-                            5,
-                            5,
-                            5,
-                            5,
-                            5,
-                            5,
-                            5,
-                            5,
-                            5,
-                        };
+                    NrDivisions = MakeRepeat(5, 14);
                     Leftmost = Math.pow(10.0, -0.1);
                     Rightmost = Math.pow(10.0, -1);
                     NrDecimals = 2;
@@ -2302,20 +2280,7 @@ public class Scales
                             1.10,
                             1.11,
                         };
-                    NrDivisions = new int[]
-                        {
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                        };
+                    NrDivisions = MakeRepeat(10, 11);
                     Leftmost = Math.exp(0.01);
                     Rightmost = Math.exp(0.1);
                     NrDecimals = 3;
@@ -2336,20 +2301,7 @@ public class Scales
                             1.100,
                             1.101,
                         };
-                    NrDivisions = new int[]
-                        {
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                        };
+                    NrDivisions = MakeRepeat(10, 11);
                     Leftmost = Math.exp(0.001);
                     Rightmost = Math.exp(0.01);
                     NrDecimals = 4;
@@ -2422,19 +2374,7 @@ public class Scales
                             0.91,
                             0.90,
                         };
-                    NrDivisions = new int[]
-                        {
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                        };
+                    NrDivisions = MakeRepeat(10, 10);
                     Leftmost = Math.exp(-0.01);
                     Rightmost = Math.exp(-0.1);
                     NrDecimals = 2;
@@ -2454,19 +2394,7 @@ public class Scales
                             0.991,
                             0.990,
                         };
-                    NrDivisions = new int[]
-                        {
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                        };
+                    NrDivisions = MakeRepeat(10, 10);
                     Leftmost = Math.exp(-0.001);
                     Rightmost = Math.exp(-0.01);
                     NrDecimals = 3;
@@ -2608,12 +2536,7 @@ public class Scales
                             2.0,
                             3.0,
                         };
-                    NrDivisions = new int[]
-                        {
-                            10,
-                            10,
-                            10,
-                        };
+                    NrDivisions = MakeRepeat(10, 3);
                     NrDecimals = 0;
                 break;
                 default: /*sigh*/
@@ -2625,12 +2548,7 @@ public class Scales
                             5.0,
                             6.0,
                         };
-                    NrDivisions = new int[]
-                        {
-                            10,
-                            10,
-                            10,
-                        };
+                    NrDivisions = MakeRepeat(10, 3);
                     NrDecimals = 1;
                 break;
                   } /*switch*/
@@ -2652,17 +2570,7 @@ public class Scales
                             0.8,
                             0.9,
                         };
-                    NrDivisions = new int[]
-                        {
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                            10,
-                        };
+                    NrDivisions = MakeRepeat(10, 8);
                     NrDecimals = 2;
                 break;
                 default: /*sigh*/
@@ -2675,13 +2583,7 @@ public class Scales
                             2.0,
                             3.0,
                         };
-                    NrDivisions = new int[]
-                        {
-                            10,
-                            10,
-                            10,
-                            10,
-                        };
+                    NrDivisions = MakeRepeat(10, 4);
                     NrDecimals = 1;
                 break;
                 case 1:
@@ -2692,12 +2594,7 @@ public class Scales
                             5.0,
                             6.0,
                         };
-                    NrDivisions = new int[]
-                        {
-                            10,
-                            10,
-                            10,
-                        };
+                    NrDivisions = MakeRepeat(10, 3);
                     NrDecimals = 1;
                 break;
                   } /*switch*/
@@ -2822,19 +2719,7 @@ public class Scales
                         0.1,
                         0.11,
                     };
-                NrDivisions = new int[]
-                    {
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                        10,
-                    };
+                NrDivisions = MakeRepeat(10, 10);
                 Rightmost = ValueAt(1.0);
             break;
             default: /*sigh*/
