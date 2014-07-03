@@ -107,6 +107,14 @@ public class Scales
 
       } /*Scale*/;
 
+    public interface Function
+      {
+        public double F
+          (
+            double X
+          );
+      } /*Function*/;
+
     public static class SpecialMarker
       {
         public final String Name;
@@ -1296,10 +1304,76 @@ public class Scales
     public static class ASinATanXScale implements Scale
       /* 0.57° < asin/atan X in degrees ≤ 5.7° */
       {
+        public final boolean TanScale;
+        public final Function Func, AFunc;
+
+        public ASinATanXScale
+          (
+            boolean TanScale
+          )
+          {
+            this.TanScale = TanScale;
+            this.Func =
+                TanScale ?
+                    new Function()
+                      {
+                        public double F
+                          (
+                            double X
+                          )
+                          {
+                            return
+                                Math.tan(X);
+                          } /*F*/
+                      } /*Function*/
+               :
+                    new Function()
+                      {
+                        public double F
+                          (
+                            double X
+                          )
+                          {
+                            return
+                                Math.sin(X);
+                          } /*F*/
+                      } /*Function*/;
+            this.AFunc =
+                TanScale ?
+                    new Function()
+                      {
+                        public double F
+                          (
+                            double X
+                          )
+                          {
+                            return
+                                Math.atan(X);
+                          } /*F*/
+                      } /*Function*/
+               :
+                    new Function()
+                      {
+                        public double F
+                          (
+                            double X
+                          )
+                          {
+                            return
+                                Math.asin(X);
+                          } /*F*/
+                      } /*Function*/;
+          } /*ASinATanXScale*/
+
         public String Name()
           {
             return
-                "0.57° < asin°|atan° \u1e8b ≤ 5.7°";
+                String.format
+                  (
+                    Global.StdLocale,
+                    "0.57° < a%s° \u1e8b ≤ 5.7°",
+                    TanScale ? "tan" : "sin"
+                  );
           } /*Name*/
 
         public double Size()
@@ -1320,7 +1394,7 @@ public class Scales
           )
           {
             return
-                Math.pow(10.0, Pos) * 18.0 / Math.PI;
+                Math.toDegrees(AFunc.F(Math.pow(10.0, Pos - 1)));
           } /*ValueAt*/
 
         public double PosAt
@@ -1329,7 +1403,7 @@ public class Scales
           )
           {
             return
-                Math.log10(Value * Math.PI / 18.0);
+                Math.log10(Func.F(Math.toRadians(Value))) + 1;
           } /*PosAt*/
 
         public SpecialMarker[] SpecialMarkers()
@@ -2841,7 +2915,8 @@ public class Scales
                         new LnXScale(),
                         new XNScale("\u03c0\u1e8b", 1, - Math.log10(Math.PI)),
                         new XNScale("1/(\u03c0\u1e8b)", -1, - Math.log10(Math.PI)),
-                        new ASinATanXScale(),
+                        new ASinATanXScale(false),
+                        new ASinATanXScale(true),
                         new ASinACosXScale(false),
                         new ASinACosXScale(true),
                         new ACosSmallXScale(),
