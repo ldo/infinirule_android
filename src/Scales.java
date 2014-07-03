@@ -181,7 +181,7 @@ public class Scales
 
     public static void DrawCenteredText
       (
-        Canvas Draw,
+        Canvas g,
         String TheText,
         float x,
         float y,
@@ -197,7 +197,7 @@ public class Scales
           {
             UsePaint.setTextScaleX(MaxWidth / (TextBounds.right - TextBounds.left));
           } /*if*/
-        Draw.drawText
+        g.drawText
           (
             TheText,
             x, /* depend on UsePaint to align horizontally */
@@ -256,13 +256,13 @@ public class Scales
           {
             this
               (
-                Value,
-                NextValue,
-                NrDecimals,
-                MinDecimals,
-                Multiplier,
-                0,
-                false
+                /*Mantissa =*/ Value,
+                /*NextMantissa =*/ NextValue,
+                /*NrDecimals =*/ NrDecimals,
+                /*MinDecimals =*/ MinDecimals,
+                /*Multiplier =*/ Multiplier,
+                /*Exponent =*/ 0,
+                /*ExponentialStep =*/ false
               );
           } /*GradLabel*/
 
@@ -274,13 +274,13 @@ public class Scales
           {
             this
               (
-                1.0,
-                Increasing ? 10.0 : 0.1,
-                0,
-                0,
-                1,
-                Exponent,
-                true
+                /*Mantissa =*/ 1.0,
+                /*NextMantissa =*/ Increasing ? 10.0 : 0.1,
+                /*NrDecimals =*/ 0,
+                /*MinDecimals =*/ 0,
+                /*Multiplier =*/ 1,
+                /*Exponent =*/ Exponent,
+                /*ExponentialStep =*/ true
               );
           } /*GradLabel*/
 
@@ -292,7 +292,7 @@ public class Scales
 
         public void DrawCentered
           (
-            Canvas Draw,
+            Canvas g,
             float x,
             float y,
             Paint UsePaint,
@@ -375,7 +375,7 @@ public class Scales
             if (Exponent != 0)
               {
                 final float ExpY = BaseY + (MantissaTextBounds.bottom + MantissaTextBounds.top) * 0.7f;
-                Draw.drawText
+                g.drawText
                   (
                     ExponentStr,
                         x
@@ -402,7 +402,7 @@ public class Scales
                   );
                 UsePaint.setTextSize(BaseTextSize);
               } /*if*/
-            Draw.drawText
+            g.drawText
               (
                 Mantissa,
                     x
