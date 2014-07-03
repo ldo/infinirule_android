@@ -4,6 +4,7 @@ Feature highlights:
     add acos scale for angles < 8°.
     separate out asin and atan scales < 5.7°, since Infinirule has
     enough accuracy to distinguish between them.
+    Long-tapping on scales no longer brings up legacy message.
 
 16240.1, 2014 June 19:
     add 1/(πx) (CIF/DIF) scale.

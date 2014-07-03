@@ -760,7 +760,12 @@ public class SlideView extends android.view.View
                       } /*if*/
                   } /*if*/
               } /*if*/
-            if (LastMouse1 != null)
+            if
+              (
+                    LastMouse1 != null
+                &&
+                    MovingWhat == MovingState.MovingCursor /* no more long taps on scales */
+              )
               {
                 getHandler().postDelayed(LongClicker, android.view.ViewConfiguration.getLongPressTimeout());
               } /*if*/

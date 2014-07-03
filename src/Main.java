@@ -405,12 +405,7 @@ public class Main
               } /*for*/
         break;
         case Scales:
-            android.widget.Toast.makeText
-              (
-                /*context =*/ Main.this,
-                /*text =*/ R.string.not_set_scale,
-                /*duration =*/ android.widget.Toast.LENGTH_SHORT
-              ).show();
+          /* won't happen any more */
         break;
           } /*switch*/
       } /*CreateContextMenu*/
