@@ -1,5 +1,8 @@
 Feature highlights:
 
+16254.1, 2014 July 3:
+    add acos scale for angles < 8°.
+
 16240.1, 2014 June 19:
     add 1/(πx) (CIF/DIF) scale.
 
