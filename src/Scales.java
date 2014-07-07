@@ -186,7 +186,7 @@ public class Scales
         float x,
         float y,
         Paint UsePaint,
-        float MaxWidth
+        float MaxWidth /* +ve to constrain width of text */
       )
       /* draws text at position x, vertically centred around y. */
       {
@@ -223,6 +223,7 @@ public class Scales
         int Value,
         int NrCopies
       )
+      /* returns an array containing NrCopies repeats of Value. */
       {
         final int[] Result = new int[NrCopies];
         for (int i = 0; i < NrCopies; ++i)
@@ -504,16 +505,17 @@ public class Scales
           {
             Result[i] = new GradLabel
               (
-                Values[i],
-                i < Values.length - 1 ?
-                    Values[i + 1]
-                : PlusExponents ?
-                    Math.pow(10.0, FromExponent) / Multiplier
-                :
-                    Values[i],
-                NrDecimals,
-                MinDecimals,
-                Multiplier
+                /*Value =*/ Values[i],
+                /*NextValue =*/
+                    i < Values.length - 1 ?
+                        Values[i + 1]
+                    : PlusExponents ?
+                        Math.pow(10.0, FromExponent) / Multiplier
+                    :
+                        Values[i],
+                /*NrDecimals =*/ NrDecimals,
+                /*MinDecimals =*/ MinDecimals,
+                /*Multiplier =*/ Multiplier
               );
           } /*for*/
         if (PlusExponents)
@@ -1430,14 +1432,15 @@ public class Scales
       } /*LnXScale*/;
 
     public static class ASinATanXScale implements Scale
-      /* 0.57° < asin/atan X in degrees ≤ 5.7° */
+      /* 0.57° < acsc/acot/asin/atan X in degrees ≤ 5.7° */
       {
-        public final boolean TanScale;
+        public final boolean TanScale, Recip;
         public final Function Func, AFunc;
 
         public ASinATanXScale
           (
-            boolean TanScale
+            boolean TanScale,
+            boolean Recip
           )
           {
             this.TanScale = TanScale;
@@ -1491,6 +1494,7 @@ public class Scales
                                 Math.asin(X);
                           } /*F*/
                       } /*Function*/;
+            this.Recip = Recip;
           } /*ASinATanXScale*/
 
         public String Name()
@@ -1500,7 +1504,10 @@ public class Scales
                   (
                     Global.StdLocale,
                     "0.57° < a%s° \u1e8b ≤ 5.7°",
-                    TanScale ? "tan" : "sin"
+                    Recip ?
+                        TanScale ? "cot" : "csc"
+                    :
+                        TanScale ? "tan" : "sin"
                   );
           } /*Name*/
 
@@ -1521,6 +1528,10 @@ public class Scales
             double Pos
           )
           {
+            if (Recip)
+              {
+                Pos = - Pos;
+              } /*if*/
             return
                 Math.toDegrees(AFunc.F(Math.pow(10.0, Pos - 1)));
           } /*ValueAt*/
@@ -1530,8 +1541,13 @@ public class Scales
             double Value
           )
           {
+            double Pos = Math.log10(Func.F(Math.toRadians(Value))) + 1;
+            if (Recip)
+              {
+                Pos = - Pos;
+              } /*if*/
             return
-                Math.log10(Func.F(Math.toRadians(Value))) + 1;
+                Pos;
           } /*PosAt*/
 
         public SpecialMarker[] SpecialMarkers()
@@ -1549,29 +1565,58 @@ public class Scales
             boolean TopEdge
           )
           {
-            final double[] GradLabels = new double[]
-                {
-                    0.0,
-                    1.0,
-                    1.5,
-                    2.0,
-                    2.5,
-                    3.0,
-                    4.0,
-                    5.0,
-                    6.0,
-                };
-            final int[] NrDivisions = new int[]
-                {
-                    10,
-                    5,
-                    5,
-                    5,
-                    10,
-                    10,
-                    10,
-                    10,
-                };
+            final double[] GradLabels =
+                Recip ?
+                    new double[]
+                        {
+                            6.0,
+                            5.0,
+                            4.0,
+                            3.0,
+                            2.0,
+                            1.0,
+                            0.9,
+                            0.8,
+                            0.7,
+                            0.6,
+                            0.5,
+                        }
+                :
+                    new double[]
+                        {
+                            0.0,
+                            1.0,
+                            1.5,
+                            2.0,
+                            2.5,
+                            3.0,
+                            4.0,
+                            5.0,
+                            6.0,
+                        };
+            final int[] NrDivisions =
+                Recip ?
+                    MakeRepeat(10, 10)
+                :
+                    new int[]
+                        {
+                            10,
+                            5,
+                            5,
+                            5,
+                            10,
+                            10,
+                            10,
+                            10,
+                        };
+            double Leftmost = 1.8 / Math.PI;
+            double Rightmost = 18.0 / Math.PI;
+            if (Recip)
+              {
+                final double Temp = Leftmost;
+                Leftmost = Rightmost;
+                Rightmost = Temp;
+              } /*if*/
             DrawGraduations
               (
                 /*g =*/ g,
@@ -1592,29 +1637,34 @@ public class Scales
                         /*ToExponent =*/ 0
                       ),
                 /*NrDivisions =*/ NrDivisions,
-                /*Leftmost =*/ 1.8 / Math.PI,
-                /*Rightmost =*/ 18.0 / Math.PI
+                /*Leftmost =*/ Leftmost,
+                /*Rightmost =*/ Rightmost
               );
           } /*Draw*/
       } /*ASinATanXScale*/;
 
     public static class ASinACosXScale implements Scale
-      /* asin/acos X in degrees, > 5.7° */
+      /* acsc/asec/asin/acos X in degrees, > 5.7° */
       {
         public final String ScaleName;
-        public final boolean CosScale;
+        public final boolean CosScale, Recip;
 
         public ASinACosXScale
           (
-            boolean CosScale
+            boolean CosScale,
+            boolean Recip
           )
           {
             this.CosScale = CosScale;
+            this.Recip = Recip;
             ScaleName = String.format
               (
                 Global.StdLocale,
                 "a%s° \u1e8b > 5.7°",
-                CosScale ? "cos" : "sin"
+                Recip ?
+                    CosScale ? "sec" : "csc"
+                :
+                    CosScale ? "cos" : "sin"
               );
           } /*ASinACosXScale*/
 
@@ -1641,6 +1691,10 @@ public class Scales
             double Pos
           )
           {
+            if (Recip)
+              {
+                Pos = 1.0 - Pos;
+              } /*if*/
             final double T = Math.pow(10.0, Pos - 1.0);
             return
                 Math.toDegrees
@@ -1658,7 +1712,7 @@ public class Scales
           )
           {
             final double T = Math.toRadians(Value);
-            return
+            double Pos =
                     Math.log10
                       (
                         CosScale ?
@@ -1668,6 +1722,12 @@ public class Scales
                       )
                 +
                     1.0;
+            if (Recip)
+              {
+                Pos = 1.0 - Pos;
+              } /*if*/
+            return
+                Pos;
           } /*PosAt*/
 
         public SpecialMarker[] SpecialMarkers()
@@ -1685,31 +1745,62 @@ public class Scales
             boolean TopEdge
           )
           {
-            final double[] GradLabels = new double[]
-                {
-                    4.0,
-                    6.0,
-                    8.0,
-                    10.0,
-                    15.0,
-                    20.0,
-                    30.0,
-                    40.0,
-                    70.0,
-                    90.0,
-                };
-            final int[] NrDivisions = new int[]
-                {
-                    20,
-                    20,
-                    20,
-                    25,
-                    25,
-                    10,
-                    10,
-                    30,
-                    4,
-                };
+            final double[] GradLabels =
+                Recip ?
+                    new double[]
+                        {
+                            90.0,
+                            80.0,
+                            70.0,
+                            60.0,
+                            50.0,
+                            40.0,
+                            30.0,
+                            20.0,
+                            10.0,
+                            5.0,
+                        }
+                :
+                    new double[]
+                        {
+                            4.0,
+                            6.0,
+                            8.0,
+                            10.0,
+                            15.0,
+                            20.0,
+                            30.0,
+                            40.0,
+                            70.0,
+                            90.0,
+                        };
+            final int[] NrDivisions =
+                Recip ?
+                    new int[]
+                        {
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            10,
+                            5,
+                        }
+                :
+                    new int[]
+                        {
+                            20,
+                            20,
+                            20,
+                            25,
+                            25,
+                            10,
+                            10,
+                            30,
+                            4,
+                        };
             double Leftmost = 18.0 / Math.PI;
             double Rightmost = 90.0;
             if (CosScale)
@@ -1720,6 +1811,12 @@ public class Scales
                   } /*for*/
                 Leftmost = 90.0 - Leftmost;
                 Rightmost = 90.0 - Rightmost;
+              } /*if*/
+            if (Recip)
+              {
+                final double Temp = Leftmost;
+                Leftmost = Rightmost;
+                Rightmost = Temp;
               } /*if*/
             DrawGraduations
               (
@@ -2926,10 +3023,14 @@ public class Scales
                         new LnXScale(),
                         new XNScale("\u03c0\u1e8b", 1, - Math.log10(Math.PI)),
                         new XNScale("1/(\u03c0\u1e8b)", -1, - Math.log10(Math.PI)),
-                        new ASinATanXScale(false),
-                        new ASinATanXScale(true),
-                        new ASinACosXScale(false),
-                        new ASinACosXScale(true),
+                        new ASinATanXScale(false, false),
+                        new ASinATanXScale(true, false),
+                        new ASinATanXScale(false, true),
+                        new ASinATanXScale(true, true),
+                        new ASinACosXScale(false, false),
+                        new ASinACosXScale(true, false),
+                        new ASinACosXScale(false, true),
+                        new ASinACosXScale(true, true),
                         new ACosSmallXScale(),
                         new ATanXScale(),
                         new ASinhCoshXScale(false, -1),
